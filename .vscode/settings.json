@@ -1,5 +1,4 @@
 {
-    "files.autoSave": "afterDelay",
     "editor.formatOnSave": true,
     "editor.rulers": [
         90

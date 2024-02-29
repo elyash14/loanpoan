@@ -1,0 +1,36 @@
+.wrapper{
+  margin-bottom: rem(5px);
+  @mixin dark {
+    background-color:  var(--mantine-color-gray-8);
+  }
+  @mixin light {
+    background-color:  var(--mantine-color-gray-1);
+  }
+}
+
+.userMenu{
+  flex: 1
+}
+
+.icon {
+    width: rem(22px);
+    height: rem(22px);
+  }
+  
+.dark {
+  @mixin dark {
+    display: none;
+  }
+  @mixin light {
+    display: block;
+  }
+}
+
+.light {
+  @mixin light {
+    display: none;
+  }
+  @mixin dark {
+    display: block;
+  }
+} 
