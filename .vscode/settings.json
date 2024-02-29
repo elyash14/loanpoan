@@ -1,0 +1,28 @@
+{
+    "files.autoSave": "afterDelay",
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        90
+    ],
+    "files.exclude": {
+        "**/.next": true,
+        "**/node_modules": true
+    },
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/.next": true,
+        "**/public": true
+    },
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+    "cssVariables.lookupFiles": [
+        "**/*.css",
+        "**/*.scss",
+        "**/*.sass",
+        "**/*.less",
+        "node_modules/@mantine/core/styles.css"
+    ]
+}
