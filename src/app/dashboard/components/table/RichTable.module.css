@@ -1,0 +1,9 @@
+.checkboxHeader{ 
+    width: rem(5);
+}
+
+.sortable {
+    margin-right: rem(7);
+    position: relative;
+    top: rem(5);
+}

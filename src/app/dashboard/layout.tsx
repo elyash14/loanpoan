@@ -1,8 +1,8 @@
+import MainMenu from '@dashboard/components/main-menu/MainMenu';
 import Navbar from '@dashboard/components/navbar/Navbar';
 import { ColorSchemeScript, Container, MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
 import type { Metadata } from "next";
-import MainMenu from './components/man-menu/MainMenu';
 
 export const metadata: Metadata = {
   title: "Create Next App",
