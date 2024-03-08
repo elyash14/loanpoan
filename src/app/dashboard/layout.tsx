@@ -12,6 +12,16 @@ export const metadata: Metadata = {
 const theme = createTheme({
   fontFamily: 'Open Sans, sans-serif',
   primaryColor: 'cyan',
+  components: {
+    TextInput: {
+      styles: {
+        root: {
+          marginBottom: '1rem',
+        },
+      },
+    },
+  },
+
 });
 
 export default function RootLayout({

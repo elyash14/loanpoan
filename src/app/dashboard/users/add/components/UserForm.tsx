@@ -1,6 +1,7 @@
 "use client";
-import { Box, Button, Group, TextInput } from "@mantine/core";
+import { Button, Container, Group, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { IconDeviceFloppy } from "@tabler/icons-react";
 import classes from "./UserForm.module.css";
 import { validateForm } from "./validate";
 
@@ -29,7 +30,7 @@ function UserForm() {
   });
 
   return (
-    <Box maw={340} mx="auto">
+    <Container size="sm" >
       <form onSubmit={form.onSubmit((values) => console.log(values))}>
         <TextInput
           withAsterisk
@@ -71,13 +72,17 @@ function UserForm() {
           {...form.getInputProps("accountNumber")}
         />
 
-        <Group justify="flex-end" mt="md">
-          <Button className={classes.submitButton} type="submit">
-            Submit
+        <Group mt="md">
+          <Button
+            className={classes.submitButton}
+            leftSection={<IconDeviceFloppy size={14} />}
+            type="submit">
+            Save
           </Button>
         </Group>
+
       </form>
-    </Box>
+    </Container>
   );
 }
 
