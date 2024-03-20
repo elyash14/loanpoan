@@ -1,74 +1,104 @@
-'use client';
+"use client";
 
-import { Checkbox, Table } from "@mantine/core";
-import { FC, useState } from "react";
-import classes from './RichTable.module.css';
-import Sortable from "./Sortable";
+import { Box, Checkbox, Table } from "@mantine/core";
+import { FC, useMemo, useState } from "react";
+import Headers from "./Headers";
+import PageSize from "./PageSize";
+import Pagination from "./Pagination";
+import classes from "./RichTable.module.css";
+import Search from "./Search";
 import { IRichTableProps } from "./interface";
 
 const RichTable: FC<IRichTableProps> = (props) => {
-    const { data, hasRowSelector = false, sort, handleSort } = props;
+  const {
+    data,
+    hasRowSelector = false,
+    sort,
+    handleSort,
+    currentPage = 1,
+    totalPages = 1,
+    handleChangePage,
+    pageSize = 10,
+    handleChangePageSize,
+    search = '',
+    handleSearch,
+    actions
+  } = props;
 
-    const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
-    const rows = data.rows.map((row) => (
-        <Table.Tr
-            key={row.id}
-            bg={selectedRows.includes(row.id) ? 'var(--mantine-color-gray-light)' : undefined}
-        >
-            {hasRowSelector &&
-                <Table.Td>
-                    <Checkbox
-                        size="xs"
-                        aria-label="Select row"
-                        checked={selectedRows.includes(row.id)}
-                        onChange={(event) =>
-                            setSelectedRows(
-                                event.currentTarget.checked
-                                    ? [...selectedRows, row.id]
-                                    : selectedRows.filter((id) => id !== row.id)
-                            )
-                        }
-                    />
-                </Table.Td>
-            }
-            {Object.values(row).map((col, key) => <Table.Td key={`${row.id}-${key}`}>{col}</Table.Td>)}
-        </Table.Tr>
-    ));
+  const rows = useMemo(() => {
+    return data.rows.map((row) => (
+      <Table.Tr
+        key={row.id}
+        bg={
+          selectedRows.includes(row.id)
+            ? "var(--mantine-color-gray-light)"
+            : undefined
+        }
+      >
+        {hasRowSelector && (
+          <Table.Td>
+            <Checkbox
+              size="xs"
+              aria-label="Select row"
+              checked={selectedRows.includes(row.id)}
+              onChange={(event) =>
+                setSelectedRows(
+                  event.currentTarget.checked
+                    ? [...selectedRows, row.id]
+                    : selectedRows.filter((id) => id !== row.id)
+                )
+              }
+            />
+          </Table.Td>
+        )}
+        {data.headers.map(header => {
+          const value = header.value ? header.value(row[header.name]) : row[header.name];
+          return <Table.Td key={`${row.id}-${header.name}`}>{value}</Table.Td>
+        })}
+      </Table.Tr>
+    ))
+  }, [data, selectedRows]);
 
-    const headers = data.headers.map((header, key) => {
-        return <Table.Th key={`${key}-${header.name}`}>
-            {header.sortable && <Sortable columnName={header.name} sort={sort!} handleSort={handleSort!} />}
-            {header.name}
-        </Table.Th>
-    });
-
-
-    return (
-        <Table>
-            <Table.Thead>
-                <Table.Tr>
-                    {hasRowSelector && <Table.Th className={classes.checkboxHeader}>
-                        <Checkbox
-                            size="xs"
-                            aria-label="Select all row"
-                            checked={selectedRows.length === data.rows.length}
-                            indeterminate={selectedRows.length > 0 && selectedRows.length < data.rows.length}
-                            onChange={(event) =>
-                                setSelectedRows(
-                                    event.currentTarget.checked
-                                        ? data.rows.map((row) => row.id)
-                                        : []
-                                )
-                            }
-                        />
-                    </Table.Th>}
-                    {headers}
-                </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-    )
-}
+  return (
+    <Box>
+      <Box className={classes.topActions}>
+        <Box flex={1}>{actions}</Box>
+        {handleSearch && <Search handleSearch={handleSearch} value={search} />}
+        {handleChangePageSize && <PageSize pageSize={pageSize} handleChangePageSize={handleChangePageSize} />}
+      </Box>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            {hasRowSelector && (
+              <Table.Th className={classes.checkboxHeader}>
+                <Checkbox
+                  size="xs"
+                  aria-label="Select all row"
+                  checked={selectedRows.length === data.rows.length}
+                  indeterminate={
+                    selectedRows.length > 0 &&
+                    selectedRows.length < data.rows.length
+                  }
+                  onChange={(event) =>
+                    setSelectedRows(
+                      event.currentTarget.checked
+                        ? data.rows.map((row) => row.id)
+                        : []
+                    )
+                  }
+                />
+              </Table.Th>
+            )}
+            <Headers headers={data.headers} sort={sort} handleSort={handleSort} />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{rows}</Table.Tbody>
+      </Table>
+      {handleChangePage && <Pagination totalPages={totalPages} currentPage={currentPage} handleChangePage={handleChangePage} />}
+    </Box>
+  );
+};
 
 export default RichTable;
