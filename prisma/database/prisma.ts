@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 // const prisma = new PrismaClient();
 
+//TODO add prisma to a global object
+
 const prisma = new PrismaClient().$extends({
     result: {
         user: {
