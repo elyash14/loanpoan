@@ -14,7 +14,7 @@ const Sortable: FC<IProps> = ({ columnName, sort, handleSort }) => {
     const handleClick = () => {
         handleSort({
             column: columnName,
-            dir: (sort.dir === undefined || sort.dir === 'asc') ? 'desc' : 'asc'
+            dir: (sort.dir === undefined || sort.dir === '+') ? '-' : '+'
         });
     }
 
@@ -22,7 +22,7 @@ const Sortable: FC<IProps> = ({ columnName, sort, handleSort }) => {
         if (sort === undefined || columnName !== sort.column) {
             return <IconArrowsSort />
         }
-        if (sort.dir === 'desc') {
+        if (sort.dir === '-') {
             return <IconSortDescending2 />
         }
         return <IconSortAscending2 />
