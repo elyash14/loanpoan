@@ -1,0 +1,8 @@
+.pagePaper{
+    @mixin dark {
+        background-color:  var(--mantine-color-dark-8);
+    }
+    @mixin light {
+        background-color:  var(--mantine-color-gray-1);
+    }
+}

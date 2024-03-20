@@ -4,6 +4,7 @@
 
 .topActions{
     display: flex;
+    margin-bottom: rem(20);
 }
 
 .sortable {

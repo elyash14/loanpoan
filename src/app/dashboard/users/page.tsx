@@ -1,5 +1,7 @@
 
+import PagePaper from "@dashboard/components/paper/PagePaper";
 import { paginatedUsersList } from "@database/user/data";
+import { IconUsers } from "@tabler/icons-react";
 import { Suspense } from "react";
 import { ITEMS_PER_PAGE } from "utils/configs";
 import { ListPage } from "utils/types/pageTypes";
@@ -16,7 +18,8 @@ export default async function Users({ searchParams }: ListPage) {
   const { data, total } = await paginatedUsersList(page, limit, search, sortBy, sortDir);
 
   return (
-    <main>
+    <PagePaper>
+      <h2><IconUsers />&nbsp;Users</h2>
       <Suspense key={search + page} fallback={<>Loading ...</>}>
         <UsersList
           // convert data to a string object to avoid NextJS hydration error
@@ -29,7 +32,6 @@ export default async function Users({ searchParams }: ListPage) {
           search={search}
         />
       </Suspense>
-
-    </main>
+    </PagePaper>
   );
 }

@@ -3,8 +3,12 @@ import RichTable from "@dashboard/components/table/RichTable";
 import {
   IRichTableData, IRichTableSort, RichTableSortDir
 } from "@dashboard/components/table/interface";
+import { Button } from "@mantine/core";
 import { User } from "@prisma/client";
+import { IconUserPlus } from "@tabler/icons-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { DASHBOARD_URL } from "utils/configs";
 
 type props = {
   users: User[],
@@ -82,7 +86,11 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
       handleSort={handleSort}
       search={search}
       handleSearch={handleSearch}
-      actions={<>Add new user</>}
+      actions={<>
+        <Button href={`/${DASHBOARD_URL}/test`} component={Link} size="xs" rightSection={<IconUserPlus size={14} />} >
+          Add
+        </Button>
+      </>}
     />
   );
 };
