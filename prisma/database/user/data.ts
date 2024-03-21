@@ -1,6 +1,6 @@
 import { RichTableSortDir } from "@dashboard/components/table/interface";
 import prisma from "@database/prisma";
-import { unstable_cache, unstable_noStore } from "next/cache";
+import { unstable_cache } from "next/cache";
 import { ITEMS_PER_PAGE } from "utils/configs";
 
 export const getUsers = unstable_cache(
@@ -28,7 +28,6 @@ export async function paginatedUsersList(
   search?: string,
   sortBy?: string,
   sortDir?: RichTableSortDir) {
-  unstable_noStore();
   try {
     let where = {};
     if (search) {
