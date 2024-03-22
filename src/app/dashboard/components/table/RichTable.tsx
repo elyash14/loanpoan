@@ -54,7 +54,7 @@ const RichTable: FC<IRichTableProps> = (props) => {
           </Table.Td>
         )}
         {data.headers.map(header => {
-          const value = header.value ? header.value(row[header.name]) : row[header.name];
+          const value = header.value ? header.value(row) : row[header.name];
           return <Table.Td key={`${row.id}-${header.name}`}>{value}</Table.Td>
         })}
       </Table.Tr>

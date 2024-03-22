@@ -9,3 +9,9 @@ export type ListPage = {
         sortDir?: RichTableSortDir
     }
 }
+
+export type InstancePage = ListPage & {
+    params: {
+        id: string;
+    }
+}

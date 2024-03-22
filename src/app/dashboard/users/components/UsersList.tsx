@@ -9,6 +9,7 @@ import { IconUserPlus } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DASHBOARD_URL } from "utils/configs";
+import UserListAction from "./UsersListAction";
 
 type props = {
   users: User[],
@@ -55,7 +56,6 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
     router.replace(`${pathname}?${params.toString()}`);
   }
 
-
   // create RichTable data based on database data and url query params
   const data: IRichTableData = {
     headers: [
@@ -67,7 +67,12 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
         name: "createdAt",
         label: "Created At",
         sortable: true,
-        value: (date => new Date(date).toDateString())
+        value: (row => new Date(row.createdAt).toDateString())
+      },
+      {
+        name: "actions",
+        label: "Actions",
+        value: UserListAction
       },
     ],
     rows: JSON.parse(users as any),
