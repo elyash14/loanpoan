@@ -1,6 +1,6 @@
 'use client';
 import { Center, Tabs, rem } from "@mantine/core";
-import { IconDashboard, IconUsers } from '@tabler/icons-react';
+import { IconDashboard, IconIdBadge2, IconUsers } from '@tabler/icons-react';
 import { usePathname, useRouter } from "next/navigation";
 import { DASHBOARD_URL } from "utils/configs";
 
@@ -19,6 +19,9 @@ const MainMenu = () => {
                     </Tabs.Tab>
                     <Tabs.Tab value={`/${DASHBOARD_URL}/users`} leftSection={<IconUsers style={iconStyle} />}>
                         Users
+                    </Tabs.Tab>
+                    <Tabs.Tab value={`/${DASHBOARD_URL}/accounts`} leftSection={<IconIdBadge2 style={iconStyle} />}>
+                        Accounts
                     </Tabs.Tab>
                 </Tabs.List>
             </Tabs>

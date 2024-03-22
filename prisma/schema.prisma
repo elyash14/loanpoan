@@ -30,4 +30,18 @@ model User {
   avatar        String?
   createdAt     DateTime  @default(now())
   deletedAt     DateTime?
+  accounts      Account[]
+}
+
+model Account {
+  id                Int       @id @default(autoincrement())
+  code              String
+  name              String?
+  installmentFactor Int
+  balance           Decimal
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now())
+  deletedAt         DateTime? @default(now())
+  user              User      @relation(fields: [userId], references: [id])
+  userId            Int
 }
