@@ -1,3 +1,5 @@
+"use server"
+
 import { RichTableSortDir } from "@dashboard/components/table/interface";
 import prisma from "@database/prisma";
 import { ITEMS_PER_PAGE } from "utils/configs";
