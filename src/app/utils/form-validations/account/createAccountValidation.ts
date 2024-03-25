@@ -18,16 +18,10 @@ export const createAccountValidationSchemaOnTheServer = z.object({
     ...basicValidation,
     code: z.string().min(2).max(8).refine(async (code) => {
         return await checkUniquenessOfCode(code);
-    }, {
-        message: "This code is already exists!",
-        path: ['code'],
-    }),
+    }, { message: "This code is already exists!" }),
     userId: z.coerce.number().refine(async (userId) => {
         return await checkUserIfNotExist(userId);
-    }, {
-        message: "User not found!",
-        path: ['userId'],
-    }),
+    }, { message: "User not found!" }),
 });
 
 export type CreateAccountResponseType = ActionResponse & {

@@ -1,34 +1,40 @@
 "use client";
-import { createAccount } from "@database/account/actions";
+import { updateAccount } from "@database/account/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Container, Group, NumberInput, TextInput, rem } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { Account } from "@prisma/client";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { DASHBOARD_URL } from "utils/configs";
-import { CreateAccountFormSchemaInputType, createAccountValidationSchema } from "utils/form-validations/account/createAccountValidation";
-import SearchAndSelectUser from "./SearchAndSelectUser";
+import { EditAccountFormSchemaInputType, editAccountValidationSchema } from "utils/form-validations/account/editAccountValidation";
 
-function AddAccountForm() {
+type Props = {
+    data: string
+}
+function EditAccountForm({ data }: Props) {
+    const account: Account = useMemo(() => JSON.parse(data), [data]);
     const router = useRouter();
 
     const {
-        control,
         setError,
-        setValue,
+        control,
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<CreateAccountFormSchemaInputType>({
-        resolver: zodResolver(createAccountValidationSchema, {}, { raw: true }),
-        defaultValues: {
-            installmentFactor: 1
-        },
-        // values , it will be useful for the update page
+    } = useForm<EditAccountFormSchemaInputType>({
+        resolver: zodResolver(editAccountValidationSchema, {}, { raw: true }),
+        values: {
+            id: account.id,
+            code: account.code,
+            name: account.name,
+            installmentFactor: account.installmentFactor,
+        }
     });
 
-    const onSubmit: SubmitHandler<CreateAccountFormSchemaInputType> = async (data) => {
+    const onSubmit: SubmitHandler<EditAccountFormSchemaInputType> = async (data) => {
         // create a form data
         const formData = new FormData();
         for (const field of Object.keys(data) as Array<keyof typeof data>) {
@@ -36,10 +42,9 @@ function AddAccountForm() {
         }
 
         // send it to the server with server actions
-        const result = await createAccount(formData);
+        const result = await updateAccount(formData);
         if (result.status === 'ERROR') {
             for (const e in result.error!) {
-                //TODO I cant figure the type of this line of code!!!!
                 setError(e as any, { message: String(result.error?.[e as ("code" | "userId" | "name" | "installmentFactor")]) });
             }
         }
@@ -55,10 +60,11 @@ function AddAccountForm() {
     return (
         <Container size="sm" >
             <form onSubmit={handleSubmit(onSubmit)}>
-                <SearchAndSelectUser
-                    {...register('userId')}
-                    error={errors.userId?.message}
-                    onChange={(v) => setValue("userId", Number(v))}
+                <input readOnly type="hidden" name="id" />
+                <TextInput
+                    readOnly
+                    label="User"
+                    value={(account as any).user.fullName}
                 />
                 <TextInput
                     withAsterisk
@@ -101,4 +107,4 @@ function AddAccountForm() {
     );
 }
 
-export default AddAccountForm;
+export default EditAccountForm;

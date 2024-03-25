@@ -1,7 +1,10 @@
 "use server";
 
 import prisma from "@database/prisma";
-import { CreateAccountResponseType, createAccountValidationSchemaOnTheServer } from "utils/form-validations/createAccountValidation";
+import { revalidatePath } from "next/cache";
+import { DASHBOARD_URL } from "utils/configs";
+import { CreateAccountResponseType, createAccountValidationSchemaOnTheServer } from "utils/form-validations/account/createAccountValidation";
+import { editAccountValidationSchema } from "utils/form-validations/account/editAccountValidation";
 
 export async function createAccount(formData: FormData): Promise<CreateAccountResponseType> {
   // validate the form data on the server
@@ -45,6 +48,50 @@ export async function createAccount(formData: FormData): Promise<CreateAccountRe
     return {
       status: "ERROR",
       message: "Failed to create account",
+    }
+  }
+}
+
+export async function updateAccount(formData: FormData): Promise<CreateAccountResponseType> {
+  // validate the form data on the server
+  const validatedFields = await editAccountValidationSchema.safeParseAsync({
+    id: formData.get('id'),
+    name: formData.get('name'),
+    code: formData.get('code'),
+    installmentFactor: formData.get('installmentFactor'),
+  })
+
+  // Return early if the form data is invalid
+  if (!validatedFields.success) {
+    return {
+      status: "ERROR",
+      error: validatedFields.error.flatten().fieldErrors,
+    }
+  }
+  // update data to the database
+  try {
+    await prisma.account.update({
+      where: {
+        id: validatedFields.data.id,
+      },
+      data: {
+        code: validatedFields.data.code,
+        name: validatedFields.data.name,
+        installmentFactor: validatedFields.data.installmentFactor,
+        updatedAt: new Date(),
+      },
+    });
+    // revalidate the list of accounts page after updating an account.
+    revalidatePath(`/${DASHBOARD_URL}/accounts`);
+    return {
+      status: "SUCCESS",
+      message: "Account updated successfully",
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      status: "ERROR",
+      message: "Failed to update account",
     }
   }
 }

@@ -61,3 +61,22 @@ export async function paginatedAccountList(
         throw new Error("Failed to load accounts list");
     }
 }
+
+export async function getAccount(id: number) {
+    try {
+        const account = await prisma.account.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        fullName: true
+                    }
+                }
+            },
+        });
+        return account;
+    } catch (error) {
+        throw new Error("Failed to fetch the account information");
+    }
+}
