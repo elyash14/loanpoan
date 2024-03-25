@@ -38,5 +38,6 @@ const SearchAndSelectUser = forwardRef<HTMLInputElement, Props>(({ name, error, 
     />)
 });
 
+SearchAndSelectUser.displayName = 'SearchAndSelectUser';
 
 export default SearchAndSelectUser;

@@ -33,4 +33,6 @@ export const richSelectBoxDataResolver = (data: any[], label: string, value: str
     return data.map(item => ({ value: String(item[value]), label: item[label] }))
 }
 
+RichSelectBox.displayName = 'RichSelectBox';
+
 export default RichSelectBox;
