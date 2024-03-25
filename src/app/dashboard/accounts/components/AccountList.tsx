@@ -56,6 +56,11 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
       { name: "id", label: "ID", sortable: true },
       { name: "code", label: "Code", sortable: true },
       {
+        name: "installmentFactor",
+        label: "Installment Factor",
+        sortable: true,
+      },
+      {
         name: "balance",
         label: "Balance",
         sortable: true,
@@ -69,12 +74,6 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
             <Link href={`/${DASHBOARD_URL}/users/${row.user.id}/view`}>{row.user.fullName}</Link>
           </Tooltip>
         )
-      },
-      {
-        name: "createdAt",
-        label: "Created At",
-        sortable: true,
-        value: (row => new Date(row.createdAt).toDateString())
       },
       {
         name: "updatedAt",

@@ -15,16 +15,16 @@ export async function paginatedAccountList(
         if (search) {
             where = {
                 OR: [
+                    { name: { contains: search.toLowerCase(), mode: 'insensitive' } },
+                    { code: { contains: search.toLowerCase(), mode: 'insensitive' } },
                     {
-                        name: {
-                            contains: search,
-                        },
-                    },
-                    {
-                        code: {
-                            contains: search,
-                        },
-                    },
+                        user: {
+                            OR: [
+                                { firstName: { contains: search.toLowerCase(), mode: 'insensitive' } },
+                                { lastName: { contains: search.toLowerCase(), mode: 'insensitive' } },
+                            ],
+                        }
+                    }
                 ],
             }
         }
@@ -35,8 +35,8 @@ export async function paginatedAccountList(
                     id: true,
                     code: true,
                     balance: true,
-                    createdAt: true,
                     updatedAt: true,
+                    installmentFactor: true,
                     user: {
                         select: {
                             id: true,
