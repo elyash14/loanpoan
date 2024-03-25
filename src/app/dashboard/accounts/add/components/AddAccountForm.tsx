@@ -2,10 +2,10 @@
 import { createAccount } from "@database/account/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Container, Group, NumberInput, TextInput, rem } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { errorNotification } from "utils/Notification/notification";
 import { DASHBOARD_URL } from "utils/configs";
 import { CreateAccountFormSchemaInputType, createAccountValidationSchema } from "utils/form-validations/account/createAccountValidation";
 import SearchAndSelectUser from "./SearchAndSelectUser";
@@ -44,9 +44,9 @@ function AddAccountForm() {
             }
         }
         else if (result.status === 'SUCCESS') {
-            notifications.show({
+            errorNotification({
                 title: 'Success',
-                message: result.message,
+                message: result.message!,
             });
             router.push(`/${DASHBOARD_URL}/accounts`);
         }

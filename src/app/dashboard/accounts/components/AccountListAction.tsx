@@ -1,3 +1,4 @@
+import DeleteItemActionIcon from "@dashboard/components/custom-action/DeleteItemActionIcon";
 import { ActionIcon, Tooltip, rem } from "@mantine/core";
 import { Account } from "@prisma/client";
 import { IconEdit, IconEye } from "@tabler/icons-react";
@@ -27,6 +28,11 @@ const AccountListAction = (row: Account) => {
                 <IconEdit />
             </ActionIcon>
         </Tooltip>
+        <DeleteItemActionIcon
+            id={row.id}
+            itemName={row.code}
+            tooltipLabel="Delete This Account"
+        />
     </>
 }
 

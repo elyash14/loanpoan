@@ -1,0 +1,13 @@
+.titleSuccess {
+    color: var(--mantine-color-green-6);
+    font-weight: bold;
+}
+
+.titleError {
+    color: var(--mantine-color-pink-7);
+    font-weight: bold;
+}
+
+.description {
+    color: var(--mantine-color-white)!important;
+}

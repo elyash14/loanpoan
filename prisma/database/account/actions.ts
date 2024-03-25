@@ -91,7 +91,30 @@ export async function updateAccount(formData: FormData): Promise<CreateAccountRe
     console.error(error);
     return {
       status: "ERROR",
-      message: "Failed to update account",
+      message: "Failed to update the account",
+    }
+  }
+}
+
+export async function deleteAccount(id: number) {
+  //TODO check if the account has installments or loan before deleting it.
+  try {
+    await prisma.account.delete({
+      where: {
+        id,
+      },
+    });
+    // revalidate the list of accounts page after updating an account.
+    revalidatePath(`/${DASHBOARD_URL}/accounts`);
+    return {
+      status: "SUCCESS",
+      message: "Account delete successfully",
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      status: "ERROR",
+      message: "Failed to delete the account",
     }
   }
 }
