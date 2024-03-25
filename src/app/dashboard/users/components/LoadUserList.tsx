@@ -1,7 +1,7 @@
 import { paginatedUsersList } from "@database/user/data";
 import { ITEMS_PER_PAGE } from "utils/configs";
 import { ListPage } from "utils/types/pageTypes";
-import UsersList from "./components/UsersList";
+import UsersList from "./UsersList";
 
 
 export default async function LoadUserList({ searchParams }: ListPage) {

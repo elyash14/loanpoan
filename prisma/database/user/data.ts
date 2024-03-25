@@ -1,5 +1,8 @@
+'use server'
+
 import { RichTableSortDir } from "@dashboard/components/table/interface";
 import prisma from "@database/prisma";
+import { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { ITEMS_PER_PAGE } from "utils/configs";
 
@@ -18,9 +21,6 @@ export const getUsers = unstable_cache(
   [],
   { tags: ["users-list"] }
 );
-
-
-
 
 export async function paginatedUsersList(
   page: number,
@@ -76,5 +76,53 @@ export async function paginatedUsersList(
     return { total, data };
   } catch (error) {
     throw new Error("Failed to load users list");
+  }
+}
+
+export async function searchUserForSelectBox(search: string | null = null, limit: number | null = null) {
+  /**
+   * search in the database if search present,
+   * take limit rows if limit present
+   *  */
+  try {
+    let where = {};
+    if (search) {
+      where = {
+        OR: [
+          {
+            email: {
+              contains: search,
+            },
+          },
+          {
+            firstName: {
+              contains: search,
+            },
+          },
+          {
+            lastName: {
+              contains: search,
+            },
+          },
+        ],
+      }
+    }
+
+    const take = limit ? limit : undefined;
+    const orderBy: Prisma.UserOrderByWithRelationInput = limit ? { createdAt: 'desc' } : {};
+
+    const result = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        fullName: true,
+      },
+      take,
+      orderBy
+    });
+    return JSON.stringify(result);
+  } catch (error) {
+    console.log(error);
+    return [];
   }
 }

@@ -3,18 +3,18 @@ import RichTable from "@dashboard/components/table/RichTable";
 import {
   IRichTableData, IRichTableSort
 } from "@dashboard/components/table/interface";
-import { Button } from "@mantine/core";
-import { User } from "@prisma/client";
-import { IconUserPlus } from "@tabler/icons-react";
+import { Button, NumberFormatter, Tooltip } from "@mantine/core";
+import { Account } from "@prisma/client";
+import { IconPlus } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DASHBOARD_URL } from "utils/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
-import UserListAction from "./UsersListAction";
+import AccountListAction from "./AccountListAction";
 
-type props = ListComponentProps & { users: User[] }
+type props = ListComponentProps & { accounts: Account[] }
 
-const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
+const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -54,22 +54,40 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
   const data: IRichTableData = {
     headers: [
       { name: "id", label: "ID", sortable: true },
-      { name: "email", label: "Email", sortable: true },
-      { name: "fullName", label: "Full Name" },
-      { name: "gender", label: "Gender" },
+      { name: "code", label: "Code", sortable: true },
       {
-        name: "createdAt",
-        label: "Created At",
+        name: "installmentFactor",
+        label: "Installment Factor",
         sortable: true,
-        value: (row => new Date(row.createdAt).toDateString())
+      },
+      {
+        name: "balance",
+        label: "Balance",
+        sortable: true,
+        value: (row => <NumberFormatter value={row.balance} thousandSeparator />)
+      },
+      {
+        name: "user",
+        label: "User",
+        value: (row =>
+          <Tooltip label="View User Profile">
+            <Link href={`/${DASHBOARD_URL}/users/${row.user.id}/view`}>{row.user.fullName}</Link>
+          </Tooltip>
+        )
+      },
+      {
+        name: "updatedAt",
+        label: "Updated At",
+        sortable: true,
+        value: (row => new Date(row.updatedAt).toDateString())
       },
       {
         name: "actions",
         label: "Actions",
-        value: UserListAction
+        value: AccountListAction
       },
     ],
-    rows: JSON.parse(users as any),
+    rows: JSON.parse(accounts as any),
   };
 
   return (
@@ -86,7 +104,7 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
       search={search}
       handleSearch={handleSearch}
       actions={<>
-        <Button href={`/${DASHBOARD_URL}/test`} component={Link} size="xs" rightSection={<IconUserPlus size={14} />} >
+        <Button href={`/${DASHBOARD_URL}/accounts/add`} component={Link} size="xs" rightSection={<IconPlus size={14} />} >
           Add
         </Button>
       </>}
@@ -94,4 +112,4 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
   );
 };
 
-export default UsersList;
+export default AccountList;
