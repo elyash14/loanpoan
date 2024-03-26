@@ -3,10 +3,9 @@ import { Suspense } from "react";
 import ConfigSkeleton from "../components/ConfigSkeleton";
 import LoadConfigs from "./components/LoadConfigs";
 
-
 export default async function GeneralConfig() {
     return <>
-        <Title mb={rem(20)} order={4}>General Config</Title>
+        <Title mb={rem(20)} order={4}>Currency</Title>
         <Suspense fallback={<ConfigSkeleton />}>
             <LoadConfigs />
         </Suspense>

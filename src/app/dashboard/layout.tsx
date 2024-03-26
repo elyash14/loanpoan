@@ -22,6 +22,13 @@ const theme = createTheme({
         },
       },
     },
+    Fieldset: {
+      styles: {
+        legend: {
+          fontWeight: 'bold',
+        }
+      }
+    }
   },
 
 });

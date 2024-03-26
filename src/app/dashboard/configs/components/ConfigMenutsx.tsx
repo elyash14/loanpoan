@@ -32,6 +32,15 @@ const ConfigMenu = () => {
         />
         <NavLink
             component={Link}
+            href={`${URL_PREFIX}/currency`}
+            label="Currency"
+            active={pathname === `${URL_PREFIX}/currency`}
+            rightSection={
+                <IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />
+            }
+        />
+        <NavLink
+            component={Link}
             href={`${URL_PREFIX}/installment`}
             label="Installment"
             active={pathname === `${URL_PREFIX}/installment`}
