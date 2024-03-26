@@ -1,0 +1,22 @@
+.menuWrapper{
+    @mixin dark {
+        background-color:  var(--mantine-color-dark-8);
+    }
+    @mixin light {
+        background-color:  var(--mantine-color-gray-1);
+    }
+}
+
+.navbarHeader {
+    @mixin dark {
+        border-bottom: 2px solid var(--mantine-color-gray-7);
+    }
+    @mixin light {
+        border-bottom: 2px solid var(--mantine-primary-color-5);
+    }
+    color: var(--mantine-primary-color-5);
+    display: flex;
+    line-height: 50px;
+    align-items: center;
+    padding-left: 8px;
+}
