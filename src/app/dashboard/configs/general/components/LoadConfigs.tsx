@@ -1,10 +1,12 @@
+
 import { getGlobalConfigs } from "@database/config/data";
 import { GlobalConfigType } from "utils/types/configs";
+import GeneralConfig from "./GeneralConfig";
 
 const LoadConfigs = async () => {
     const config = (await getGlobalConfigs() as GlobalConfigType);
 
-    return <h1>{config?.currency?.name}</h1>;
+    return <GeneralConfig applicationName={config.applicationName} />;
 }
 
 export default LoadConfigs;
