@@ -41,7 +41,14 @@ model Account {
   balance           Decimal
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @default(now())
-  deletedAt         DateTime? @default(now())
+  deletedAt         DateTime?
   user              User      @relation(fields: [userId], references: [id])
   userId            Int
+}
+
+model InstallmentAmount {
+  id           Int       @id @default(autoincrement())
+  amount       Decimal
+  createdAt    DateTime  @default(now())
+  deprecatedAt DateTime?
 }

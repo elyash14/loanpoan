@@ -11,7 +11,6 @@ export const successNotification = ({ title, message }: NotificationType) => {
         title,
         message,
         color: 'green',
-        autoClose: false,
         classNames: {
             title: classes.titleSuccess,
             description: classes.description,
