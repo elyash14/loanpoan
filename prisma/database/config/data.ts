@@ -18,3 +18,24 @@ export const getGlobalConfigs = unstable_cache(async () => {
     [],
     { tags: ["global-config"] }
 );
+
+export const getWaitingListConfigs = unstable_cache(async () => {
+    try {
+        const result = await prisma.config.findFirst({
+            where: {
+                name: "waiting_list"
+            }
+        });
+        if (result === null) {
+            createWaitingList();
+        }
+
+        return result?.value || {};
+    } catch (error) {
+        console.log(error);
+        return {};
+    }
+},
+    [],
+    { tags: ["global-config"] }
+);

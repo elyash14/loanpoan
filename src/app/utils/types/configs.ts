@@ -5,3 +5,5 @@ export type GlobalConfigType = {
         symbol: string;
     };
 }
+
+export type WaitingListType = number[];
