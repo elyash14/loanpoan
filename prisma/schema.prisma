@@ -44,6 +44,7 @@ model Account {
   deletedAt         DateTime?
   user              User      @relation(fields: [userId], references: [id])
   userId            Int
+  loans             Loan[]
 }
 
 model InstallmentAmount {
@@ -59,4 +60,23 @@ model Config {
   label        String?
   descriptiion String? @db.Text
   value        Json
+}
+
+model Loan {
+  id           Int       @id @default(autoincrement())
+  description  String?   @db.Text
+  account      Account?  @relation(fields: [accountId], references: [id])
+  accountId    Int?
+  amount       Decimal
+  paymentCount Int
+  createdAt    DateTime  @default(now())
+  startedAt    DateTime?
+  finishedAt   DateTime?
+}
+
+model Payment {
+  id      Int       @id @default(autoincrement())
+  amount  Decimal
+  dueDate DateTime
+  payedAt DateTime?
 }
