@@ -4,4 +4,5 @@ export type GlobalConfigType = {
         name: string;
         symbol: string;
     };
+    dateType?: "GREGORIAN" | "JALALI"
 }

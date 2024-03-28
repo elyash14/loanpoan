@@ -63,6 +63,7 @@ export async function saveGeneralConfig(formData: FormData): Promise<SaveGeneral
   // validate the form data on the server
   const validatedFields = saveGeneralConfigSchema.safeParse({
     applicationName: formData.get('applicationName'),
+    dateType: formData.get('dateType'),
   })
   // Return early if the form data is invalid
   if (!validatedFields.success) {
@@ -77,6 +78,7 @@ export async function saveGeneralConfig(formData: FormData): Promise<SaveGeneral
     const config = (await getGlobalConfigs()) as GlobalConfigType;
     const newConfig: GlobalConfigType = {
       applicationName: validatedFields.data.applicationName,
+      dateType: validatedFields.data.dateType,
       ...config
     }
 

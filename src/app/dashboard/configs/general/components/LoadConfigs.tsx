@@ -6,7 +6,10 @@ import GeneralConfig from "./GeneralConfig";
 const LoadConfigs = async () => {
     const config = (await getGlobalConfigs() as GlobalConfigType);
 
-    return <GeneralConfig applicationName={config.applicationName} />;
+    return <GeneralConfig
+        applicationName={config.applicationName}
+        dateType={config.dateType}
+    />;
 }
 
 export default LoadConfigs;
