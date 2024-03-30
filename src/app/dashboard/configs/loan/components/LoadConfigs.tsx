@@ -1,15 +1,12 @@
 
 import { getGlobalConfigs } from "@database/config/data";
 import { GlobalConfigType } from "utils/types/configs";
-import GeneralConfig from "./GeneralConfig";
+import LoanConfig from "./LoanConfig";
 
 const LoadConfigs = async () => {
     const config = (await getGlobalConfigs() as GlobalConfigType);
 
-    return <GeneralConfig
-        applicationName={config.applicationName}
-        dateType={config.dateType}
-    />;
+    return <LoanConfig loanConfig={config.loan} />;
 }
 
 export default LoadConfigs;

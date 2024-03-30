@@ -2,6 +2,7 @@ import MainMenu from '@dashboard/components/main-menu/MainMenu';
 import Navbar from '@dashboard/components/navbar/Navbar';
 import { ColorSchemeScript, Container, MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import type { Metadata } from "next";

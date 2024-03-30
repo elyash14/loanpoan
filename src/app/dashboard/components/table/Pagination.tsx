@@ -5,7 +5,7 @@ import { IRichTablePaginationProps } from "./interface";
 
 const Pagination: FC<IRichTablePaginationProps> = ({ totalPages, currentPage, handleChangePage }) => {
 
-    return <MPagination gap={3} total={totalPages} value={currentPage} onChange={handleChangePage} mt="xs" />
+    return <MPagination gap={3} size="sm" total={totalPages} value={currentPage} onChange={handleChangePage} mt="xs" />
 }
 
 export default Pagination;

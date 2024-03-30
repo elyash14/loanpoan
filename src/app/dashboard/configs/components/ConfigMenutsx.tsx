@@ -48,6 +48,15 @@ const ConfigMenu = () => {
                 <IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />
             }
         />
+        <NavLink
+            component={Link}
+            href={`${URL_PREFIX}/loan`}
+            label="Loan Config"
+            active={pathname === `${URL_PREFIX}/loan`}
+            rightSection={
+                <IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />
+            }
+        />
     </Paper>
 }
 

@@ -1,17 +1,17 @@
 import DeleteItemActionIcon from "@dashboard/components/custom-action/DeleteItemActionIcon";
-import { deleteAccount } from "@database/account/actions";
+import { deleteLoan } from "@database/loan/actions";
 import { ActionIcon, Tooltip, rem } from "@mantine/core";
-import { Account } from "@prisma/client";
-import { IconEdit, IconEye } from "@tabler/icons-react";
+import { Loan } from "@prisma/client";
+import { IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import { errorNotification, successNotification } from "utils/Notification/notification";
 
 import { DASHBOARD_URL } from "utils/configs";
 
-const AccountListAction = (row: Account) => {
+const LoanListAction = (row: Loan) => {
 
     const handleDelete = async (id: number) => {
-        const result = await deleteAccount(id);
+        const result = await deleteLoan(id);
         if (result.status === 'ERROR') {
             errorNotification({
                 title: 'Error',
@@ -27,9 +27,9 @@ const AccountListAction = (row: Account) => {
     }
 
     return <>
-        <Tooltip label="View Account">
+        <Tooltip label="View Loan">
             <ActionIcon
-                href={`/${DASHBOARD_URL}/accounts/${row.id}/view`}
+                href={`/${DASHBOARD_URL}/loans/${row.id}/view`}
                 component={Link}
                 size="sm"
                 variant="light"
@@ -37,23 +37,13 @@ const AccountListAction = (row: Account) => {
                 <IconEye />
             </ActionIcon>
         </Tooltip>
-        <Tooltip label="Edit Account">
-            <ActionIcon
-                href={`/${DASHBOARD_URL}/accounts/${row.id}/edit`}
-                component={Link}
-                size="sm"
-                variant="light"
-                mr={rem(3)}>
-                <IconEdit />
-            </ActionIcon>
-        </Tooltip>
         <DeleteItemActionIcon
             id={row.id}
-            itemName={row.code}
-            tooltipLabel="Delete This Account"
+            itemName={(row as any).account.code}
+            tooltipLabel="Delete This Loan"
             handleDelete={handleDelete}
         />
     </>
 }
 
-export default AccountListAction
+export default LoanListAction
