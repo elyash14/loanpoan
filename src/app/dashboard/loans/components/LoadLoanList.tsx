@@ -8,7 +8,7 @@ export default async function LoadLoanList({ searchParams }: ListPage) {
     const search = searchParams?.search || '';
     const page = Number(searchParams?.page) || 1;
     const limit = Number(searchParams?.limit) || ITEMS_PER_PAGE;
-    const sortBy = searchParams?.sortBy || 'createdAt';
+    const sortBy = searchParams?.sortBy || 'startedAt';
     const sortDir = searchParams?.sortDir || '-';
 
     const { data, total } = await paginatedLoanList(page, limit, search, sortBy, sortDir);

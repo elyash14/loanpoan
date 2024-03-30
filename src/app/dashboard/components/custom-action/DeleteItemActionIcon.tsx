@@ -1,33 +1,20 @@
-import { deleteAccount } from "@database/account/actions";
 import { ActionIcon, Button, Modal, Text, Tooltip, rem } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconAlertOctagonFilled, IconTrashX } from "@tabler/icons-react";
-import { errorNotification, successNotification } from "utils/Notification/notification";
 
 type DeleteItemActionIconProps = {
     tooltipLabel: string;
     itemName: string;
     id: number;
+    handleDelete: (id: number) => void;
 }
 
 const DeleteItemActionIcon = (props: DeleteItemActionIconProps) => {
-    const { tooltipLabel, itemName, id } = props;
+    const { tooltipLabel, itemName, id, handleDelete } = props;
     const [opened, { open, close }] = useDisclosure(false);
 
-    const handleDelete = async () => {
-        const result = await deleteAccount(id);
-        if (result.status === 'ERROR') {
-            errorNotification({
-                title: 'Error',
-                message: result.message,
-            });
-        }
-        else if (result.status === 'SUCCESS') {
-            successNotification({
-                title: 'Success',
-                message: result.message,
-            });
-        }
+    const handleAction = () => {
+        handleDelete(id);
         close();
     }
 
@@ -50,7 +37,7 @@ const DeleteItemActionIcon = (props: DeleteItemActionIconProps) => {
             title={<Text display="flex" c="pink">Delete Item &nbsp;<IconAlertOctagonFilled /></Text>}
         >
             <p>Are you sure to delete {itemName} ?!</p>
-            <Button color="pink" mr={rem(5)} onClick={handleDelete}>Confirm!</Button>
+            <Button color="pink" mr={rem(5)} onClick={handleAction}>Confirm!</Button>
             <Button onClick={close}>Cancel</Button>
         </Modal>
     </>

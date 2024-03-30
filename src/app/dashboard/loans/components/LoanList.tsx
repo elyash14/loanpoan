@@ -78,10 +78,10 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
         value: (row => <NumberFormatter value={row.amount} thousandSeparator />)
       },
       {
-        name: "createdAt",
-        label: "Created At",
+        name: "paymentCount",
+        label: "Payments Count",
         sortable: true,
-        value: (row => new Date(row.createdAt).toDateString())
+        value: (row => row.paymentCount)
       },
       {
         name: "started",
@@ -117,11 +117,6 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
       handleSort={handleSort}
       search={search}
       handleSearch={handleSearch}
-    // actions={<>
-    //   <Button href={`/${DASHBOARD_URL}/loans/add`} component={Link} size="xs" rightSection={<IconPlus size={14} />} >
-    //     Add
-    //   </Button>
-    // </>}
     />
   );
 };

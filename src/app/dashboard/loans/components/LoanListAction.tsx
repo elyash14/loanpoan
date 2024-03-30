@@ -1,11 +1,31 @@
+import DeleteItemActionIcon from "@dashboard/components/custom-action/DeleteItemActionIcon";
+import { deleteLoan } from "@database/loan/actions";
 import { ActionIcon, Tooltip, rem } from "@mantine/core";
 import { Loan } from "@prisma/client";
-import { IconEdit, IconEye } from "@tabler/icons-react";
+import { IconEye } from "@tabler/icons-react";
 import Link from "next/link";
+import { errorNotification, successNotification } from "utils/Notification/notification";
 
 import { DASHBOARD_URL } from "utils/configs";
 
 const LoanListAction = (row: Loan) => {
+
+    const handleDelete = async (id: number) => {
+        const result = await deleteLoan(id);
+        if (result.status === 'ERROR') {
+            errorNotification({
+                title: 'Error',
+                message: result.message,
+            });
+        }
+        else if (result.status === 'SUCCESS') {
+            successNotification({
+                title: 'Success',
+                message: result.message,
+            });
+        }
+    }
+
     return <>
         <Tooltip label="View Loan">
             <ActionIcon
@@ -17,21 +37,12 @@ const LoanListAction = (row: Loan) => {
                 <IconEye />
             </ActionIcon>
         </Tooltip>
-        <Tooltip label="Edit Loan">
-            <ActionIcon
-                href={`/${DASHBOARD_URL}/loans/${row.id}/edit`}
-                component={Link}
-                size="sm"
-                variant="light"
-                mr={rem(3)}>
-                <IconEdit />
-            </ActionIcon>
-        </Tooltip>
-        {/* <DeleteItemActionIcon
+        <DeleteItemActionIcon
             id={row.id}
-            itemName={row.code}
+            itemName={(row as any).account.code}
             tooltipLabel="Delete This Loan"
-        /> */}
+            handleDelete={handleDelete}
+        />
     </>
 }
 

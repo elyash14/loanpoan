@@ -2,6 +2,8 @@
 
 import { getGlobalConfigs } from "@database/config/data";
 import prisma from "@database/prisma";
+import { revalidatePath } from "next/cache";
+import { DASHBOARD_URL } from "utils/configs";
 import { CreateLoanResponseType, createLoanValidationSchemaOnTheServer } from "utils/form-validations/loan/createLoanValidation";
 import { calculateLoanPayments } from "utils/loan/calculatePayment";
 import { GlobalConfigType } from "utils/types/configs";
@@ -67,6 +69,8 @@ export async function createLoan(formData: FormData): Promise<CreateLoanResponse
         }
       },
     });
+    // revalidate the list of accounts page after updating an account.
+    revalidatePath(`/${DASHBOARD_URL}/loans`);
     return {
       status: "SUCCESS",
       message: "Loan created successfully",
@@ -78,4 +82,49 @@ export async function createLoan(formData: FormData): Promise<CreateLoanResponse
       message: "Failed to create loan",
     }
   }
+}
+
+export async function deleteLoan(id: number) {
+  //TODO check if the account has installments or loan before deleting it.
+  try {
+    // check this loan has any payed payments or not
+    if (await loanHasPaidPayments(id)) {
+      return {
+        status: "ERROR",
+        message: "This loan has already paid payments. You can not delete it",
+      }
+    }
+
+    // delete all payments of this loan
+    const deleteAllPayments = prisma.payment.deleteMany({ where: { loanId: id } });
+    // delete the loan
+    const deleteLoan = prisma.loan.delete({
+      where: {
+        id,
+      },
+    });
+    // using transaction to ensure both of them will be completed
+    await prisma.$transaction([deleteAllPayments, deleteLoan]);
+
+    // revalidate the list of accounts page after updating an account.
+    revalidatePath(`/${DASHBOARD_URL}/loans`);
+    return {
+      status: "SUCCESS",
+      message: "Account delete successfully",
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      status: "ERROR",
+      message: "Failed to delete the account",
+    }
+  }
+}
+
+export async function loanHasPaidPayments(loanId: number) {
+  const count = await prisma.payment.count({
+    where: { loanId, payedAt: { not: null } },
+  });
+
+  return count > 0;
 }
