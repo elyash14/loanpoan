@@ -52,7 +52,6 @@ const GeneralConfig = ({ applicationName, dateType }: Props) => {
                 title: 'Success',
                 message: result.message!,
             });
-            close(); // close the modal after submit.
         }
     };
 

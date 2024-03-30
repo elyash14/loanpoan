@@ -5,4 +5,9 @@ export type GlobalConfigType = {
         symbol: string;
     };
     dateType?: "GREGORIAN" | "JALALI"
+    loan?: {
+        minimumFactor: number;
+        maximumFactor: number;
+        restrict: boolean;
+    }
 }
