@@ -67,16 +67,19 @@ model Loan {
   description  String?   @db.Text
   account      Account?  @relation(fields: [accountId], references: [id])
   accountId    Int?
-  amount       Decimal
+  amount       Decimal   @db.Decimal(20, 2)
   paymentCount Int
   createdAt    DateTime  @default(now())
   startedAt    DateTime?
   finishedAt   DateTime?
+  payments     Payment[]
 }
 
 model Payment {
   id      Int       @id @default(autoincrement())
-  amount  Decimal
+  amount  Decimal   @db.Decimal(20, 2)
   dueDate DateTime
   payedAt DateTime?
+  Loan    Loan?     @relation(fields: [loanId], references: [id])
+  loanId  Int?
 }
