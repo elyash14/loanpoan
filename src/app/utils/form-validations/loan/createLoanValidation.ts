@@ -1,3 +1,4 @@
+import { checkMinAndMaxLoanAmount } from "@database/loan/validations";
 import { ActionResponse } from "utils/types/actionFormTypes";
 import { z } from "zod";
 
@@ -14,14 +15,23 @@ const basicValidation = {
 export const createLoanValidationSchema = z.object(basicValidation);
 
 // this validation schema will be run on the server (extended schema).
-export const createLoanValidationSchemaOnTheServer = z.object({
-    ...basicValidation,
-    // code: z.string().min(2).max(8).refine(async (code) => {
-    //     return await checkUniquenessOfCode(code);
-    // }, { message: "This code is already exists!" }),
-    // userId: z.coerce.number().refine(async (userId) => {
-    //     return await checkUserIfNotExist(userId);
-    // }, { message: "User not found!" }),
+export const createLoanValidationSchemaOnTheServer = z.object(basicValidation).superRefine(async (val, ctx) => {
+    const check = await checkMinAndMaxLoanAmount(val.amount, val.accountId);
+    if (check.maximumError) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['amount'],
+            message: `Total amount can't be greater than ${check.maximum}`,
+        });
+    }
+    if (check.minimumError) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['amount'],
+            message: `Total amount can't be less than ${check.minimum}`,
+        });
+    }
+    //TODO check the current balance of bank
 });
 
 export type CreateLoanResponseType = ActionResponse & {
