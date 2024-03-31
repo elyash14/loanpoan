@@ -1,5 +1,6 @@
 
 import { ActionResponse } from "utils/types/actionFormTypes";
+import { GlobalConfigType } from "utils/types/configs";
 import { z } from "zod";
 
 export const saveLoanConfigSchema = z.object({
@@ -24,6 +25,7 @@ export const saveLoanConfigSchema = z.object({
 });;
 
 export type SaveLoanConfigResponseType = ActionResponse & {
+    data?: GlobalConfigType;
     error?: {
         minimumFactor?: string[] | undefined;
         maximumFactor?: string[] | undefined;

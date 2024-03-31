@@ -1,11 +1,14 @@
 import MainMenu from '@dashboard/components/main-menu/MainMenu';
 import Navbar from '@dashboard/components/navbar/Navbar';
+import { getGlobalConfigs } from '@database/config/data';
 import { ColorSchemeScript, Container, MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import type { Metadata } from "next";
+import { GlobalConfigType } from 'utils/types/configs';
+import HydrateData from './components/store/HydrateData';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -34,11 +37,13 @@ const theme = createTheme({
 
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const config = (await getGlobalConfigs() as GlobalConfigType);
+
   return (
     <html lang="en">
       <head>
@@ -53,6 +58,7 @@ export default function RootLayout({
           </Container>
           <Notifications />
         </MantineProvider>
+        <HydrateData globalConfig={config} />
       </body>
     </html>
   );

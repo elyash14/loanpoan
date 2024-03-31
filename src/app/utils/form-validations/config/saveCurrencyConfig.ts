@@ -1,5 +1,6 @@
 
 import { ActionResponse } from "utils/types/actionFormTypes";
+import { GlobalConfigType } from "utils/types/configs";
 import { z } from "zod";
 
 export const saveCurrencySchema = z.object({
@@ -8,6 +9,7 @@ export const saveCurrencySchema = z.object({
 });
 
 export type SaveCurrencyResponseType = ActionResponse & {
+    data?: GlobalConfigType;
     error?: {
         name?: string[] | undefined;
         symbol?: string[] | undefined;
