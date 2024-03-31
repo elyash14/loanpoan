@@ -48,6 +48,7 @@ export async function saveCurrencyConfig(formData: FormData): Promise<SaveCurren
 
     revalidateTag('global-config');
     return {
+      data: newConfig,
       status: "SUCCESS",
       message: "Currency saved successfully",
     }
@@ -98,6 +99,7 @@ export async function saveGeneralConfig(formData: FormData): Promise<SaveGeneral
 
     revalidateTag('global-config');
     return {
+      data: newConfig,
       status: "SUCCESS",
       message: "Currency saved successfully",
     }
@@ -152,6 +154,7 @@ export async function saveLoanConfig(formData: FormData): Promise<SaveLoanConfig
 
     revalidateTag('global-config');
     return {
+      data: newConfig,
       status: "SUCCESS",
       message: "Currency saved successfully",
     }

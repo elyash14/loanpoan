@@ -1,5 +1,6 @@
 
 import { ActionResponse } from "utils/types/actionFormTypes";
+import { GlobalConfigType } from "utils/types/configs";
 import { z } from "zod";
 
 export const saveGeneralConfigSchema = z.object({
@@ -8,6 +9,7 @@ export const saveGeneralConfigSchema = z.object({
 });
 
 export type SaveGeneralConfigResponseType = ActionResponse & {
+    data?: GlobalConfigType;
     error?: {
         applicationName?: string[] | undefined;
         dateType?: string[] | undefined;

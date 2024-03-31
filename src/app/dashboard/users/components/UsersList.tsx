@@ -6,9 +6,12 @@ import {
 import { Button } from "@mantine/core";
 import { User } from "@prisma/client";
 import { IconUserPlus } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DASHBOARD_URL } from "utils/configs";
+import { formatDate } from "utils/date";
+import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import UserListAction from "./UsersListAction";
 
@@ -18,6 +21,7 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { dateType } = useAtomValue(globalConfigAtom);
 
   /**
    *  in all handler we change the url query params and navigate user
@@ -61,7 +65,7 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
         name: "createdAt",
         label: "Created At",
         sortable: true,
-        value: (row => new Date(row.createdAt).toDateString())
+        value: (row => formatDate(row.createdAt, dateType))
       },
       {
         name: "actions",

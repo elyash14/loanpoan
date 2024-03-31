@@ -4,10 +4,12 @@ import { saveGeneralConfig } from "@database/config/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Group, Select, TextInput, rem } from "@mantine/core";
 import { IconDeviceFloppy } from "@tabler/icons-react";
+import { useSetAtom } from "jotai";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { errorNotification, successNotification } from "utils/Notification/notification";
 import { dateTypeOptions } from "utils/form-validations/config/defaultValues";
 import { SaveGeneralConfigFormSchemaInputType, saveGeneralConfigSchema } from "utils/form-validations/config/saveGlobalConfig";
+import { globalConfigAtom } from "utils/stores/configs";
 import { GlobalConfigType } from "utils/types/configs";
 
 type Props = {
@@ -16,6 +18,7 @@ type Props = {
 }
 
 const GeneralConfig = ({ applicationName, dateType }: Props) => {
+    const setGlobalConfig = useSetAtom(globalConfigAtom);
     const {
         control,
         setError,
@@ -52,6 +55,7 @@ const GeneralConfig = ({ applicationName, dateType }: Props) => {
                 title: 'Success',
                 message: result.message!,
             });
+            setGlobalConfig(result.data!);
         }
     };
 

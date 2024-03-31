@@ -4,9 +4,11 @@ import { saveLoanConfig } from "@database/config/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Group, NumberInput, Switch, rem } from "@mantine/core";
 import { IconDeviceFloppy } from "@tabler/icons-react";
+import { useSetAtom } from "jotai";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { errorNotification, successNotification } from "utils/Notification/notification";
 import { SaveLoanConfigFormSchemaInputType, saveLoanConfigSchema } from "utils/form-validations/config/saveLoanConfig";
+import { globalConfigAtom } from "utils/stores/configs";
 import { GlobalConfigType } from "utils/types/configs";
 
 type Props = {
@@ -14,8 +16,8 @@ type Props = {
 }
 
 const LoanConfig = ({ loanConfig }: Props) => {
+    const setGlobalConfig = useSetAtom(globalConfigAtom);
     const {
-        watch,
         control,
         setError,
         handleSubmit,
@@ -59,6 +61,7 @@ const LoanConfig = ({ loanConfig }: Props) => {
                 title: 'Success',
                 message: result.message!,
             });
+            setGlobalConfig(result.data!);
         }
     };
 

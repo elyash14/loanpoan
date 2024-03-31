@@ -4,9 +4,11 @@ import { saveCurrencyConfig } from "@database/config/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Group, TextInput, rem } from "@mantine/core";
 import { IconDeviceFloppy } from "@tabler/icons-react";
+import { useSetAtom } from "jotai";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { errorNotification, successNotification } from "utils/Notification/notification";
 import { SaveCurrencyFormSchemaInputType, saveCurrencySchema } from "utils/form-validations/config/saveCurrencyConfig";
+import { globalConfigAtom } from "utils/stores/configs";
 import { GlobalConfigType } from "utils/types/configs";
 
 type Props = {
@@ -14,6 +16,7 @@ type Props = {
 }
 
 const CurrencyConfig = ({ currency }: Props) => {
+    const setGlobalConfig = useSetAtom(globalConfigAtom);
     const {
         setError,
         register,
@@ -49,6 +52,7 @@ const CurrencyConfig = ({ currency }: Props) => {
                 title: 'Success',
                 message: result.message!,
             });
+            setGlobalConfig(result.data!);
             close(); // close the modal after submit.
         }
     };
