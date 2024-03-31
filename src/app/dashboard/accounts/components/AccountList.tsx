@@ -6,9 +6,12 @@ import {
 import { Button, NumberFormatter, Tooltip } from "@mantine/core";
 import { Account } from "@prisma/client";
 import { IconPlus } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DASHBOARD_URL } from "utils/configs";
+import { formatDate } from "utils/date";
+import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import AccountListAction from "./AccountListAction";
 
@@ -18,6 +21,7 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { dateType, currency } = useAtomValue(globalConfigAtom);
 
   /**
    *  in all handler we change the url query params and navigate user
@@ -64,7 +68,7 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
         name: "balance",
         label: "Balance",
         sortable: true,
-        value: (row => <NumberFormatter value={row.balance} thousandSeparator />)
+        value: (row => <NumberFormatter value={row.balance} thousandSeparator prefix={`${currency?.symbol} `} />)
       },
       {
         name: "user",
@@ -79,7 +83,7 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
         name: "updatedAt",
         label: "Updated At",
         sortable: true,
-        value: (row => new Date(row.updatedAt).toDateString())
+        value: (row => formatDate(row.updatedAt, dateType))
       },
       {
         name: "actions",

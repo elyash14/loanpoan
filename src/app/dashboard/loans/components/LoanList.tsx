@@ -5,9 +5,12 @@ import {
 } from "@dashboard/components/table/interface";
 import { NumberFormatter, Tooltip } from "@mantine/core";
 import { Account } from "@prisma/client";
+import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DASHBOARD_URL } from "utils/configs";
+import { formatDate } from "utils/date";
+import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import LoanListAction from "./LoanListAction";
 
@@ -17,6 +20,7 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { dateType, currency } = useAtomValue(globalConfigAtom);
 
   /**
    *  in all handler we change the url query params and navigate user
@@ -75,7 +79,7 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
         name: "amount",
         label: "Amount",
         sortable: true,
-        value: (row => <NumberFormatter value={row.amount} thousandSeparator />)
+        value: (row => <NumberFormatter value={row.amount} thousandSeparator prefix={`${currency?.symbol} `} />)
       },
       {
         name: "paymentCount",
@@ -87,13 +91,13 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
         name: "started",
         label: "Started At",
         sortable: true,
-        value: (row => new Date(row.startedAt).toDateString())
+        value: (row => formatDate(row.startedAt, dateType))
       },
       {
         name: "finishedAt",
         label: "Finished At",
         sortable: true,
-        value: (row => new Date(row.finishedAt).toDateString())
+        value: (row => formatDate(row.finishedAt, dateType))
       },
       {
         name: "actions",

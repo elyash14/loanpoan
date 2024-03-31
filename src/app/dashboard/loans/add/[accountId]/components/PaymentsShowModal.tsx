@@ -47,6 +47,7 @@ const PaymentsShowModal = (props: Props) => {
             label="Custom Amount Per Month"
             value={customAmount}
             thousandSeparator=","
+            prefix={`${currency?.symbol} `}
             onChange={(v) => setCustomAmount(Number(v))}
             allowNegative={false}
         />

@@ -108,6 +108,7 @@ function AddLoanForm({ data, dateType, currency, loanConfig }: Props) {
                             onBlur={onBlur}
                             value={value}
                             thousandSeparator=","
+                            prefix={`${currency?.symbol} `}
                             allowNegative={false}
                             error={errors.amount?.message}
                             min={loanConfig?.restrict ? minimumAmount : undefined}
