@@ -18,6 +18,11 @@ enum Gender {
   MAN
 }
 
+enum LoanStatus {
+  IN_PROGRESS
+  FINISHED
+}
+
 enum InstallmentType {
   NORMAL
   CUSTOM
@@ -76,6 +81,7 @@ model Loan {
   accountId    Int?
   amount       Decimal       @db.Decimal(20, 2)
   paymentCount Int
+  status       LoanStatus    @default(IN_PROGRESS)
   createdAt    DateTime      @default(now())
   startedAt    DateTime?
   finishedAt   DateTime?
