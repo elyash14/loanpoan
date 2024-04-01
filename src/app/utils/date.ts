@@ -3,6 +3,9 @@ import dayjs from "dayjs";
 import { GlobalConfigType } from "./types/configs";
 
 export const formatDate = (date: Date, dateType: GlobalConfigType["dateType"], form: string = "yyyy MMMM d") => {
+    if (!date) {
+        return '';
+    }
     if (dateType === "JALALI") {
         return format(date, form);
     }

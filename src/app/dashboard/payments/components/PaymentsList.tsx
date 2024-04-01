@@ -3,9 +3,8 @@ import RichTable from "@dashboard/components/table/RichTable";
 import {
   IRichTableData, IRichTableSort
 } from "@dashboard/components/table/interface";
-import { statusValue } from "@database/loan/utils";
-import { NumberFormatter, Tooltip } from "@mantine/core";
-import { Account } from "@prisma/client";
+import { NumberFormatter, Select, Tooltip } from "@mantine/core";
+import { Payment } from "@prisma/client";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -13,11 +12,12 @@ import { DASHBOARD_URL } from "utils/configs";
 import { formatDate } from "utils/date";
 import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
-import LoanListAction from "./LoanListAction";
+import PaymentsListAction from "./PaymentsListAction";
 
-type props = ListComponentProps & { loans: Account[] }
+type props = ListComponentProps & { payments: Payment[], status: string }
 
-const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
+const PaymentsList = (props: props) => {
+  const { payments, totalPages, currentPage, pageSize, sortBy, sortDir, search, status } = props;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -54,25 +54,25 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
     router.replace(`${pathname}?${params.toString()}`);
   }
 
+  const handleChangeStatus = (status: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('status', status);
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+
   // create RichTable data based on database data and url query params
   const data: IRichTableData = {
     headers: [
       { name: "id", label: "ID", sortable: true },
       {
-        name: "user",
-        label: "User",
+        name: "loan",
+        label: "Loan",
         value: (row =>
-          <Tooltip label="View User Profile">
-            <Link href={`/${DASHBOARD_URL}/users/${row.account.user.id}/view`}>{row.account.user.fullName}</Link>
-          </Tooltip>
-        )
-      },
-      {
-        name: "account",
-        label: "Account",
-        value: (row =>
-          <Tooltip label="View The Account">
-            <Link href={`/${DASHBOARD_URL}/accounts/${row.account.id}/view`}>{row.account.code}</Link>
+          <Tooltip label="View The Loan">
+            <Link href={`/${DASHBOARD_URL}/loans/${row.loan.id}/view`}>
+              {row.loan.account.code} - ({row.loan.account.user.fullName})
+            </Link>
           </Tooltip>
         )
       },
@@ -82,33 +82,26 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
         sortable: true,
         value: (row => <NumberFormatter value={row.amount} thousandSeparator prefix={`${currency?.symbol} `} />)
       },
+
       {
-        name: "paymentCount",
-        label: "Payments Count",
+        name: "dueDate",
+        label: "Due Date",
         sortable: true,
-        value: (row => <Tooltip label="Show All Payments">
-          <Link href={`/${DASHBOARD_URL}/payments?loanId=${row.id}`}>{row.paymentCount}</Link>
-        </Tooltip>)
+        value: (row => formatDate(row.dueDate, dateType))
       },
       {
-        name: "status",
-        label: "Status",
+        name: "payedAt",
+        label: "Paid At",
         sortable: true,
-        value: (row => statusValue(row.status))
-      },
-      {
-        name: "createdAt",
-        label: "Finished At",
-        sortable: true,
-        value: (row => formatDate(row.createdAt, dateType))
+        value: (row => formatDate(row.payedAt, dateType))
       },
       {
         name: "actions",
         label: "Actions",
-        value: LoanListAction
+        value: PaymentsListAction
       },
     ],
-    rows: JSON.parse(loans as any),
+    rows: JSON.parse(payments as any),
   };
 
   return (
@@ -124,8 +117,17 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
       handleSort={handleSort}
       search={search}
       handleSearch={handleSearch}
+      actions={
+        <Select
+          defaultValue={status}
+          size="xs"
+          style={{ float: "right", width: 150, marginRight: 5 }}
+          data={['All', 'Paid', 'Not Paid']}
+          onChange={(_value, option) => handleChangeStatus(option.value)}
+        />
+      }
     />
   );
 };
 
-export default LoanList;
+export default PaymentsList;
