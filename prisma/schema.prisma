@@ -18,9 +18,14 @@ enum Gender {
   MAN
 }
 
+enum InstallmentType {
+  NORMAL
+  CUSTOM
+}
+
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique()
+  id            Int           @id @default(autoincrement())
+  email         String        @unique()
   password      String
   firstName     String
   lastName      String
@@ -28,9 +33,10 @@ model User {
   cartNumber    String?
   accountNumber String?
   avatar        String?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime      @default(now())
   deletedAt     DateTime?
   accounts      Account[]
+  Installment   Installment[]
 }
 
 model Account {
@@ -38,7 +44,7 @@ model Account {
   code              String
   name              String?
   installmentFactor Int
-  balance           Decimal
+  balance           Decimal   @db.Decimal(20, 2)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @default(now())
   deletedAt         DateTime?
@@ -48,10 +54,11 @@ model Account {
 }
 
 model InstallmentAmount {
-  id           Int       @id @default(autoincrement())
-  amount       Decimal
-  createdAt    DateTime  @default(now())
+  id           Int           @id @default(autoincrement())
+  amount       Decimal       @db.Decimal(20, 2)
+  createdAt    DateTime      @default(now())
   deprecatedAt DateTime?
+  instalments  Installment[]
 }
 
 model Config {
@@ -63,16 +70,17 @@ model Config {
 }
 
 model Loan {
-  id           Int       @id @default(autoincrement())
-  description  String?   @db.Text
-  account      Account?  @relation(fields: [accountId], references: [id])
+  id           Int           @id @default(autoincrement())
+  description  String?       @db.Text
+  account      Account?      @relation(fields: [accountId], references: [id])
   accountId    Int?
-  amount       Decimal   @db.Decimal(20, 2)
+  amount       Decimal       @db.Decimal(20, 2)
   paymentCount Int
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime      @default(now())
   startedAt    DateTime?
   finishedAt   DateTime?
   payments     Payment[]
+  instalments  Installment[]
 }
 
 model Payment {
@@ -80,6 +88,20 @@ model Payment {
   amount  Decimal   @db.Decimal(20, 2)
   dueDate DateTime
   payedAt DateTime?
-  Loan    Loan?     @relation(fields: [loanId], references: [id])
+  loan    Loan?     @relation(fields: [loanId], references: [id])
   loanId  Int?
+}
+
+model Installment {
+  id                  Int                @id @default(autoincrement())
+  loan                Loan?              @relation(fields: [loanId], references: [id])
+  loanId              Int?
+  installmentAmount   InstallmentAmount? @relation(fields: [installmentAmountId], references: [id])
+  installmentAmountId Int?
+  amount              Decimal            @db.Decimal(20, 2)
+  type                InstallmentType    @default(NORMAL)
+  approvedBy          User?              @relation(fields: [approvedById], references: [id])
+  approvedById        Int?
+  createdAt           DateTime           @default(now())
+  approvedAt          DateTime?
 }
