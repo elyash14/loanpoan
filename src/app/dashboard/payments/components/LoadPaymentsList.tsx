@@ -31,5 +31,6 @@ export default async function LoadPaymentsList({ searchParams }: LoadPaymentsLis
         sortDir={sortDir}
         search={search}
         status={status}
+        loanId={loanId}
     />
 }

@@ -22,7 +22,8 @@ const RichTable: FC<IRichTableProps> = (props) => {
     handleChangePageSize,
     search = '',
     handleSearch,
-    actions
+    actions,
+    bottomActions
   } = props;
 
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -96,7 +97,12 @@ const RichTable: FC<IRichTableProps> = (props) => {
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
-      {handleChangePage && <Pagination totalPages={totalPages} currentPage={currentPage} handleChangePage={handleChangePage} />}
+      <Box className={classes.footer}>
+        <Box flex={1}>
+          {handleChangePage && <Pagination totalPages={totalPages} currentPage={currentPage} handleChangePage={handleChangePage} />}
+        </Box>
+        {bottomActions && <Box>{bottomActions}</Box>}
+      </Box>
     </Box>
   );
 };

@@ -60,3 +60,45 @@ export async function paginatedLoanList(
         throw new Error("Failed to load loans list");
     }
 }
+
+export async function getLoan(id: number) {
+    try {
+        const [loan, currentPayment] = await Promise.all([
+            prisma.loan.findUnique({
+                where: { id },
+                include: {
+                    _count: {
+                        select: {
+                            payments: {
+                                where: {
+                                    payedAt: { not: null }
+                                }
+                            }
+                        },
+                    },
+                    account: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    fullName: true
+                                }
+                            }
+                        }
+                    },
+                    payments: true
+                },
+            }),
+            prisma.payment.findFirst({
+                where: {
+                    loanId: id,
+                    payedAt: null,
+                },
+                orderBy: { dueDate: 'asc' },
+            }),
+        ]);
+        return { loan, currentPayment };
+    } catch (error) {
+        throw new Error("Failed to fetch the loan information");
+    }
+}

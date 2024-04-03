@@ -3,7 +3,7 @@ import RichTable from "@dashboard/components/table/RichTable";
 import {
   IRichTableData, IRichTableSort
 } from "@dashboard/components/table/interface";
-import { NumberFormatter, Select, Tooltip } from "@mantine/core";
+import { Button, NumberFormatter, Select, Tooltip } from "@mantine/core";
 import { Payment } from "@prisma/client";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
@@ -14,10 +14,10 @@ import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import PaymentsListAction from "./PaymentsListAction";
 
-type props = ListComponentProps & { payments: Payment[], status: string }
+type props = ListComponentProps & { payments: Payment[], status: string, loanId: number }
 
 const PaymentsList = (props: props) => {
-  const { payments, totalPages, currentPage, pageSize, sortBy, sortDir, search, status } = props;
+  const { payments, totalPages, currentPage, pageSize, sortBy, sortDir, search, status, loanId } = props;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -126,6 +126,10 @@ const PaymentsList = (props: props) => {
           onChange={(_value, option) => handleChangeStatus(option.value)}
         />
       }
+      // if loanId exist add bottomAction
+      bottomActions={loanId ?
+        <Button size="xs" variant="default" component={Link} href={`/${DASHBOARD_URL}/loans/${loanId}/view`}>Back To Loan</Button>
+        : null}
     />
   );
 };
