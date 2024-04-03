@@ -34,6 +34,7 @@ export interface IRichTableProps {
   search?: string;
   handleSearch?: (value: string) => void;
   actions?: ReactNode;
+  bottomActions?: ReactNode;
 }
 
 export interface IRichTableHeadersProps {

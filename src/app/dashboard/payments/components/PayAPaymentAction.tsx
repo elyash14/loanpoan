@@ -9,10 +9,11 @@ import { formatDate } from "utils/date";
 import { globalConfigAtom } from "utils/stores/configs";
 
 type Props = {
-    payment: Payment
+    payment: Payment,
+    inList?: boolean
 }
 
-const PayAPaymentAction = ({ payment }: Props) => {
+const PayAPaymentAction = ({ payment, inList = true }: Props) => {
     const { dateType, currency } = useAtomValue(globalConfigAtom);
     const theme = useMantineTheme();
     const [opened, { open, close }] = useDisclosure(false);
@@ -35,7 +36,7 @@ const PayAPaymentAction = ({ payment }: Props) => {
     }
 
     return <>
-        <Tooltip label="Pay this payment">
+        {inList ? <Tooltip label="Pay this payment">
             <ActionIcon
                 size="sm"
                 variant="light"
@@ -44,7 +45,11 @@ const PayAPaymentAction = ({ payment }: Props) => {
             >
                 <IconCreditCardPay />
             </ActionIcon>
-        </Tooltip>
+        </Tooltip> :
+            <Button onClick={open} size="xs" ml={rem(5)}>
+                Pay Current Payment
+            </Button>
+        }
 
         <Modal
             opened={opened}

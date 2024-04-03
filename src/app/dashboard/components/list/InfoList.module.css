@@ -1,0 +1,9 @@
+.listicon {
+  width: rem(16);
+  height: rem(16);
+}
+
+.listTitle{
+  color: var(--mantine-primary-color-7);
+  font-weight: 700;
+}
