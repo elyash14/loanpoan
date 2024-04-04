@@ -1,0 +1,21 @@
+.balanceAndFactor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.balance{
+    width: fit-content;
+}
+.balanceAmount{
+    color: var(--mantine-color-yellow-6);
+}
+
+.loansWrapper, .installmentsWrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.loansCount, .installmentsCount{
+    display: block;
+    color: var(--mantine-primary-color-6);
+}

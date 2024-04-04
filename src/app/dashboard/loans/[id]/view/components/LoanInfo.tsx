@@ -62,11 +62,11 @@ const LoanInfo = ({ data, current }: Props) => {
                 <RingProgress
                     size={140}
                     label={<>
-                        <Text size="xs" c="green" ta="center">{paidPayments}</Text>
+                        <Text size="xs" c="teal" ta="center">{paidPayments}</Text>
                         <Text size="lg" ta="center">{loan.paymentCount}</Text>
                     </>}
                     sections={[
-                        { value: Decimal.mul(Decimal.div(paidPayments, loan.paymentCount), 100).toNumber(), color: 'green' },
+                        { value: Decimal.mul(Decimal.div(paidPayments, loan.paymentCount), 100).toNumber(), color: 'teal' },
                     ]}
                 />
                 <Text size="xs" ta="center">Payments Status</Text>

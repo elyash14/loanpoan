@@ -39,6 +39,9 @@ export async function createAccount(formData: FormData): Promise<CreateAccountRe
         }
       },
     });
+
+    // revalidate the list of accounts page after updating an account.
+    revalidatePath(`/${DASHBOARD_URL}/accounts`);
     return {
       status: "SUCCESS",
       message: "Account created successfully",
