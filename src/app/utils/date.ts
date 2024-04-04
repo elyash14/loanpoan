@@ -2,14 +2,14 @@ import { format } from "date-fns-jalali";
 import dayjs from "dayjs";
 import { GlobalConfigType } from "./types/configs";
 
-export const formatDate = (date: Date, dateType: GlobalConfigType["dateType"], form: string = "yyyy MMMM d") => {
+export const formatDate = (date: Date, dateType: GlobalConfigType["dateType"]) => {
     if (!date) {
         return '';
     }
     if (dateType === "JALALI") {
-        return format(date, form);
+        return format(date, "yyyy MMMM d");
     }
-    return dayjs(date).format(form);
+    return dayjs(date).format('YYYY MMM d');
 }
 
 export const getMonth = (date: Date, dateType: GlobalConfigType["dateType"]) => {

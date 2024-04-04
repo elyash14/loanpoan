@@ -66,9 +66,10 @@ const PayAPaymentAction = ({ payment, inList = true }: Props) => {
                     </ThemeIcon>
                 }
             >
-                <List.Item><b><Text fw={700} span c={theme.primaryColor}>Account Info:</Text></b> {
-                    `${(payment as any).loan?.account?.code} - ${(payment as any).loan?.account?.user?.fullName}`
-                }</List.Item>
+                {(payment as any).loan &&
+                    <List.Item><b><Text fw={700} span c={theme.primaryColor}>Account Info:</Text></b> {
+                        `${(payment as any).loan?.account?.code} - ${(payment as any).loan?.account?.user?.fullName}`
+                    }</List.Item>}
                 <List.Item><Text fw={700} span c={theme.primaryColor}>Payable Amount:</Text> {
                     <NumberFormatter value={String(payment.amount)} thousandSeparator prefix={`${currency?.symbol} `} />
                 }</List.Item>

@@ -5,7 +5,7 @@ import { Button, Container, Group, NumberInput, TextInput, rem } from "@mantine/
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { errorNotification } from "utils/Notification/notification";
+import { errorNotification, successNotification } from "utils/Notification/notification";
 import { DASHBOARD_URL } from "utils/configs";
 import { CreateAccountFormSchemaInputType, createAccountValidationSchema } from "utils/form-validations/account/createAccountValidation";
 import SearchAndSelectUser from "./SearchAndSelectUser";
@@ -44,12 +44,17 @@ function AddAccountForm() {
             }
         }
         else if (result.status === 'SUCCESS') {
-            errorNotification({
+            successNotification({
                 title: 'Success',
                 message: result.message!,
             });
             router.push(`/${DASHBOARD_URL}/accounts`);
+            return;
         }
+        errorNotification({
+            title: 'Error',
+            message: result.message!,
+        });
     };
 
     return (
