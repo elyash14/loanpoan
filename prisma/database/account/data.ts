@@ -80,3 +80,65 @@ export async function getAccount(id: number) {
         throw new Error("Failed to fetch the account information");
     }
 }
+
+export async function getAccountFullRelationData(id: number) {
+    try {
+        const [account, currentLoan] = await Promise.all([
+            prisma.account.findUnique({
+                where: { id },
+                include: {
+                    _count: {
+                        select: {
+                            loans: true
+                        },
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true
+                        }
+                    }
+                },
+            }),
+            prisma.loan.findFirst({
+                where: {
+                    accountId: id,
+                    status: "IN_PROGRESS"
+                },
+            }),
+        ]);
+        return { account, currentLoan };
+    } catch (error) {
+        throw new Error("Failed to fetch the account information");
+    }
+}
+
+export async function getAccountOtherData(id: number) {
+    try {
+        const [loansCount, currentLoan] = await Promise.all([
+            prisma.loan.count({
+                where: { accountId: id },
+            }),
+            prisma.loan.findFirst({
+                where: {
+                    accountId: id,
+                    status: "IN_PROGRESS"
+                },
+                include: {
+                    _count: {
+                        select: {
+                            payments: {
+                                where: {
+                                    payedAt: { not: null }
+                                }
+                            }
+                        },
+                    },
+                }
+            })
+        ]);
+        return { loansCount, currentLoan };
+    } catch (error) {
+        throw new Error("Failed to fetch the account other data");
+    }
+}

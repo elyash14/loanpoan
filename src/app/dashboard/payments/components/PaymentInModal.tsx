@@ -10,7 +10,7 @@ const PaymentInModal = ({ payment, dateType, currency }: {
     return <Card shadow="md" padding="xs" radius="xs" maw={rem(150)} style={{ margin: "auto" }}>
         <Card.Section ta="center">
             <Text mt="md" c={theme.primaryColor} fz={rem(25)} fw="bold">{getMonth(payment.date, dateType)}</Text>
-            <Text mb="xs" size="sm" c={theme.colors.gray[6]}>{formatDate(payment.date, dateType, 'y-M-d')}</Text>
+            <Text mb="xs" size="sm" c={theme.colors.gray[6]}>{formatDate(payment.date, dateType, 'Y-M-d')}</Text>
         </Card.Section>
         <Card.Section mb="xs" ta="center">
             <Text c={theme.colors.gray[1]}>
