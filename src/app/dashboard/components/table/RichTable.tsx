@@ -20,10 +20,10 @@ const RichTable: FC<IRichTableProps> = (props) => {
     handleChangePage,
     pageSize = 10,
     handleChangePageSize,
-    search = '',
+    search = "",
     handleSearch,
     actions,
-    bottomActions
+    bottomActions,
   } = props;
 
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -48,18 +48,18 @@ const RichTable: FC<IRichTableProps> = (props) => {
                 setSelectedRows(
                   event.currentTarget.checked
                     ? [...selectedRows, row.id]
-                    : selectedRows.filter((id) => id !== row.id)
+                    : selectedRows.filter((id) => id !== row.id),
                 )
               }
             />
           </Table.Td>
         )}
-        {data.headers.map(header => {
+        {data.headers.map((header) => {
           const value = header.value ? header.value(row) : row[header.name];
-          return <Table.Td key={`${row.id}-${header.name}`}>{value}</Table.Td>
+          return <Table.Td key={`${row.id}-${header.name}`}>{value}</Table.Td>;
         })}
       </Table.Tr>
-    ))
+    ));
   }, [data, selectedRows]);
 
   return (
@@ -67,7 +67,12 @@ const RichTable: FC<IRichTableProps> = (props) => {
       <Box className={classes.topActions}>
         <Box flex={1}>{actions}</Box>
         {handleSearch && <Search handleSearch={handleSearch} value={search} />}
-        {handleChangePageSize && <PageSize pageSize={pageSize} handleChangePageSize={handleChangePageSize} />}
+        {handleChangePageSize && (
+          <PageSize
+            pageSize={pageSize}
+            handleChangePageSize={handleChangePageSize}
+          />
+        )}
       </Box>
       <Table>
         <Table.Thead>
@@ -86,20 +91,30 @@ const RichTable: FC<IRichTableProps> = (props) => {
                     setSelectedRows(
                       event.currentTarget.checked
                         ? data.rows.map((row) => row.id)
-                        : []
+                        : [],
                     )
                   }
                 />
               </Table.Th>
             )}
-            <Headers headers={data.headers} sort={sort} handleSort={handleSort} />
+            <Headers
+              headers={data.headers}
+              sort={sort}
+              handleSort={handleSort}
+            />
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
       <Box className={classes.footer}>
         <Box flex={1}>
-          {handleChangePage && <Pagination totalPages={totalPages} currentPage={currentPage} handleChangePage={handleChangePage} />}
+          {handleChangePage && (
+            <Pagination
+              totalPages={totalPages}
+              currentPage={currentPage}
+              handleChangePage={handleChangePage}
+            />
+          )}
         </Box>
         {bottomActions && <Box>{bottomActions}</Box>}
       </Box>

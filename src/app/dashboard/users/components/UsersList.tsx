@@ -1,7 +1,8 @@
 "use client";
 import RichTable from "@dashboard/components/table/RichTable";
 import {
-  IRichTableData, IRichTableSort
+  IRichTableData,
+  IRichTableSort,
 } from "@dashboard/components/table/interface";
 import { Button } from "@mantine/core";
 import { User } from "@prisma/client";
@@ -15,9 +16,17 @@ import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import UserListAction from "./UsersListAction";
 
-type props = ListComponentProps & { users: User[] }
+type props = ListComponentProps & { users: User[] };
 
-const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
+const UsersList = ({
+  users,
+  totalPages,
+  currentPage,
+  pageSize,
+  sortBy,
+  sortDir,
+  search,
+}: props) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -25,34 +34,34 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
 
   /**
    *  in all handler we change the url query params and navigate user
-   *  to the new url to fire new prisma query 
+   *  to the new url to fire new prisma query
    */
   const handleChangePage = (pageNumber: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set('page', pageNumber.toString());
+    params.set("page", pageNumber.toString());
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const handleChangePageSize = (pageSize: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set('limit', pageSize.toString());
-    params.delete('page');
+    params.set("limit", pageSize.toString());
+    params.delete("page");
     router.replace(`${pathname}?${params.toString()}`);
-  }
+  };
 
   const handleSort = (sortable: IRichTableSort) => {
     const params = new URLSearchParams(searchParams);
-    params.set('sortBy', sortable.column);
-    params.set('sortDir', sortable.dir);
+    params.set("sortBy", sortable.column);
+    params.set("sortDir", sortable.dir);
     router.replace(`${pathname}?${params.toString()}`);
-  }
+  };
 
   const handleSearch = (search: string) => {
     const params = new URLSearchParams(searchParams);
-    params.set('search', search);
-    params.delete('page');
+    params.set("search", search);
+    params.delete("page");
     router.replace(`${pathname}?${params.toString()}`);
-  }
+  };
 
   // create RichTable data based on database data and url query params
   const data: IRichTableData = {
@@ -65,12 +74,12 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
         name: "createdAt",
         label: "Created At",
         sortable: true,
-        value: (row => formatDate(row.createdAt, dateType))
+        value: (row) => formatDate(row.createdAt, dateType),
       },
       {
         name: "actions",
         label: "Actions",
-        value: UserListAction
+        value: UserListAction,
       },
     ],
     rows: JSON.parse(users as any),
@@ -89,11 +98,18 @@ const UsersList = ({ users, totalPages, currentPage, pageSize, sortBy, sortDir, 
       handleSort={handleSort}
       search={search}
       handleSearch={handleSearch}
-      actions={<>
-        <Button href={`/${DASHBOARD_URL}/test`} component={Link} size="xs" rightSection={<IconUserPlus size={14} />} >
-          Add
-        </Button>
-      </>}
+      actions={
+        <>
+          <Button
+            href={`/${DASHBOARD_URL}/users/add`}
+            component={Link}
+            size="xs"
+            rightSection={<IconUserPlus size={14} />}
+          >
+            Add
+          </Button>
+        </>
+      }
     />
   );
 };

@@ -6,8 +6,21 @@ import { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { ITEMS_PER_PAGE } from "utils/configs";
 
+
+export async function getUser(id: number) {
+  try {
+      const user = await prisma.user.findUnique({
+          where: { id },
+         
+      });
+      return user;
+  } catch (error) {
+      throw new Error("Failed to fetch the account information");
+  }
+}
+
 export const getUsers = unstable_cache(
-  async () => {
+  async (id: number) => {
     return await prisma.user.findMany({
       select: {
         id: true,
