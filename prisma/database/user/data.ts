@@ -20,7 +20,7 @@ export async function getUser(id: number) {
 }
 
 export const getUsers = unstable_cache(
-  async (id: number) => {
+  async () => {
     return await prisma.user.findMany({
       select: {
         id: true,
