@@ -3,6 +3,7 @@
     "editor.rulers": [
         90
     ],
+    "editor.detectIndentation": false,
     "files.exclude": {
         "**/.next": true,
         "**/node_modules": true
