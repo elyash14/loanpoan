@@ -32,24 +32,16 @@ function AddAccountForm() {
     formState: { errors, isSubmitting },
   } = useForm<CreateUserFormSchemaInputType>({
     resolver: zodResolver(createUserValidationSchema, {}, { raw: true }),
-    // defaultValues: {
-
-    // },
-    // values , it will be useful for the update page
   });
 
-  console.log(errors);
-
   const data = [
-    { value: "WOMAN", label: "WOMAN" },
-    { value: "MAN", label: "MAN" },
+    { value: "WOMAN", label: "Woman" },
+    { value: "MAN", label: "Man" },
   ];
 
   const onSubmit: SubmitHandler<CreateUserFormSchemaInputType> = async (
     data,
   ) => {
-    console.log(data);
-
     // create a form data
     const formData = new FormData();
     for (const field of Object.keys(data) as Array<keyof typeof data>) {
@@ -86,18 +78,18 @@ function AddAccountForm() {
         /> */}
         <TextInput
           withAsterisk
-          label="email"
+          label="Email"
           {...register("email")}
           error={errors.email?.message}
         />
         <TextInput
-          label="firstName"
+          label="First Name"
           {...register("firstName")}
           error={errors.firstName?.message}
         />
 
         <TextInput
-          label="lastName"
+          label="Last Name"
           {...register("lastName")}
           error={errors.lastName?.message}
         />
@@ -124,7 +116,7 @@ function AddAccountForm() {
           name="gender"
           render={({ field: { onChange, onBlur, value } }) => (
             <Select
-              label="enter your gender"
+              label="Enter Your Gender"
               placeholder="Pick one"
               value={value}
               onChange={onChange}

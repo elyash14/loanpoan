@@ -1,56 +1,44 @@
 "use client";
-import { updateUser } from "@database/user/actions";
+import { updatePassword } from "@database/user/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Button,
-  Container,
-  Group,
-  Select,
-  TextInput,
-  rem,
-} from "@mantine/core";
+import { Button, Container, Group, PasswordInput, rem } from "@mantine/core";
 import { User } from "@prisma/client";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { successNotification } from "utils/Notification/notification";
+import {
+  errorNotification,
+  successNotification,
+} from "utils/Notification/notification";
 import { DASHBOARD_URL } from "utils/configs";
 import {
-  EditUserFormSchemaInputType,
-  editUserValidationSchema,
-} from "utils/form-validations/user/editUserValidation";
+  ChangePasswordFormSchemaOutputType,
+  changePasswordValidationSchema,
+} from "utils/form-validations/user/changePasswordValidation";
 
 type Props = {
   data: string;
 };
-function EditUserForm({ data }: Props) {
+function ChangePasswordForm({ data }: Props) {
   const user: User = useMemo(() => JSON.parse(data), [data]);
   const router = useRouter();
 
   const {
-    setError,
     control,
-    register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<EditUserFormSchemaInputType>({
-    resolver: zodResolver(editUserValidationSchema, {}, { raw: true }),
+  } = useForm<ChangePasswordFormSchemaOutputType>({
+    resolver: zodResolver(changePasswordValidationSchema, {}, { raw: true }),
     values: {
       id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      gender: user.gender,
+      password: "",
     },
   });
 
-  const sex = [
-    { value: "WOMAN", label: "Woman" },
-    { value: "MAN", label: "Man" },
-  ];
-
-  const onSubmit: SubmitHandler<EditUserFormSchemaInputType> = async (data) => {
+  const onSubmit: SubmitHandler<ChangePasswordFormSchemaOutputType> = async (
+    data,
+  ) => {
     // create a form data
     const formData = new FormData();
     for (const field of Object.keys(data) as Array<keyof typeof data>) {
@@ -58,17 +46,12 @@ function EditUserForm({ data }: Props) {
     }
 
     // send it to the server with server actions
-    const result = await updateUser(formData);
+    const result = await updatePassword(formData);
     if (result.status === "ERROR") {
-      for (const e in result.error!) {
-        setError(e as any, {
-          message: String(
-            result.error?.[
-              e as "userId" | "email" | "firstName" | "lastName" | "gender"
-            ],
-          ),
-        });
-      }
+      errorNotification({
+        title: "Success",
+        message: result.message!,
+      });
     } else if (result.status === "SUCCESS") {
       successNotification({
         title: "Success",
@@ -82,39 +65,23 @@ function EditUserForm({ data }: Props) {
     <Container size="sm">
       <form onSubmit={handleSubmit(onSubmit)}>
         <input readOnly type="hidden" name="id" value={user.id} />
-        <TextInput
-          withAsterisk
-          label="First Name"
-          {...register("firstName")}
-          error={errors.firstName?.message}
-        />
-        <TextInput
-          label="Last Name"
-          {...register("lastName")}
-          error={errors.lastName?.message}
-        />
-        <TextInput
-          withAsterisk
-          label="Email"
-          {...register("email")}
-          error={errors.email?.message}
-        />
-
         <Controller
           control={control}
-          name="gender"
+          name="password"
           render={({ field: { onChange, onBlur, value } }) => (
-            <Select
-              label="Enter Your Gender"
-              placeholder="Pick one"
+            <PasswordInput
+              placeholder="Password"
+              label="New Password"
+              description="Password must include at least one letter, number and special character"
               value={value}
               onChange={onChange}
               onBlur={onBlur}
-              data={sex}
-              error={errors.gender?.message}
+              withAsterisk
+              error={errors.password?.message}
             />
           )}
         />
+
         <Group mt="md">
           <Button
             display="block"
@@ -131,4 +98,4 @@ function EditUserForm({ data }: Props) {
   );
 }
 
-export default EditUserForm;
+export default ChangePasswordForm;
