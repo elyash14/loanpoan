@@ -1,15 +1,15 @@
 "use client";
-import { updateAccount } from "@database/account/actions";
+import { updateUser } from "@database/user/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Container,
   Group,
-  NumberInput,
+  Select,
   TextInput,
   rem,
 } from "@mantine/core";
-import { Account } from "@prisma/client";
+import { User } from "@prisma/client";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -17,17 +17,16 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { successNotification } from "utils/Notification/notification";
 import { DASHBOARD_URL } from "utils/configs";
 import {
-  EditAccountFormSchemaInputType,
-  editAccountValidationSchema,
-} from "utils/form-validations/account/editAccountValidation";
+  EditUserFormSchemaInputType,
+  editUserValidationSchema,
+} from "utils/form-validations/user/editUserValidation";
 
 type Props = {
   data: string;
 };
-function EditAccountForm({ data }: Props) {
-  const account: Account = useMemo(() => JSON.parse(data), [data]);
+function EditUserForm({ data }: Props) {
+  const user: User = useMemo(() => JSON.parse(data), [data]);
   const router = useRouter();
-  console.log(account);
 
   const {
     setError,
@@ -35,19 +34,23 @@ function EditAccountForm({ data }: Props) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<EditAccountFormSchemaInputType>({
-    resolver: zodResolver(editAccountValidationSchema, {}, { raw: true }),
+  } = useForm<EditUserFormSchemaInputType>({
+    resolver: zodResolver(editUserValidationSchema, {}, { raw: true }),
     values: {
-      id: account.id,
-      code: account.code,
-      name: account.name,
-      installmentFactor: account.installmentFactor,
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      gender: user.gender,
     },
   });
 
-  const onSubmit: SubmitHandler<EditAccountFormSchemaInputType> = async (
-    data,
-  ) => {
+  const sex = [
+    { value: "WOMAN", label: "Woman" },
+    { value: "MAN", label: "Man" },
+  ];
+
+  const onSubmit: SubmitHandler<EditUserFormSchemaInputType> = async (data) => {
     // create a form data
     const formData = new FormData();
     for (const field of Object.keys(data) as Array<keyof typeof data>) {
@@ -55,13 +58,13 @@ function EditAccountForm({ data }: Props) {
     }
 
     // send it to the server with server actions
-    const result = await updateAccount(formData);
+    const result = await updateUser(formData);
     if (result.status === "ERROR") {
       for (const e in result.error!) {
         setError(e as any, {
           message: String(
             result.error?.[
-              e as "code" | "userId" | "name" | "installmentFactor"
+              e as "userId" | "email" | "firstName" | "lastName" | "gender"
             ],
           ),
         });
@@ -71,42 +74,44 @@ function EditAccountForm({ data }: Props) {
         title: "Success",
         message: result.message!,
       });
-      router.push(`/${DASHBOARD_URL}/accounts`);
+      router.push(`/${DASHBOARD_URL}/users`);
     }
   };
 
   return (
     <Container size="sm">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <input readOnly type="hidden" name="id" />
+        <input readOnly type="hidden" name="id" value={user.id} />
         <TextInput
-          readOnly
-          label="User"
-          value={(account as any).user.fullName}
+          withAsterisk
+          label="First Name"
+          {...register("firstName")}
+          error={errors.firstName?.message}
+        />
+        <TextInput
+          label="Last Name"
+          {...register("lastName")}
+          error={errors.lastName?.message}
         />
         <TextInput
           withAsterisk
-          label="Code"
-          {...register("code")}
-          error={errors.code?.message}
+          label="Email"
+          {...register("email")}
+          error={errors.email?.message}
         />
-        <TextInput
-          label="Name"
-          {...register("name")}
-          error={errors.name?.message}
-        />
+
         <Controller
           control={control}
-          name="installmentFactor"
+          name="gender"
           render={({ field: { onChange, onBlur, value } }) => (
-            <NumberInput
-              withAsterisk
-              label="Installment Factor"
+            <Select
+              label="Enter Your Gender"
+              placeholder="Pick one"
+              value={value}
               onChange={onChange}
               onBlur={onBlur}
-              value={value}
-              allowNegative={false}
-              error={errors.installmentFactor?.message}
+              data={sex}
+              error={errors.gender?.message}
             />
           )}
         />
@@ -126,4 +131,4 @@ function EditAccountForm({ data }: Props) {
   );
 }
 
-export default EditAccountForm;
+export default EditUserForm;

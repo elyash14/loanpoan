@@ -1,27 +1,25 @@
 "use client";
-import { createAccount } from "@database/account/actions";
+import { createUser } from "@database/user/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Container,
   Group,
-  NumberInput,
+  PasswordInput,
+  Select,
   TextInput,
   rem,
 } from "@mantine/core";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import {
-  errorNotification,
-  successNotification,
-} from "utils/Notification/notification";
+import { successNotification } from "utils/Notification/notification";
 import { DASHBOARD_URL } from "utils/configs";
 import {
-  CreateAccountFormSchemaInputType,
-  createAccountValidationSchema,
-} from "utils/form-validations/account/createAccountValidation";
-import SearchAndSelectUser from "./SearchAndSelectUser";
+  CreateUserFormSchemaInputType,
+  createUserValidationSchema,
+} from "utils/form-validations/user/createUserValidation";
+// import SearchAndSelectUser from "./SearchAndSelectUser";
 
 function AddAccountForm() {
   const router = useRouter();
@@ -29,22 +27,21 @@ function AddAccountForm() {
   const {
     control,
     setError,
-    setValue,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<CreateAccountFormSchemaInputType>({
-    resolver: zodResolver(createAccountValidationSchema, {}, { raw: true }),
-    defaultValues: {
-      installmentFactor: 1,
-    },
-    // values , it will be useful for the update page
+  } = useForm<CreateUserFormSchemaInputType>({
+    resolver: zodResolver(createUserValidationSchema, {}, { raw: true }),
   });
 
-  const onSubmit: SubmitHandler<CreateAccountFormSchemaInputType> = async (
+  const data = [
+    { value: "WOMAN", label: "Woman" },
+    { value: "MAN", label: "Man" },
+  ];
+
+  const onSubmit: SubmitHandler<CreateUserFormSchemaInputType> = async (
     data,
   ) => {
-    console.log("formData", data);
     // create a form data
     const formData = new FormData();
     for (const field of Object.keys(data) as Array<keyof typeof data>) {
@@ -52,15 +49,13 @@ function AddAccountForm() {
     }
 
     // send it to the server with server actions
-    const result = await createAccount(formData);
+    const result = await createUser(formData);
     if (result.status === "ERROR") {
       for (const e in result.error!) {
         //TODO I cant figure the type of this line of code!!!!
         setError(e as any, {
           message: String(
-            result.error?.[
-              e as "code" | "userId" | "name" | "installmentFactor"
-            ],
+            result.error?.[e as "email" | "firstName" | "lastName" | "gender"],
           ),
         });
       }
@@ -69,49 +64,69 @@ function AddAccountForm() {
         title: "Success",
         message: result.message!,
       });
-      router.push(`/${DASHBOARD_URL}/accounts`);
-      return;
+      router.push(`/${DASHBOARD_URL}/users`);
     }
-    errorNotification({
-      title: "Error",
-      message: result.message!,
-    });
   };
 
   return (
     <Container size="sm">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <SearchAndSelectUser
+        {/* <SearchAndSelectUser
           {...register("userId")}
           error={errors.userId?.message}
           onChange={(v) => setValue("userId", Number(v))}
-        />
+        /> */}
         <TextInput
           withAsterisk
-          label="Code"
-          {...register("code")}
-          error={errors.code?.message}
+          label="Email"
+          {...register("email")}
+          error={errors.email?.message}
         />
         <TextInput
-          label="Name"
-          {...register("name")}
-          error={errors.name?.message}
+          label="First Name"
+          {...register("firstName")}
+          error={errors.firstName?.message}
         />
+
+        <TextInput
+          label="Last Name"
+          {...register("lastName")}
+          error={errors.lastName?.message}
+        />
+
         <Controller
           control={control}
-          name="installmentFactor"
+          name="password"
           render={({ field: { onChange, onBlur, value } }) => (
-            <NumberInput
-              withAsterisk
-              label="Installment Factor"
+            <PasswordInput
+              placeholder="Password"
+              label="Password"
+              description="Password must include at least one letter, number and special character"
+              value={value}
               onChange={onChange}
               onBlur={onBlur}
-              value={value}
-              allowNegative={false}
-              error={errors.installmentFactor?.message}
+              withAsterisk
+              error={errors.password?.message}
             />
           )}
         />
+
+        <Controller
+          control={control}
+          name="gender"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Select
+              label="Enter Your Gender"
+              placeholder="Pick one"
+              value={value}
+              onChange={onChange}
+              onBlur={onBlur}
+              data={data}
+              error={errors.gender?.message}
+            />
+          )}
+        />
+
         <Group mt="md">
           <Button
             display="block"
