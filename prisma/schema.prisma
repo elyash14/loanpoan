@@ -5,109 +5,115 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    USER
+    ADMIN
 }
 
 enum Gender {
-  WOMAN
-  MAN
+    WOMAN
+    MAN
 }
 
 enum LoanStatus {
-  IN_PROGRESS
-  FINISHED
+    IN_PROGRESS
+    FINISHED
 }
 
 enum InstallmentType {
-  NORMAL
-  CUSTOM
+    NORMAL
+    CUSTOM
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique()
-  password      String
-  firstName     String
-  lastName      String
-  gender        Gender
-  cartNumber    String?
-  accountNumber String?
-  avatar        String?
-  createdAt     DateTime      @default(now())
-  deletedAt     DateTime?
-  accounts      Account[]
-  Installment   Installment[]
+    id            Int           @id @default(autoincrement())
+    email         String        @unique()
+    password      String
+    firstName     String
+    lastName      String
+    gender        Gender
+    cartNumber    String?
+    accountNumber String?
+    avatar        String?
+    createdAt     DateTime      @default(now())
+    deletedAt     DateTime?
+    role          Role          @default(ADMIN)
+    accounts      Account[]
+    Installment   Installment[]
 }
 
 model Account {
-  id                Int           @id @default(autoincrement())
-  code              String
-  name              String?
-  installmentFactor Int
-  balance           Decimal       @db.Decimal(20, 2)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @default(now())
-  deletedAt         DateTime?
-  user              User          @relation(fields: [userId], references: [id])
-  userId            Int
-  loans             Loan[]
-  instalments       Installment[]
+    id                Int           @id @default(autoincrement())
+    code              String
+    name              String?
+    installmentFactor Int
+    balance           Decimal       @db.Decimal(20, 2)
+    createdAt         DateTime      @default(now())
+    updatedAt         DateTime      @default(now())
+    deletedAt         DateTime?
+    user              User          @relation(fields: [userId], references: [id])
+    userId            Int
+    loans             Loan[]
+    instalments       Installment[]
 }
 
 model InstallmentAmount {
-  id           Int           @id @default(autoincrement())
-  amount       Decimal       @db.Decimal(20, 2)
-  createdAt    DateTime      @default(now())
-  deprecatedAt DateTime?
-  instalments  Installment[]
+    id           Int           @id @default(autoincrement())
+    amount       Decimal       @db.Decimal(20, 2)
+    createdAt    DateTime      @default(now())
+    deprecatedAt DateTime?
+    instalments  Installment[]
 }
 
 model Config {
-  id           Int     @id @default(autoincrement())
-  name         String  @unique()
-  label        String?
-  descriptiion String? @db.Text
-  value        Json
+    id           Int     @id @default(autoincrement())
+    name         String  @unique()
+    label        String?
+    descriptiion String? @db.Text
+    value        Json
 }
 
 model Loan {
-  id           Int        @id @default(autoincrement())
-  description  String?    @db.Text
-  account      Account?   @relation(fields: [accountId], references: [id])
-  accountId    Int?
-  amount       Decimal    @db.Decimal(20, 2)
-  paymentCount Int
-  status       LoanStatus @default(IN_PROGRESS)
-  createdAt    DateTime   @default(now())
-  startedAt    DateTime?
-  finishedAt   DateTime?
-  payments     Payment[]
+    id           Int        @id @default(autoincrement())
+    description  String?    @db.Text
+    account      Account?   @relation(fields: [accountId], references: [id])
+    accountId    Int?
+    amount       Decimal    @db.Decimal(20, 2)
+    paymentCount Int
+    status       LoanStatus @default(IN_PROGRESS)
+    createdAt    DateTime   @default(now())
+    startedAt    DateTime?
+    finishedAt   DateTime?
+    payments     Payment[]
 }
 
 model Payment {
-  id      Int       @id @default(autoincrement())
-  amount  Decimal   @db.Decimal(20, 2)
-  dueDate DateTime
-  payedAt DateTime?
-  loan    Loan?     @relation(fields: [loanId], references: [id])
-  loanId  Int?
+    id      Int       @id @default(autoincrement())
+    amount  Decimal   @db.Decimal(20, 2)
+    dueDate DateTime
+    payedAt DateTime?
+    loan    Loan?     @relation(fields: [loanId], references: [id])
+    loanId  Int?
 }
 
 model Installment {
-  id                  Int                @id @default(autoincrement())
-  installmentAmount   InstallmentAmount? @relation(fields: [installmentAmountId], references: [id])
-  installmentAmountId Int?
-  Account             Account?           @relation(fields: [accountId], references: [id])
-  accountId           Int?
-  amount              Decimal            @db.Decimal(20, 2)
-  type                InstallmentType    @default(NORMAL)
-  approvedBy          User?              @relation(fields: [approvedById], references: [id])
-  approvedById        Int?
-  createdAt           DateTime           @default(now())
-  approvedAt          DateTime?
+    id                  Int                @id @default(autoincrement())
+    installmentAmount   InstallmentAmount? @relation(fields: [installmentAmountId], references: [id])
+    installmentAmountId Int?
+    Account             Account?           @relation(fields: [accountId], references: [id])
+    accountId           Int?
+    amount              Decimal            @db.Decimal(20, 2)
+    type                InstallmentType    @default(NORMAL)
+    approvedBy          User?              @relation(fields: [approvedById], references: [id])
+    approvedById        Int?
+    createdAt           DateTime           @default(now())
+    approvedAt          DateTime?
 }
