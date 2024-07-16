@@ -9,5 +9,11 @@ export type GlobalConfigType = {
         minimumFactor: number;
         maximumFactor: number;
         restrict: boolean;
+    };
+    installment?: {
+        dueDay: number;
+        payDay: number;
     }
 }
+
+//TODO make a seeder to seed a default value for this config
