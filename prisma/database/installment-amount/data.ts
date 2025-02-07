@@ -27,3 +27,20 @@ export async function paginatedInstallmentAmountList(
         throw new Error("Failed to load installment amounts list");
     }
 }
+
+export async function getCurrentInstallmentAmount() {
+    try {
+        const currentInstallmentAmount = await prisma.installmentAmount.findFirst({
+            where: {
+                deprecatedAt: null
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        return currentInstallmentAmount;
+    } catch (error) {
+        throw new Error("Failed to get current installment amount");
+    }
+}

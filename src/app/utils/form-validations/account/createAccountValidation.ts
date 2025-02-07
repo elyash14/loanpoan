@@ -8,6 +8,7 @@ const basicValidation = {
     name: z.string().nullable(),
     installmentFactor: z.coerce.number().min(0).max(10),
     userId: z.coerce.number().min(1, "Please select a user"),
+    openedAt: z.date(),
 };
 
 // this validation schema will be run just on the client
@@ -30,6 +31,7 @@ export type CreateAccountResponseType = ActionResponse & {
         name?: string[] | undefined;
         installmentFactor?: string[] | undefined;
         userId?: string[] | undefined;
+        openedAt?: string[] | undefined;
     }
 };
 

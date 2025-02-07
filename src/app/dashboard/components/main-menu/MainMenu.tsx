@@ -23,6 +23,9 @@ const MainMenu = () => {
                     <Tabs.Tab value={`/${DASHBOARD_URL}/accounts`} leftSection={<IconIdBadge2 style={iconStyle} />}>
                         Accounts
                     </Tabs.Tab>
+                    <Tabs.Tab value={`/${DASHBOARD_URL}/installments`} leftSection={<IconIdBadge2 style={iconStyle} />}>
+                        Installments
+                    </Tabs.Tab>
                     <Tabs.Tab value={`/${DASHBOARD_URL}/loans`} leftSection={<IconMoneybag style={iconStyle} />}>
                         Loans
                     </Tabs.Tab>

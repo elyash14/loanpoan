@@ -9,7 +9,7 @@ const LoadAccountOtherData = async ({ id }: props) => {
     const { loansCount, currentLoan } = await getAccountOtherData(id);
 
     return (
-        <AccountOtherInfo loansCount={loansCount} currentLoanData={JSON.stringify(currentLoan)} />
+        <AccountOtherInfo id={id} loansCount={loansCount} currentLoanData={JSON.stringify(currentLoan)} />
     );
 }
 

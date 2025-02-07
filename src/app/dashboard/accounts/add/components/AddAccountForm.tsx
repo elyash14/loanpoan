@@ -9,7 +9,8 @@ import {
     TextInput,
     rem,
 } from "@mantine/core";
-import { IconDeviceFloppy } from "@tabler/icons-react";
+import { DatePickerInput } from "@mantine/dates";
+import { IconCalendar, IconDeviceFloppy } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
@@ -54,11 +55,10 @@ function AddAccountForm() {
         const result = await createAccount(formData);
         if (result.status === "ERROR") {
             for (const e in result.error!) {
-                //TODO I cant figure the type of this line of code!!!!
                 setError(e as any, {
                     message: String(
                         result.error?.[
-                        e as "code" | "userId" | "name" | "installmentFactor"
+                        e as "code" | "userId" | "name" | "installmentFactor" | "openedAt"
                         ],
                     ),
                 });
@@ -111,6 +111,21 @@ function AddAccountForm() {
                         />
                     )}
                 />
+                <Controller
+                    control={control}
+                    name="openedAt"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                        <DatePickerInput
+                            leftSection={<IconCalendar style={{ width: rem(18), height: rem(18) }} stroke={1.5} />}
+                            withAsterisk
+                            label="Opening Date"
+                            placeholder="Pick a date"
+                            value={value}
+                            defaultValue={new Date()}
+                            onChange={onChange}
+                            onBlur={onBlur}
+                        />
+                    )} />
                 <Group mt="md">
                     <Button
                         display="block"

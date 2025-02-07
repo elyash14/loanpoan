@@ -3,9 +3,8 @@ import RichTable from "@dashboard/components/table/RichTable";
 import {
     IRichTableData, IRichTableSort
 } from "@dashboard/components/table/interface";
-import { Button, NumberFormatter, Tooltip } from "@mantine/core";
-import { Account } from "@prisma/client";
-import { IconPlus } from "@tabler/icons-react";
+import { Box, NumberFormatter, Select, Tooltip } from "@mantine/core";
+import { Payment } from "@prisma/client";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -13,11 +12,18 @@ import { DASHBOARD_URL } from "utils/configs";
 import { formatDate } from "utils/date";
 import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
-import AccountListAction from "./AccountListAction";
+import GenerateMonthlyInstallments from "./GenerateMonthlyInstallments";
+import InstallmentListAction from "./InstallmentListAction";
 
-type props = ListComponentProps & { accounts: Account[] }
+type props = ListComponentProps & {
+    payments: Payment[],
+    status: string,
+    loanId: number,
+    accountId?: number
+}
 
-const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
+const InstallmentsList = (props: props) => {
+    const { payments, totalPages, currentPage, pageSize, sortBy, sortDir, search, status, loanId, accountId } = props;
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -54,44 +60,58 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
         router.replace(`${pathname}?${params.toString()}`);
     }
 
+    const handleChangeStatus = (status: string) => {
+        const params = new URLSearchParams(searchParams);
+        params.set('status', status);
+        router.replace(`${pathname}?${params.toString()}`);
+    }
+
+
     // create RichTable data based on database data and url query params
     const data: IRichTableData = {
         headers: [
             { name: "id", label: "ID", sortable: true },
-            { name: "code", label: "Code", sortable: true },
             {
-                name: "installmentFactor",
-                label: "Installment Factor",
-                sortable: true,
-            },
-            {
-                name: "balance",
-                label: "Balance",
-                sortable: true,
-                value: (row => <NumberFormatter value={row.balance} thousandSeparator prefix={`${currency?.symbol} `} />)
-            },
-            {
-                name: "user",
-                label: "User",
+                name: "account",
+                label: "Account",
                 value: (row =>
-                    <Tooltip label="View User Profile">
-                        <Link href={`/${DASHBOARD_URL}/users/${row.user.id}/view`}>{row.user.fullName}</Link>
+                    <Tooltip label="View The Account">
+                        <Link href={`/${DASHBOARD_URL}/accounts/${row.account.id}/view`}>
+                            {row.account.code} - ({row.account.user.fullName})
+                        </Link>
                     </Tooltip>
                 )
             },
             {
-                name: "openedAt",
-                label: "Opening Date",
+                name: "amount",
+                label: "Amount",
                 sortable: true,
-                value: (row => formatDate(row.openedAt, dateType))
+                value: (row => <NumberFormatter value={row.amount} thousandSeparator prefix={`${currency?.symbol} `} />)
+            },
+            {
+                name: "type",
+                label: "Type",
+                sortable: true,
+            },
+            {
+                name: "dueDate",
+                label: "Due Date",
+                sortable: true,
+                value: (row => formatDate(row.dueDate, dateType))
+            },
+            {
+                name: "payedAt",
+                label: "Paid At",
+                sortable: true,
+                value: (row => formatDate(row.payedAt, dateType))
             },
             {
                 name: "actions",
                 label: "Actions",
-                value: AccountListAction
+                value: InstallmentListAction
             },
         ],
-        rows: JSON.parse(accounts as any),
+        rows: JSON.parse(payments as any),
     };
 
     return (
@@ -107,13 +127,20 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
             handleSort={handleSort}
             search={search}
             handleSearch={handleSearch}
-            actions={<>
-                <Button href={`/${DASHBOARD_URL}/accounts/add`} component={Link} size="xs" rightSection={<IconPlus size={14} />} >
-                    Add
-                </Button>
-            </>}
+            actions={
+                <Box>
+                    {!accountId && <GenerateMonthlyInstallments />}
+                    <Select
+                        defaultValue={status}
+                        size="xs"
+                        style={{ float: "right", width: 150, marginRight: 5 }}
+                        data={['All', 'Paid', 'Not Paid']}
+                        onChange={(_value, option) => handleChangeStatus(option.value)}
+                    />
+                </Box>
+            }
         />
     );
 };
 
-export default AccountList;
+export default InstallmentsList;

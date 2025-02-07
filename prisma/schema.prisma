@@ -45,7 +45,7 @@ model User {
     avatar        String?
     createdAt     DateTime      @default(now())
     deletedAt     DateTime?
-    role          Role          @default(ADMIN)
+    role          Role          @default(USER)
     accounts      Account[]
     Installment   Installment[]
 }
@@ -58,6 +58,7 @@ model Account {
     balance           Decimal       @db.Decimal(20, 2)
     createdAt         DateTime      @default(now())
     updatedAt         DateTime      @default(now())
+    openedAt          DateTime?
     deletedAt         DateTime?
     user              User          @relation(fields: [userId], references: [id])
     userId            Int
@@ -108,12 +109,14 @@ model Installment {
     id                  Int                @id @default(autoincrement())
     installmentAmount   InstallmentAmount? @relation(fields: [installmentAmountId], references: [id])
     installmentAmountId Int?
-    Account             Account?           @relation(fields: [accountId], references: [id])
+    account             Account?           @relation(fields: [accountId], references: [id])
     accountId           Int?
     amount              Decimal            @db.Decimal(20, 2)
     type                InstallmentType    @default(NORMAL)
     approvedBy          User?              @relation(fields: [approvedById], references: [id])
     approvedById        Int?
     createdAt           DateTime           @default(now())
+    dueDate             DateTime           @default(now())
+    payedAt             DateTime?
     approvedAt          DateTime?
 }

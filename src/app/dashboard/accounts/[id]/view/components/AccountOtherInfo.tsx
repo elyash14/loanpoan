@@ -6,18 +6,19 @@ import AccountInstallments from "./AccountInstallments";
 import AccountLoans from "./AccountLoans";
 
 type Props = {
+    id: number, // account id
     loansCount: number,
     currentLoanData: string,
 }
 
-const AccountOtherInfo = ({ loansCount, currentLoanData }: Props) => {
+const AccountOtherInfo = ({ id, loansCount, currentLoanData }: Props) => {
     const currentLoan: Loan = JSON.parse(currentLoanData);
 
     return <>
         <Grid>
             <Grid.Col span={6} >
                 <h3>Installments</h3>
-                <AccountInstallments />
+                <AccountInstallments id={id} />
             </Grid.Col>
             <Grid.Col span={6}>
                 <h3>Loans</h3>

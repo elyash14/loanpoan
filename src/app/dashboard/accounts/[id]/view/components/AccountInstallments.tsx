@@ -1,7 +1,13 @@
 import { Box, Text } from "@mantine/core";
+import Link from "next/link";
+import { DASHBOARD_URL } from "utils/configs";
 import classes from "./AccountInfo.module.css";
 
-const AccountInstallments = () => {
+type props = {
+    id: number
+}
+
+const AccountInstallments = ({ id }: props) => {
 
     return <Box className={classes.installmentsWrapper} ml="xs">
         <Box className={classes.installmentsCount}>
@@ -12,6 +18,7 @@ const AccountInstallments = () => {
         TODO: show 3 latest installments
         <br />
         if pass the due date show the pay action
+        <Link href={`/${DASHBOARD_URL}/accounts/${id}/installments`}>View All Installments</Link>
     </Box>
 }
 

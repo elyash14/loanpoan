@@ -39,12 +39,12 @@ const AccountInfo = ({ data, currentLoanData }: Props) => {
             value: account.name ?? '---'
         },
         {
-            title: 'Loan Create Date',
+            title: 'Account Create Date',
             value: formatDate(account.createdAt, dateType)
         },
         {
-            title: 'Start Date',
-            value: formatDate(account.updatedAt!, dateType)
+            title: 'Account Opened Date',
+            value: formatDate(account.openedAt!, dateType)
         },
     ];
     if (account.deletedAt) {

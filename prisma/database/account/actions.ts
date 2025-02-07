@@ -13,6 +13,7 @@ export async function createAccount(formData: FormData): Promise<CreateAccountRe
         name: formData.get('name'),
         installmentFactor: formData.get('installmentFactor'),
         userId: formData.get('userId'),
+        openedAt: new Date(formData.get('openedAt') as string),
     })
 
     // Return early if the form data is invalid
@@ -30,6 +31,7 @@ export async function createAccount(formData: FormData): Promise<CreateAccountRe
                 name: validatedFields.data.name,
                 installmentFactor: validatedFields.data.installmentFactor,
                 balance: 0,
+                openedAt: validatedFields.data.openedAt,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 user: {
@@ -39,6 +41,8 @@ export async function createAccount(formData: FormData): Promise<CreateAccountRe
                 }
             },
         });
+        // revalidate the list of accounts page after updating an account.
+        revalidatePath(`/${DASHBOARD_URL}/accounts`);
         return {
             status: "SUCCESS",
             message: "Account created successfully",

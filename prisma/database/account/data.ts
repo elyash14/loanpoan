@@ -35,7 +35,7 @@ export async function paginatedAccountList(
                     id: true,
                     code: true,
                     balance: true,
-                    updatedAt: true,
+                    openedAt: true,
                     installmentFactor: true,
                     user: {
                         select: {
@@ -48,7 +48,7 @@ export async function paginatedAccountList(
                 take: limit ?? ITEMS_PER_PAGE,
                 skip: (page - 1) * (limit ?? ITEMS_PER_PAGE),
                 orderBy: {
-                    [sortBy ?? 'updatedAt']: sortDir == '+' ? 'asc' : 'desc',
+                    [sortBy ?? 'openedAt']: sortDir == '+' ? 'asc' : 'desc',
                 },
             }),
             prisma.account.count({
