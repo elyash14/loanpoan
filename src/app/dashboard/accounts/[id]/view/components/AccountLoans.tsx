@@ -9,10 +9,11 @@ import classes from './AccountInfo.module.css';
 
 type Props = {
     currentLoan: Loan,
-    loansCount: number
+    loansCount: number,
+    accountId: number
 }
-const AccountLoans = ({ currentLoan, loansCount }: Props) => {
-    const { currency, dateType } = useAtomValue(globalConfigAtom);
+const AccountLoans = ({ currentLoan, loansCount, accountId }: Props) => {
+    const { currency } = useAtomValue(globalConfigAtom);
 
 
     return <Box className={classes.loansWrapper} mx="xs">
@@ -21,8 +22,8 @@ const AccountLoans = ({ currentLoan, loansCount }: Props) => {
             <Text fz={30} fw={900} span>{loansCount}</Text>
         </Box>
 
-        {currentLoan &&
-            <Blockquote w="100%" color="teal" icon={<IconMoneybag />} mt="xl">
+        {currentLoan ?
+            (<Blockquote w="100%" color="teal" icon={<IconMoneybag />} mt="xl">
                 <Title order={3} mb="md">Current Loan</Title>
                 <List mb="md">
                     <List.Item>
@@ -46,6 +47,20 @@ const AccountLoans = ({ currentLoan, loansCount }: Props) => {
                     </Button>
                 </Box>
             </Blockquote>
+            ) : (
+                <Box ta="center" mt="md">
+                    <Title order={3}>No current loan</Title>
+                    <Button
+                        size="xl" component={Link}
+                        href={`/${DASHBOARD_URL}/loans/add/${accountId}`}>
+                        Add Loan
+                    </Button>
+                </Box>
+            )}
+        {loansCount > 0 &&
+            <Box mt="md" w="100%" ta="end" style={{ flexDirection: "column-reverse" }}>
+                <Link href={`/${DASHBOARD_URL}/loans?account=${accountId}`}>View all loans</Link>
+            </Box>
         }
     </Box>
 }

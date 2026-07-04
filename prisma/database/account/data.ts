@@ -115,7 +115,7 @@ export async function getAccountFullRelationData(id: number) {
 
 export async function getAccountOtherData(id: number) {
     try {
-        const [loansCount, currentLoan] = await Promise.all([
+        const [loansCount, currentLoan, latestInstallments, installmentsCount] = await Promise.all([
             prisma.loan.count({
                 where: { accountId: id },
             }),
@@ -135,9 +135,36 @@ export async function getAccountOtherData(id: number) {
                         },
                     },
                 }
+            }),
+            prisma.installment.findMany({
+                where: {
+                    accountId: id
+                },
+                orderBy: {
+                    dueDate: 'desc'
+                },
+                take: 3,
+                select: {
+                    id: true,
+                    amount: true,
+                    dueDate: true,
+                    payedAt: true,
+                }
+            }),
+            prisma.installment.count({
+                where: {
+                    accountId: id,
+                    payedAt: { not: null }
+                }
             })
         ]);
-        return { loansCount, currentLoan };
+
+        return {
+            loansCount,
+            currentLoan,
+            installmentsCount,
+            latestInstallments
+        };
     } catch (error) {
         throw new Error("Failed to fetch the account other data");
     }

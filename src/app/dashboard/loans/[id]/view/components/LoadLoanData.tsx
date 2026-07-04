@@ -3,18 +3,18 @@ import { notFound } from "next/navigation";
 import LoanInfo from "./LoanInfo";
 
 type props = {
-    id: number
+  id: number
 }
 
 const LoadLoanData = async ({ id }: props) => {
-    const { loan, currentPayment } = await getLoan(id);
-    if (!loan) {
-        notFound();
-    }
+  const { loan, currentPayment, paymentRemainAmount } = await getLoan(id);
+  if (!loan) {
+    notFound();
+  }
 
-    return (
-        <LoanInfo data={JSON.stringify(loan)} current={JSON.stringify(currentPayment)} />
-    );
+  return (
+    <LoanInfo data={JSON.stringify(loan)} current={JSON.stringify(currentPayment)} paymentRemainAmount={JSON.stringify(paymentRemainAmount)} />
+  );
 }
 
 export default LoadLoanData;

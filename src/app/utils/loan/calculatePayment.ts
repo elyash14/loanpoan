@@ -40,10 +40,16 @@ export const calculateLoanPayments = (
         const date = dateType === "JALALI" ? addMonths(start, i) : dayjs(start).add(1, 'M').toDate();
         payments.push({ date: date, amount: Number(amount.toDecimalPlaces(2)) });
     }
+    // if the remain is greater than 0, then add the remain to the last payment
+    if (Decimal.sub(total, Decimal.mul(amount, count)).toNumber() > 0) {
+        if (count == paymentCount) {
+            payments[payments.length - 1].amount = Number(Decimal.add(payments[payments.length - 1].amount, Decimal.sub(total, Decimal.mul(amount, count))));
+        }
+    }
     // push the remain 
     if (count < paymentCount) {
         const remain = Decimal.sub(total, Decimal.mul(amount, count));
-        const date = dateType === "JALALI" ? addMonths(start, count) : dayjs(start).add(1, 'M').toDate();
+        const date = dateType === "JALALI" ? addMonths(start, count + 1) : dayjs(start).add(1, 'M').toDate();
         payments.push({ date: date, amount: Number(remain) });
     }
 

@@ -1,0 +1,26 @@
+User View:
+- general user view
+- point to accounts
+- point to loans
+- point to installments
+
+Account View:
+- installments list (*)
+- payments list
+- loan info (*)
+
+Dashboard:
+- total amount of loans
+- total amount of payments
+- total amount of installments
+- total amount of overdue loans
+- total amount of overdue payments
+- total amount of overdue installments
+
+General:
+- year and month filter for installments list 
+- add new custom installments
+- soft delete for account
+- year and month filter for payments list
+- filter by status in loan list
+
