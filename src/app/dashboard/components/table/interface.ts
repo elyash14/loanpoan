@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 
 export interface IRichTableRow {
   id: number;
-  [key: string]: any;
 }
 
 export interface IRichTableSort {
@@ -10,19 +9,20 @@ export interface IRichTableSort {
   dir: RichTableSortDir;
 }
 
-export interface IRichTableHeader {
+export interface IRichTableHeader<TRow extends IRichTableRow = IRichTableRow> {
   name: string;
   label?: string;
-  value?: (col: any) => string | ReactNode;
+  value?: (col: TRow) => string | ReactNode;
   sortable?: boolean;
 }
 
-export interface IRichTableData {
-  headers: IRichTableHeader[];
-  rows: IRichTableRow[];
+export interface IRichTableData<TRow extends IRichTableRow = IRichTableRow> {
+  headers: IRichTableHeader<TRow>[];
+  rows: TRow[];
 }
-export interface IRichTableProps {
-  data: IRichTableData;
+
+export interface IRichTableProps<TRow extends IRichTableRow = IRichTableRow> {
+  data: IRichTableData<TRow>;
   hasRowSelector?: boolean;
   sort?: IRichTableSort;
   handleSort?: (sort: IRichTableSort) => void;
@@ -37,8 +37,8 @@ export interface IRichTableProps {
   bottomActions?: ReactNode;
 }
 
-export interface IRichTableHeadersProps {
-  headers: IRichTableHeader[],
+export interface IRichTableHeadersProps<TRow extends IRichTableRow = IRichTableRow> {
+  headers: IRichTableHeader<TRow>[];
   sort?: IRichTableSort;
   handleSort?: (sort: IRichTableSort) => void;
 }

@@ -16,7 +16,9 @@ import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import UserListAction from "./UsersListAction";
 
-type props = ListComponentProps & { users: User[] };
+type UserListRow = User & { fullName: string };
+
+type props = ListComponentProps & { users: string };
 
 const UsersList = ({
   users,
@@ -32,10 +34,6 @@ const UsersList = ({
   const searchParams = useSearchParams();
   const { dateType } = useAtomValue(globalConfigAtom);
 
-  /**
-   *  in all handler we change the url query params and navigate user
-   *  to the new url to fire new prisma query
-   */
   const handleChangePage = (pageNumber: number) => {
     const params = new URLSearchParams(searchParams);
     params.set("page", pageNumber.toString());
@@ -63,8 +61,7 @@ const UsersList = ({
     router.replace(`${pathname}?${params.toString()}`);
   };
 
-  // create RichTable data based on database data and url query params
-  const data: IRichTableData = {
+  const data: IRichTableData<UserListRow> = {
     headers: [
       { name: "id", label: "ID", sortable: true },
       { name: "email", label: "Email", sortable: true },
@@ -82,11 +79,11 @@ const UsersList = ({
         value: UserListAction,
       },
     ],
-    rows: JSON.parse(users as any),
+    rows: JSON.parse(users) as UserListRow[],
   };
 
   return (
-    <RichTable
+    <RichTable<UserListRow>
       data={data}
       hasRowSelector
       totalPages={totalPages}

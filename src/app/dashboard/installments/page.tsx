@@ -1,16 +1,18 @@
-
 import PagePaper from "@dashboard/components/paper/PagePaper";
 import ListPageSkeleton from "@dashboard/components/skeleton/ListPageSkeleton";
 import { IconIdBadge2 } from "@tabler/icons-react";
 import { Suspense } from "react";
-import LoadInstallmentsList, { LoadInstallmentsListProps } from "./components/LoadInstallmentsList";
+import { ListPage } from "utils/types/pageTypes";
+import LoadInstallmentsList from "./components/LoadInstallmentsList";
 
-export default async function Installments({ searchParams }: LoadInstallmentsListProps) {
+export default async function Installments({ searchParams }: ListPage) {
+    const resolvedSearchParams = await searchParams;
+
     return (
         <PagePaper>
             <h2><IconIdBadge2 />&nbsp;Installments</h2>
             <Suspense fallback={<ListPageSkeleton />}>
-                <LoadInstallmentsList searchParams={searchParams} />
+                <LoadInstallmentsList searchParams={resolvedSearchParams} />
             </Suspense>
         </PagePaper>
     );

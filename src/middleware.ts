@@ -11,12 +11,18 @@ export default async function middleware(req: NextRequest) {
 
     // decrypt the session from the cookie
     // we can't use the verifySession function from dataAccessLayer because of react cache 
-    const cookie = cookies().get('session')?.value;
+    const cookieStore = await cookies();
+    const cookie = cookieStore.get('session')?.value;
     const session = await decrypt(cookie);
+    const hasInvalidSessionCookie = Boolean(cookie) && !session?.userId;
 
     // redirect to /login if the user is not authenticated
     if (!isPublicRoute && !session?.userId) {
-        return NextResponse.redirect(new URL('/login', req.nextUrl));
+        const response = NextResponse.redirect(new URL('/login', req.nextUrl));
+        if (hasInvalidSessionCookie) {
+            response.cookies.delete('session');
+        }
+        return response;
     }
 
     // redirect to / if the user is not an admin
@@ -25,7 +31,11 @@ export default async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/', req.nextUrl));
     }
 
-    return NextResponse.next();
+    const response = NextResponse.next();
+    if (hasInvalidSessionCookie) {
+        response.cookies.delete('session');
+    }
+    return response;
 }
 
 // Routes Middleware should not run on

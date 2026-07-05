@@ -123,7 +123,7 @@ export async function deleteLoan(id: number) {
 
 export async function loanHasPaidPayments(loanId: number) {
   const count = await prisma.payment.count({
-    where: { loanId, payedAt: { not: null } },
+    where: { loanId, paidAt: { not: null } },
   });
 
   return count > 0;

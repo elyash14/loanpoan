@@ -80,7 +80,7 @@ export async function getLoan(id: number) {
             select: {
               payments: {
                 where: {
-                  payedAt: { not: null }
+                  paidAt: { not: null }
                 }
               }
             },
@@ -101,7 +101,7 @@ export async function getLoan(id: number) {
       prisma.payment.findFirst({
         where: {
           loanId: id,
-          payedAt: null,
+          paidAt: null,
         },
         orderBy: { dueDate: 'asc' },
       }),
@@ -111,7 +111,7 @@ export async function getLoan(id: number) {
         },
         where: {
           loanId: id,
-          payedAt: null
+          paidAt: null
         }
       })
     ]);

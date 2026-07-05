@@ -7,11 +7,13 @@ import { ListPage } from "utils/types/pageTypes";
 import LoadAccountList from "./components/LoadAccountList";
 
 export default async function Accounts({ searchParams }: ListPage) {
+  const resolvedSearchParams = await searchParams;
+
   return (
     <PagePaper>
       <h2><IconIdBadge2 />&nbsp;Accounts</h2>
       <Suspense fallback={<ListPageSkeleton />}>
-        <LoadAccountList searchParams={searchParams} />
+        <LoadAccountList searchParams={resolvedSearchParams} />
       </Suspense>
     </PagePaper>
   );

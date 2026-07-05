@@ -1,16 +1,12 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -40,7 +36,7 @@ model User {
     firstName     String
     lastName      String
     gender        Gender
-    cartNumber    String?
+    cardNumber    String?
     accountNumber String?
     avatar        String?
     createdAt     DateTime      @default(now())
@@ -63,7 +59,7 @@ model Account {
     user              User          @relation(fields: [userId], references: [id])
     userId            Int
     loans             Loan[]
-    instalments       Installment[]
+    installments      Installment[]
 }
 
 model InstallmentAmount {
@@ -71,15 +67,15 @@ model InstallmentAmount {
     amount       Decimal       @db.Decimal(20, 2)
     createdAt    DateTime      @default(now())
     deprecatedAt DateTime?
-    instalments  Installment[]
+    installments Installment[]
 }
 
 model Config {
-    id           Int     @id @default(autoincrement())
-    name         String  @unique()
-    label        String?
-    descriptiion String? @db.Text
-    value        Json
+    id          Int     @id @default(autoincrement())
+    name        String  @unique()
+    label       String?
+    description String? @db.Text
+    value       Json
 }
 
 model Loan {
@@ -100,7 +96,7 @@ model Payment {
     id      Int       @id @default(autoincrement())
     amount  Decimal   @db.Decimal(20, 2)
     dueDate DateTime
-    payedAt DateTime?
+    paidAt  DateTime?
     loan    Loan?     @relation(fields: [loanId], references: [id])
     loanId  Int?
 }
@@ -117,6 +113,6 @@ model Installment {
     approvedById        Int?
     createdAt           DateTime           @default(now())
     dueDate             DateTime           @default(now())
-    payedAt             DateTime?
+    paidAt              DateTime?
     approvedAt          DateTime?
 }

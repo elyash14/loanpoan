@@ -7,17 +7,19 @@ import AccountOtherInfoPageSkeleton from "./components/skeletons/AccountOtherInf
 import AccountPageSkeleton from "./components/skeletons/AccountPageSkeleton";
 
 export default async function View({ params }: InstancePage) {
+    const { id } = await params;
+
     return (
         <>
             <PagePaper>
                 <h2>View Account</h2>
                 <Suspense fallback={<AccountPageSkeleton />}>
-                    <LoadAccountData id={Number(params.id)} />
+                    <LoadAccountData id={Number(id)} />
                 </Suspense>
             </PagePaper>
             <PagePaper>
                 <Suspense fallback={<AccountOtherInfoPageSkeleton />}>
-                    <LoadAccountOtherData id={Number(params.id)} />
+                    <LoadAccountOtherData id={Number(id)} />
                 </Suspense>
             </PagePaper>
         </>

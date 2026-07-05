@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@database/prisma";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { SaveCurrencyResponseType, saveCurrencySchema } from "utils/form-validations/config/saveCurrencyConfig";
 import { SaveGeneralConfigResponseType, saveGeneralConfigSchema } from "utils/form-validations/config/saveGlobalConfig";
 import { SaveInstallmentConfigResponseType, saveInstallmentConfigSchema } from "utils/form-validations/config/saveInstallmentConfig";
@@ -47,7 +47,7 @@ export async function saveCurrencyConfig(formData: FormData): Promise<SaveCurren
             }
         });
 
-        revalidateTag('global-config');
+        updateTag('global-config');
         return {
             data: newConfig,
             status: "SUCCESS",
@@ -98,7 +98,7 @@ export async function saveGeneralConfig(formData: FormData): Promise<SaveGeneral
             },
         });
 
-        revalidateTag('global-config');
+        updateTag('global-config');
         return {
             data: newConfig,
             status: "SUCCESS",
@@ -153,7 +153,7 @@ export async function saveLoanConfig(formData: FormData): Promise<SaveLoanConfig
             },
         });
 
-        revalidateTag('global-config');
+        updateTag('global-config');
         return {
             data: newConfig,
             status: "SUCCESS",
@@ -206,7 +206,7 @@ export async function saveInstallmentConfig(formData: FormData): Promise<SaveIns
             },
         });
 
-        revalidateTag('global-config');
+        updateTag('global-config');
         return {
             data: newConfig,
             status: "SUCCESS",

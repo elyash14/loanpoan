@@ -33,13 +33,13 @@ export async function paginatedInstallmentsList(
         if (status === 'Not Paid') {
             where = {
                 ...where,
-                payedAt: null
+                paidAt: null
             }
         }
         if (status === 'Paid') {
             where = {
                 ...where,
-                payedAt: { not: null }
+                paidAt: { not: null }
             }
         }
 

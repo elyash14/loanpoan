@@ -14,7 +14,17 @@ import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import PaymentsListAction from "./PaymentsListAction";
 
-type props = ListComponentProps & { payments: Payment[], status: string, loanId: number }
+type PaymentListRow = Payment & {
+  loan: {
+    id: number;
+    account: {
+      code: string;
+      user: { fullName: string };
+    };
+  };
+};
+
+type props = ListComponentProps & { payments: string, status: string, loanId: number }
 
 const PaymentsList = (props: props) => {
   const { payments, totalPages, currentPage, pageSize, sortBy, sortDir, search, status, loanId } = props;
@@ -23,10 +33,6 @@ const PaymentsList = (props: props) => {
   const searchParams = useSearchParams();
   const { dateType, currency } = useAtomValue(globalConfigAtom);
 
-  /**
-   *  in all handler we change the url query params and navigate user
-   *  to the new url to fire new prisma query 
-   */
   const handleChangePage = (pageNumber: number) => {
     const params = new URLSearchParams(searchParams);
     params.set('page', pageNumber.toString());
@@ -60,9 +66,7 @@ const PaymentsList = (props: props) => {
     router.replace(`${pathname}?${params.toString()}`);
   }
 
-
-  // create RichTable data based on database data and url query params
-  const data: IRichTableData = {
+  const data: IRichTableData<PaymentListRow> = {
     headers: [
       { name: "id", label: "ID", sortable: true },
       {
@@ -80,9 +84,8 @@ const PaymentsList = (props: props) => {
         name: "amount",
         label: "Amount",
         sortable: true,
-        value: (row => <NumberFormatter value={row.amount} thousandSeparator prefix={`${currency?.symbol} `} />)
+        value: (row => <NumberFormatter value={Number(row.amount)} thousandSeparator prefix={`${currency?.symbol} `} />)
       },
-
       {
         name: "dueDate",
         label: "Due Date",
@@ -90,10 +93,10 @@ const PaymentsList = (props: props) => {
         value: (row => formatDate(row.dueDate, dateType))
       },
       {
-        name: "payedAt",
+        name: "paidAt",
         label: "Paid At",
         sortable: true,
-        value: (row => formatDate(row.payedAt, dateType))
+        value: (row => formatDate(row.paidAt!, dateType))
       },
       {
         name: "actions",
@@ -101,11 +104,11 @@ const PaymentsList = (props: props) => {
         value: PaymentsListAction
       },
     ],
-    rows: JSON.parse(payments as any),
+    rows: JSON.parse(payments) as PaymentListRow[],
   };
 
   return (
-    <RichTable
+    <RichTable<PaymentListRow>
       data={data}
       hasRowSelector
       totalPages={totalPages}
@@ -126,7 +129,6 @@ const PaymentsList = (props: props) => {
           onChange={(_value, option) => handleChangeStatus(option.value)}
         />
       }
-      // if loanId exist add bottomAction
       bottomActions={loanId ?
         <Button size="xs" variant="default" component={Link} href={`/${DASHBOARD_URL}/loans/${loanId}/view`}>Back To Loan</Button>
         : null}

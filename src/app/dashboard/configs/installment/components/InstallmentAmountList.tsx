@@ -11,7 +11,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import AddNewInstallmentAmount from "./AddNewInstallmentAmount";
 
-type props = ListComponentProps & { installments: InstallmentAmount[] }
+type props = ListComponentProps & { installments: string }
 
 const InstallmentAmountList = ({ installments, totalPages, currentPage, pageSize, sortBy, sortDir }: props) => {
   const router = useRouter();
@@ -19,10 +19,6 @@ const InstallmentAmountList = ({ installments, totalPages, currentPage, pageSize
   const searchParams = useSearchParams();
   const [opened, { open, close }] = useDisclosure(false);
 
-  /**
-   *  in all handler we change the url query params and navigate user
-   *  to the new url to fire new prisma query 
-   */
   const handleChangePage = (pageNumber: number) => {
     const params = new URLSearchParams(searchParams);
     params.set('page', pageNumber.toString());
@@ -43,15 +39,14 @@ const InstallmentAmountList = ({ installments, totalPages, currentPage, pageSize
     router.replace(`${pathname}?${params.toString()}`);
   }
 
-  // create RichTable data based on database data and url query params
-  const data: IRichTableData = {
+  const data: IRichTableData<InstallmentAmount> = {
     headers: [
       { name: "id", label: "ID", sortable: true },
       {
         name: "amount",
         label: "Amount",
         sortable: true,
-        value: (row => <NumberFormatter value={row.amount} thousandSeparator />)
+        value: (row => <NumberFormatter value={Number(row.amount)} thousandSeparator />)
       },
       {
         name: "createdAt",
@@ -66,11 +61,11 @@ const InstallmentAmountList = ({ installments, totalPages, currentPage, pageSize
         value: (row => row.deprecatedAt ? new Date(row.deprecatedAt).toDateString() : '---')
       },
     ],
-    rows: JSON.parse(installments as any),
+    rows: JSON.parse(installments) as InstallmentAmount[],
   };
 
   return (<>
-    <RichTable
+    <RichTable<InstallmentAmount>
       data={data}
       hasRowSelector
       totalPages={totalPages}
@@ -87,8 +82,7 @@ const InstallmentAmountList = ({ installments, totalPages, currentPage, pageSize
       </>}
     />
     <AddNewInstallmentAmount opened={opened} close={close} />
-  </>
-  );
+  </>);
 };
 
 export default InstallmentAmountList;

@@ -6,7 +6,7 @@ import { IconCreditCardPay } from "@tabler/icons-react";
 
 const PaymentsListAction = (row: Payment) => {
 
-    if (row.payedAt) {
+    if (row.paidAt) {
         return <Tooltip label="This payment has been paid">
             <ActionIcon
                 size="sm"

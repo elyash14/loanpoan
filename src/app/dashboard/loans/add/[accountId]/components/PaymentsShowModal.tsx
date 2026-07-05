@@ -1,4 +1,4 @@
-import PaymentInModal from "@dashboard/loans/components/PaymentInModal";
+import PaymentInModal from "@dashboard/components/PaymentInModal";
 import { Alert, Button, Divider, Grid, Modal, NumberInput, ScrollArea, rem } from "@mantine/core";
 import { IconCheck, IconInfoCircle } from "@tabler/icons-react";
 import { useMemo, useState } from "react";

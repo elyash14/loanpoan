@@ -1,4 +1,4 @@
-import { payAPayment } from "@database/pament/actions";
+import { payAPayment } from "@database/payment/actions";
 import { ActionIcon, Button, List, Modal, NumberFormatter, Text, ThemeIcon, Tooltip, rem, useMantineTheme } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Payment } from "@prisma/client";

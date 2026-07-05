@@ -199,7 +199,7 @@ export async function login(
 }
 
 export async function logout() {
-    deleteSession();
+    await deleteSession();
     redirect('/login');
 }
 

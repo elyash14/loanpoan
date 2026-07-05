@@ -3,7 +3,7 @@
 import { getGlobalConfigs } from "@database/config/data";
 import { getCurrentInstallmentAmount } from "@database/installment-amount/data";
 import prisma from "@database/prisma";
-import jMoment from 'moment-jalaali';
+import { addMonths, setDate } from 'date-fns-jalali';
 import { revalidatePath } from "next/cache";
 import { getSession } from 'utils/auth/dataAccessLayer';
 import { DASHBOARD_URL } from "utils/configs";
@@ -19,7 +19,7 @@ export async function payAnInstallment(id: number) {
     });
 
     // check this installment has been paid or not
-    if (!installment || installment.payedAt) {
+    if (!installment || installment.paidAt) {
       return {
         status: "ERROR",
         message: "The installment already has been paid",
@@ -32,7 +32,7 @@ export async function payAnInstallment(id: number) {
     await prisma.installment.update({
       where: { id },
       data: {
-        payedAt: new Date(),
+        paidAt: new Date(),
         approvedById: Number(session?.userId!),
         approvedAt: new Date(),
       }
@@ -45,7 +45,7 @@ export async function payAnInstallment(id: number) {
       },
       where: {
         accountId: installment.accountId,
-        payedAt: { not: null }
+        paidAt: { not: null }
       }
     })
     await prisma.account.update({
@@ -152,7 +152,7 @@ const calculateUndueInstallments = async () => {
           },
           where: {
             accountId: account.id,
-            // payedAt: { not: null }
+            // paidAt: { not: null }
           }
         })
         await prisma.account.update({
@@ -179,20 +179,15 @@ const _generateInstallmentsDateForAccount = (initialDate: Date, currentDate: Dat
     let nextPay;
 
     if (dateType === 'JALALI') {
-      const convertedDate = jMoment(startDate);
-      convertedDate.jDate(dueDay).add(1, 'jMonth');
-      nextMonth = convertedDate.toDate();
-
-      const convertedDate2 = jMoment(startDate);
-      convertedDate2.jDate(payDay).add(1, 'jMonth');
-      nextPay = convertedDate2.toDate();
+      nextMonth = setDate(addMonths(startDate, 1), dueDay);
+      nextPay = setDate(addMonths(startDate, 1), payDay);
     } else {
-      const nextMonth = new Date(startDate);
-      nextMonth.setMonth(nextMonth.getMonth() + 1); // Move to the next month
-      nextMonth.setDate(dueDay); // set the day of month
+      nextMonth = new Date(startDate);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      nextMonth.setDate(dueDay);
 
-      const nextPay = new Date(startDate);
-      nextPay.setMonth(nextMonth.getMonth() + 1);
+      nextPay = new Date(startDate);
+      nextPay.setMonth(nextPay.getMonth() + 1);
       nextPay.setDate(payDay);
     }
 

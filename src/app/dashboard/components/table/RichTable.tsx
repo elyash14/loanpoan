@@ -1,15 +1,15 @@
 "use client";
 
 import { Box, Checkbox, Table } from "@mantine/core";
-import { FC, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Headers from "./Headers";
 import PageSize from "./PageSize";
 import Pagination from "./Pagination";
 import classes from "./RichTable.module.css";
 import Search from "./Search";
-import { IRichTableProps } from "./interface";
+import { IRichTableProps, IRichTableRow } from "./interface";
 
-const RichTable: FC<IRichTableProps> = (props) => {
+const RichTable = <TRow extends IRichTableRow>(props: IRichTableProps<TRow>) => {
   const {
     data,
     hasRowSelector = false,
@@ -55,12 +55,14 @@ const RichTable: FC<IRichTableProps> = (props) => {
           </Table.Td>
         )}
         {data.headers.map((header) => {
-          const value = header.value ? header.value(row) : row[header.name];
-          return <Table.Td key={`${row.id}-${header.name}`}>{value}</Table.Td>;
+          const value = header.value
+            ? header.value(row)
+            : (row as Record<string, unknown>)[header.name];
+          return <Table.Td key={`${row.id}-${header.name}`}>{value as React.ReactNode}</Table.Td>;
         })}
       </Table.Tr>
     ));
-  }, [data, selectedRows]);
+  }, [data, selectedRows, hasRowSelector]);
 
   return (
     <Box>
@@ -97,7 +99,7 @@ const RichTable: FC<IRichTableProps> = (props) => {
                 />
               </Table.Th>
             )}
-            <Headers
+            <Headers<TRow>
               headers={data.headers}
               sort={sort}
               handleSort={handleSort}

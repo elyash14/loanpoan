@@ -5,7 +5,7 @@ import {
 } from "@dashboard/components/table/interface";
 import { statusValue } from "@database/loan/utils";
 import { NumberFormatter, Tooltip } from "@mantine/core";
-import { Account } from "@prisma/client";
+import { Loan, LoanStatus } from "@prisma/client";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -15,7 +15,16 @@ import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import LoanListAction from "./LoanListAction";
 
-type props = ListComponentProps & { loans: Account[] }
+type LoanListRow = Loan & {
+    account: {
+        id: number;
+        code: string;
+        name: string | null;
+        user: { id: number; fullName: string };
+    };
+};
+
+type props = ListComponentProps & { loans: string }
 
 const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
     const router = useRouter();
@@ -23,39 +32,34 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
     const searchParams = useSearchParams();
     const { dateType, currency } = useAtomValue(globalConfigAtom);
 
-    /**
-     *  in all handler we change the url query params and navigate user
-     *  to the new url to fire new prisma query 
-     */
     const handleChangePage = (pageNumber: number) => {
-        const params = new URLSearchParams(searchParams as any);
+        const params = new URLSearchParams(searchParams);
         params.set('page', pageNumber.toString());
         router.replace(`${pathname}?${params.toString()}`);
     };
 
     const handleChangePageSize = (pageSize: number) => {
-        const params = new URLSearchParams(searchParams as any);
+        const params = new URLSearchParams(searchParams);
         params.set('limit', pageSize.toString());
         params.delete('page');
         router.replace(`${pathname}?${params.toString()}`);
     }
 
     const handleSort = (sortable: IRichTableSort) => {
-        const params = new URLSearchParams(searchParams as any);
+        const params = new URLSearchParams(searchParams);
         params.set('sortBy', sortable.column);
         params.set('sortDir', sortable.dir);
         router.replace(`${pathname}?${params.toString()}`);
     }
 
     const handleSearch = (search: string) => {
-        const params = new URLSearchParams(searchParams as any);
+        const params = new URLSearchParams(searchParams);
         params.set('search', search);
         params.delete('page');
         router.replace(`${pathname}?${params.toString()}`);
     }
 
-    // create RichTable data based on database data and url query params
-    const data: IRichTableData = {
+    const data: IRichTableData<LoanListRow> = {
         headers: [
             { name: "id", label: "ID", sortable: true },
             {
@@ -80,7 +84,7 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
                 name: "amount",
                 label: "Amount",
                 sortable: true,
-                value: (row => <NumberFormatter value={row.amount} thousandSeparator prefix={`${currency?.symbol} `} />)
+                value: (row => <NumberFormatter value={Number(row.amount)} thousandSeparator prefix={`${currency?.symbol} `} />)
             },
             {
                 name: "paymentCount",
@@ -94,19 +98,19 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
                 name: "status",
                 label: "Status",
                 sortable: true,
-                value: (row => statusValue(row.status))
+                value: (row => statusValue(row.status as LoanStatus))
             },
             {
                 name: "startedAt",
                 label: "Created At",
                 sortable: true,
-                value: (row => formatDate(row.startedAt, dateType))
+                value: (row => formatDate(row.startedAt!, dateType))
             },
             {
                 name: "finishedAt",
                 label: "Finish Date",
                 sortable: true,
-                value: (row => formatDate(row.finishedAt, dateType))
+                value: (row => formatDate(row.finishedAt!, dateType))
             },
             {
                 name: "actions",
@@ -114,11 +118,11 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
                 value: LoanListAction
             },
         ],
-        rows: JSON.parse(loans as any),
+        rows: JSON.parse(loans) as LoanListRow[],
     };
 
     return (
-        <RichTable
+        <RichTable<LoanListRow>
             data={data}
             hasRowSelector
             totalPages={totalPages}

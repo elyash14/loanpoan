@@ -3,8 +3,8 @@ import RichTable from "@dashboard/components/table/RichTable";
 import {
     IRichTableData, IRichTableSort
 } from "@dashboard/components/table/interface";
-import { Box, NumberFormatter, Select, Tooltip } from "@mantine/core";
-import { Payment } from "@prisma/client";
+import { Box, Button, NumberFormatter, Select, Tooltip } from "@mantine/core";
+import { Installment } from "@prisma/client";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -15,8 +15,16 @@ import { ListComponentProps } from "utils/types/generalComponentTypes";
 import GenerateMonthlyInstallments from "./GenerateMonthlyInstallments";
 import InstallmentListAction from "./InstallmentListAction";
 
+type InstallmentListRow = Installment & {
+    account: {
+        id: number;
+        code: string;
+        user: { fullName: string };
+    };
+};
+
 type props = ListComponentProps & {
-    payments: Payment[],
+    payments: string,
     status: string,
     loanId: number,
     accountId?: number
@@ -29,10 +37,6 @@ const InstallmentsList = (props: props) => {
     const searchParams = useSearchParams();
     const { dateType, currency } = useAtomValue(globalConfigAtom);
 
-    /**
-     *  in all handler we change the url query params and navigate user
-     *  to the new url to fire new prisma query 
-     */
     const handleChangePage = (pageNumber: number) => {
         const params = new URLSearchParams(searchParams);
         params.set('page', pageNumber.toString());
@@ -66,9 +70,7 @@ const InstallmentsList = (props: props) => {
         router.replace(`${pathname}?${params.toString()}`);
     }
 
-
-    // create RichTable data based on database data and url query params
-    const data: IRichTableData = {
+    const data: IRichTableData<InstallmentListRow> = {
         headers: [
             { name: "id", label: "ID", sortable: true },
             {
@@ -86,7 +88,7 @@ const InstallmentsList = (props: props) => {
                 name: "amount",
                 label: "Amount",
                 sortable: true,
-                value: (row => <NumberFormatter value={row.amount} thousandSeparator prefix={`${currency?.symbol} `} />)
+                value: (row => <NumberFormatter value={Number(row.amount)} thousandSeparator prefix={`${currency?.symbol} `} />)
             },
             {
                 name: "type",
@@ -100,10 +102,10 @@ const InstallmentsList = (props: props) => {
                 value: (row => formatDate(row.dueDate, dateType))
             },
             {
-                name: "payedAt",
+                name: "paidAt",
                 label: "Paid At",
                 sortable: true,
-                value: (row => formatDate(row.payedAt, dateType))
+                value: (row => formatDate(row.paidAt!, dateType))
             },
             {
                 name: "actions",
@@ -111,11 +113,11 @@ const InstallmentsList = (props: props) => {
                 value: InstallmentListAction
             },
         ],
-        rows: JSON.parse(payments as any),
+        rows: JSON.parse(payments) as InstallmentListRow[],
     };
 
     return (
-        <RichTable
+        <RichTable<InstallmentListRow>
             data={data}
             hasRowSelector
             totalPages={totalPages}
@@ -128,8 +130,7 @@ const InstallmentsList = (props: props) => {
             search={search}
             handleSearch={handleSearch}
             actions={
-                <Box>
-                    {!accountId && <GenerateMonthlyInstallments />}
+                <Box style={{ display: 'flex', gap: 5 }}>
                     <Select
                         defaultValue={status}
                         size="xs"
@@ -137,8 +138,14 @@ const InstallmentsList = (props: props) => {
                         data={['All', 'Paid', 'Not Paid']}
                         onChange={(_value, option) => handleChangeStatus(option.value)}
                     />
+                    <GenerateMonthlyInstallments />
                 </Box>
             }
+            bottomActions={loanId ?
+                <Button size="xs" variant="default" component={Link} href={`/${DASHBOARD_URL}/loans/${loanId}/view`}>Back To Loan</Button>
+                : accountId ?
+                    <Button size="xs" variant="default" component={Link} href={`/${DASHBOARD_URL}/accounts/${accountId}/view`}>Back To Account</Button>
+                    : null}
         />
     );
 };

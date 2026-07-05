@@ -1,14 +1,11 @@
 
-import { paginatedPaymentsList } from "@database/pament/data";
+import { paginatedPaymentsList } from "@database/payment/data";
 import { ITEMS_PER_PAGE } from "utils/configs";
-import { ListPage } from "utils/types/pageTypes";
+import { PageSearchParams } from "utils/types/pageTypes";
 import PaymentsList from "./PaymentsList";
 
 export type LoadPaymentsListProps = {
-    searchParams: ListPage["searchParams"] & {
-        loanId: string,
-        status: string,
-    }
+    searchParams: PageSearchParams;
 }
 export default async function LoadPaymentsList({ searchParams }: LoadPaymentsListProps) {
     const search = searchParams?.search || '';

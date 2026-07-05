@@ -5,11 +5,13 @@ import LoadLoanData from "./components/LoadLoanData";
 import LoanPageSkeleton from "./components/LoanPageSkeleton";
 
 export default async function View({ params }: InstancePage) {
+    const { id } = await params;
+
     return (
         <PagePaper>
             <h2>View Loan</h2>
             <Suspense fallback={<LoanPageSkeleton />}>
-                <LoadLoanData id={Number(params.id)} />
+                <LoadLoanData id={Number(id)} />
             </Suspense>
         </PagePaper>
     );

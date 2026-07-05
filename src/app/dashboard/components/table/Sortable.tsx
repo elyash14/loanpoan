@@ -26,7 +26,7 @@ const Sortable: FC<IProps> = ({ columnName, sort, handleSort }) => {
             return <IconSortDescending2 />
         }
         return <IconSortAscending2 />
-    }, [sort])
+    }, [sort, columnName])
 
     return <ActionIcon className={classes.sortable}
         variant="subtle" size="sm"

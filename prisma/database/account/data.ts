@@ -129,7 +129,7 @@ export async function getAccountOtherData(id: number) {
                         select: {
                             payments: {
                                 where: {
-                                    payedAt: { not: null }
+                                    paidAt: { not: null }
                                 }
                             }
                         },
@@ -148,13 +148,13 @@ export async function getAccountOtherData(id: number) {
                     id: true,
                     amount: true,
                     dueDate: true,
-                    payedAt: true,
+                    paidAt: true,
                 }
             }),
             prisma.installment.count({
                 where: {
                     accountId: id,
-                    payedAt: { not: null }
+                    paidAt: { not: null }
                 }
             })
         ]);

@@ -5,15 +5,15 @@ import { Suspense } from "react";
 import { ListPage } from "utils/types/pageTypes";
 import LoadLoanList from "./components/LoadLoanList";
 
-export default async function Loans({ searchParams }: ListPage & { searchParams: { account?: string } }) {
-    // Extract accountId from searchParams
-    const accountId = searchParams?.account ? parseInt(searchParams.account) : undefined;
+export default async function Loans({ searchParams }: ListPage) {
+    const resolvedSearchParams = await searchParams;
+    const accountId = resolvedSearchParams?.account ? parseInt(resolvedSearchParams.account) : undefined;
 
     return (
         <PagePaper>
             <h2><IconMoneybag />&nbsp;Loans</h2>
             <Suspense fallback={<ListPageSkeleton />}>
-                <LoadLoanList searchParams={{ ...searchParams, account: accountId?.toString() }} />
+                <LoadLoanList searchParams={{ ...resolvedSearchParams, account: accountId?.toString() }} />
             </Suspense>
         </PagePaper>
     );

@@ -1,9 +1,9 @@
 import { Table } from "@mantine/core";
-import { FC, memo } from "react";
+import { memo } from "react";
 import Sortable from "./Sortable";
-import { IRichTableHeadersProps } from "./interface";
+import { IRichTableHeadersProps, IRichTableRow } from "./interface";
 
-const Headers: FC<IRichTableHeadersProps> = ({ headers, sort, handleSort }) => {
+const Headers = <TRow extends IRichTableRow>({ headers, sort, handleSort }: IRichTableHeadersProps<TRow>) => {
     return <>{headers.map((header, key) => {
         return (
             <Table.Th key={`${key}-${header.name}`}>
@@ -21,4 +21,4 @@ const Headers: FC<IRichTableHeadersProps> = ({ headers, sort, handleSort }) => {
     </>
 }
 
-export default memo(Headers);
+export default memo(Headers) as typeof Headers;

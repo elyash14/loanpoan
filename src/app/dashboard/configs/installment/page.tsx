@@ -6,6 +6,8 @@ import LoadConfigs from "./components/LoadConfigs";
 import LoadInstallmentConfigList from "./components/LoadInstallmentConfigList";
 
 export default async function InstallmentConfig({ searchParams }: ListPage) {
+    const resolvedSearchParams = await searchParams;
+
     return <>
         <Title mb={rem(20)} order={4}>Installment Dates</Title>
         <Suspense fallback={<ListPageSkeleton />}>
@@ -14,7 +16,7 @@ export default async function InstallmentConfig({ searchParams }: ListPage) {
         <Divider my={rem(20)} />
         <Title mb={rem(20)} order={4}>Installment Amounts</Title>
         <Suspense fallback={<ListPageSkeleton />}>
-            <LoadInstallmentConfigList searchParams={searchParams} />
+            <LoadInstallmentConfigList searchParams={resolvedSearchParams} />
         </Suspense>
     </>;
 }

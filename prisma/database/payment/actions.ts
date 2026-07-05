@@ -10,25 +10,22 @@ export async function payAPayment(id: number) {
       where: { id },
     });
 
-    // check this payment has been paid or not
-    if (!payment || payment.payedAt) {
+    if (!payment || payment.paidAt) {
       return {
         status: "ERROR",
         message: "The payment already has been paid",
       }
     }
 
-    // pay
     await prisma.payment.update({
       where: { id },
-      data: { payedAt: new Date() }
+      data: { paidAt: new Date() }
     });
 
-    // check this payment was the last payments of the loan
     const count = await prisma.payment.count({
       where: {
         loanId: payment.loanId,
-        payedAt: null
+        paidAt: null
       }
     });
 
@@ -40,7 +37,6 @@ export async function payAPayment(id: number) {
       revalidatePath(`/${DASHBOARD_URL}/loans`);
     }
 
-    // revalidate the list of accounts page after updating an account.
     revalidatePath(`/${DASHBOARD_URL}/payments`);
     return {
       status: "SUCCESS",

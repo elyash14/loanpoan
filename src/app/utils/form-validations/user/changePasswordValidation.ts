@@ -2,7 +2,7 @@ import { ActionResponse } from "utils/types/actionFormTypes";
 import { z } from "zod";
 
 const basicValidation = {
-    id: z.coerce.number(),
+    id: z.coerce.number<number>(),
     password: z.string().min(8, "Password must be at least 8 characters long"),
 };
 

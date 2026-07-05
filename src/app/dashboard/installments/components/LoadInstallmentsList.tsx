@@ -1,15 +1,14 @@
 import { paginatedInstallmentsList } from "@database/installments/data";
 import { ITEMS_PER_PAGE } from "utils/configs";
-import { ListPage } from "utils/types/pageTypes";
+import { ListPage, PageSearchParams } from "utils/types/pageTypes";
 import InstallmentsList from "./InstallmentsList";
 
+export type InstallmentsSearchParams = PageSearchParams;
+
 export type LoadInstallmentsListProps = {
-    searchParams: ListPage["searchParams"] & {
-        loanId: string,
-        status: string,
-    },
-    accountId?: number
-}
+    searchParams: InstallmentsSearchParams;
+    accountId?: number;
+};
 
 export default async function LoadInstallmentsList({
     searchParams,

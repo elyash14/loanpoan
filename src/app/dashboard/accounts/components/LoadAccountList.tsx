@@ -1,9 +1,9 @@
 import { paginatedAccountList } from "@database/account/data";
 import { ITEMS_PER_PAGE } from "utils/configs";
-import { ListPage } from "utils/types/pageTypes";
+import { PageSearchParams } from "utils/types/pageTypes";
 import AccountList from "./AccountList";
 
-export default async function LoadAccountList({ searchParams }: ListPage) {
+export default async function LoadAccountList({ searchParams }: { searchParams: PageSearchParams }) {
     const search = searchParams?.search || "";
     const page = Number(searchParams?.page) || 1;
     const limit = Number(searchParams?.limit) || ITEMS_PER_PAGE;

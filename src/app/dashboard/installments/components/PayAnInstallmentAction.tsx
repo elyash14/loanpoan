@@ -35,7 +35,7 @@ const PayAnInstallmentAction = ({ installment }: Props) => {
         close();
     }
 
-    if (installment.payedAt) {
+    if (installment.paidAt) {
         return <ActionIcon
             size="sm"
             disabled

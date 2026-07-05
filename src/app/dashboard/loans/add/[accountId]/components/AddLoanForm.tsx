@@ -76,7 +76,7 @@ function AddLoanForm({ data, dateType, currency, loanConfig }: Props) {
             handleOpenModal();
         }
         mustCalculate.current = true;
-    }, [amount, paymentCount, startedAt]);
+    }, [amount, paymentCount, startedAt, handleOpenModal]);
 
     return (
         <Container size="sm" >
@@ -87,7 +87,7 @@ function AddLoanForm({ data, dateType, currency, loanConfig }: Props) {
                     render={({ field: { value } }) => (
                         <input
                             type="hidden"
-                            value={value}
+                            value={String(value ?? '')}
                         />
                     )}
                 />
@@ -167,9 +167,9 @@ function AddLoanForm({ data, dateType, currency, loanConfig }: Props) {
                 </Group>
             </form>
             {openModal && <PaymentsShowModal
-                totalAmount={amount}
-                paymentCount={paymentCount}
-                startedAt={startedAt}
+                totalAmount={Number(amount)}
+                paymentCount={Number(paymentCount)}
+                startedAt={startedAt as Date}
                 dateType={dateType}
                 currency={currency}
                 handleClose={(paymentAmount, paymentCount) => {

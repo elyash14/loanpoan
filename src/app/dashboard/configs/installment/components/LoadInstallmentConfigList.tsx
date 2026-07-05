@@ -1,9 +1,9 @@
 import { paginatedInstallmentAmountList } from "@database/installment-amount/data";
-import { ListPage } from "utils/types/pageTypes";
+import { PageSearchParams } from "utils/types/pageTypes";
 import InstallmentAmountList from "./InstallmentAmountList";
 
 
-export default async function LoadInstallmentConfigList({ searchParams }: ListPage) {
+export default async function LoadInstallmentConfigList({ searchParams }: { searchParams: PageSearchParams }) {
     const search = searchParams?.search || '';
     const page = Number(searchParams?.page) || 1;
     const limit = Number(searchParams?.limit) || 5;

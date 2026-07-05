@@ -39,7 +39,7 @@ const AccountInstallments = ({ id, installmentsCount, latestInstallments }: prop
                                 <NumberFormatter value={Number(installment.amount)} thousandSeparator prefix={`${currency?.symbol} `} />
                             </Table.Td>
                             <Table.Td>{formatDate(installment.dueDate, dateType!)}</Table.Td>
-                            <Table.Td>{installment.payedAt ? "Paid" : (
+                            <Table.Td>{installment.paidAt ? "Paid" : (
                                 <PayAnInstallmentAction installment={installment} />
                             )}</Table.Td>
                         </Table.Tr>

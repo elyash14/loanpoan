@@ -15,7 +15,11 @@ import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import AccountListAction from "./AccountListAction";
 
-type props = ListComponentProps & { accounts: Account[] }
+type AccountListRow = Account & {
+    user: { id: number; fullName: string };
+};
+
+type props = ListComponentProps & { accounts: string }
 
 const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
     const router = useRouter();
@@ -23,10 +27,6 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
     const searchParams = useSearchParams();
     const { dateType, currency } = useAtomValue(globalConfigAtom);
 
-    /**
-     *  in all handler we change the url query params and navigate user
-     *  to the new url to fire new prisma query 
-     */
     const handleChangePage = (pageNumber: number) => {
         const params = new URLSearchParams(searchParams);
         params.set('page', pageNumber.toString());
@@ -54,8 +54,7 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
         router.replace(`${pathname}?${params.toString()}`);
     }
 
-    // create RichTable data based on database data and url query params
-    const data: IRichTableData = {
+    const data: IRichTableData<AccountListRow> = {
         headers: [
             { name: "id", label: "ID", sortable: true },
             { name: "code", label: "Code", sortable: true },
@@ -68,7 +67,7 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
                 name: "balance",
                 label: "Balance",
                 sortable: true,
-                value: (row => <NumberFormatter value={row.balance} thousandSeparator prefix={`${currency?.symbol} `} />)
+                value: (row => <NumberFormatter value={Number(row.balance)} thousandSeparator prefix={`${currency?.symbol} `} />)
             },
             {
                 name: "user",
@@ -83,7 +82,7 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
                 name: "openedAt",
                 label: "Opening Date",
                 sortable: true,
-                value: (row => formatDate(row.openedAt, dateType))
+                value: (row => formatDate(row.openedAt!, dateType))
             },
             {
                 name: "actions",
@@ -91,11 +90,11 @@ const AccountList = ({ accounts, totalPages, currentPage, pageSize, sortBy, sort
                 value: AccountListAction
             },
         ],
-        rows: JSON.parse(accounts as any),
+        rows: JSON.parse(accounts) as AccountListRow[],
     };
 
     return (
-        <RichTable
+        <RichTable<AccountListRow>
             data={data}
             hasRowSelector
             totalPages={totalPages}

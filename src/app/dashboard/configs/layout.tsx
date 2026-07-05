@@ -1,8 +1,6 @@
 import PagePaper from '@dashboard/components/paper/PagePaper';
 import { Box, rem } from '@mantine/core';
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
-import ConfigMenu from './components/ConfigMenutsx';
+import ConfigMenu from './components/ConfigMenu';
 
 export default function RootLayout({
   children,

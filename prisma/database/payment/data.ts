@@ -15,7 +15,6 @@ export async function paginatedPaymentsList(
     try {
         let where = {};
 
-        // load all payments of a loan
         if (loanId) {
             where = {
                 loanId
@@ -23,12 +22,12 @@ export async function paginatedPaymentsList(
         }
         if (status === 'Not Paid') {
             where = {
-                payedAt: null
+                paidAt: null
             }
         }
         if (status === 'Paid') {
             where = {
-                payedAt: { not: null }
+                paidAt: { not: null }
             }
         }
 
