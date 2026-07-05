@@ -22,6 +22,7 @@ export default async function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <head>
                 <ColorSchemeScript defaultColorScheme="dark" />
+                <script src="https://telegram.org/js/telegram-web-app.js" async />
             </head>
             <body suppressHydrationWarning>
                 <MantineProvider theme={theme} defaultColorScheme="dark">

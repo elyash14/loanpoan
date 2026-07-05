@@ -3,11 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { decrypt } from 'utils/auth/session';
 import { DASHBOARD_URL } from 'utils/configs';
 
-const publicRoutes = ['/login'];
+const publicRoutes = ['/login', '/link-required'];
+
+const userAppRoute = /^\/(home|accounts|loans|installments|payments|profile|more)(\/|$)/;
 
 export default async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
     const isPublicRoute = publicRoutes.includes(path);
+    const isUserAppRoute = userAppRoute.test(path);
 
     // decrypt the session from the cookie
     // we can't use the verifySession function from dataAccessLayer because of react cache 
@@ -16,8 +19,12 @@ export default async function middleware(req: NextRequest) {
     const session = await decrypt(cookie);
     const hasInvalidSessionCookie = Boolean(cookie) && !session?.userId;
 
+    // User panel: allow through so Telegram Mini App can bootstrap auth client-side
+    // Dashboard still requires session below
+    const requiresAuth = !isPublicRoute && !isUserAppRoute;
+
     // redirect to /login if the user is not authenticated
-    if (!isPublicRoute && !session?.userId) {
+    if (requiresAuth && !session?.userId) {
         const response = NextResponse.redirect(new URL('/login', req.nextUrl));
         if (hasInvalidSessionCookie) {
             response.cookies.delete('session');

@@ -23,9 +23,14 @@ import {
 
 type Props = {
   data: string;
+  telegramMembers: string;
 };
-function EditUserForm({ data }: Props) {
+function EditUserForm({ data, telegramMembers }: Props) {
   const user: User = useMemo(() => JSON.parse(data), [data]);
+  const memberOptions = useMemo(
+    () => JSON.parse(telegramMembers) as { value: string; label: string; username: string; disabled?: boolean }[],
+    [telegramMembers],
+  );
   const router = useRouter();
 
   const {
@@ -33,6 +38,8 @@ function EditUserForm({ data }: Props) {
     control,
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<EditUserFormSchemaInputType>({
     resolver: zodResolver(editUserValidationSchema, {}, { raw: true }),
@@ -42,8 +49,12 @@ function EditUserForm({ data }: Props) {
       lastName: user.lastName,
       email: user.email,
       gender: user.gender,
+      telegramId: user.telegramId?.toString() ?? "",
+      telegramUsername: user.telegramUsername ?? "",
     },
   });
+
+  const linkedTelegramId = watch("telegramId");
 
   const sex = [
     { value: "WOMAN", label: "Woman" },
@@ -81,7 +92,7 @@ function EditUserForm({ data }: Props) {
   return (
     <Container size="sm">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <input readOnly type="hidden" name="id" value={user.id} />
+        <input type="hidden" {...register("id", { valueAsNumber: true })} />
         <TextInput
           withAsterisk
           label="First Name"
@@ -114,6 +125,37 @@ function EditUserForm({ data }: Props) {
               error={errors.gender?.message}
             />
           )}
+        />
+        <Select
+          label="Link Telegram member"
+          placeholder={memberOptions.length ? "Pick from synced group members" : "No members synced yet — go to Telegram tab"}
+          description="Sync members on Dashboard → Telegram, or enter ID manually below"
+          searchable
+          clearable
+          value={linkedTelegramId || null}
+          onChange={(selected) => {
+            setValue("telegramId", selected ?? "");
+            const picked = memberOptions.find((m) => m.value === selected);
+            setValue("telegramUsername", picked?.username ?? "");
+          }}
+          data={memberOptions.map((m) => ({
+            value: m.value,
+            label: m.label,
+            disabled: m.disabled,
+          }))}
+        />
+        <TextInput
+          label="Telegram ID (manual)"
+          placeholder="Numeric Telegram user ID"
+          description="User must open the Mini App after linking"
+          {...register("telegramId")}
+          error={errors.telegramId?.message}
+        />
+        <TextInput
+          label="Telegram username"
+          placeholder="@username (optional)"
+          {...register("telegramUsername")}
+          error={errors.telegramUsername?.message}
         />
         <Group mt="md">
           <Button

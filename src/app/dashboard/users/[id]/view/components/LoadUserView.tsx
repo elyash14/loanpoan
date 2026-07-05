@@ -1,6 +1,7 @@
 import { getUserForView, getUserRelatedData } from "@database/user/data";
 import { notFound } from "next/navigation";
 import UserViewTabs from "./UserViewTabs";
+import { serializeClient } from "utils/serialize";
 
 type props = {
     id: number;
@@ -18,7 +19,7 @@ const LoadUserView = async ({ id }: props) => {
 
     return (
         <UserViewTabs
-            userData={JSON.stringify(user)}
+            userData={serializeClient(user)}
             accountsData={JSON.stringify(related.accounts)}
             accountsCount={related.accountsCount}
             loansCount={related.loansCount}

@@ -63,6 +63,8 @@ export async function updateUser(formData: FormData): Promise<CreateUserResponse
         lastName: formData.get('lastName'),
         email: formData.get('email'),
         gender: formData.get('gender'),
+        telegramId: formData.get('telegramId'),
+        telegramUsername: formData.get('telegramUsername'),
     })
 
     // Return early if the form data is invalid
@@ -82,7 +84,10 @@ export async function updateUser(formData: FormData): Promise<CreateUserResponse
                 lastName: validatedFields.data.lastName,
                 gender: validatedFields.data.gender,
                 email: validatedFields.data.email,
-                // updatedAt: new Date(),
+                telegramId: validatedFields.data.telegramId
+                    ? BigInt(validatedFields.data.telegramId)
+                    : null,
+                telegramUsername: validatedFields.data.telegramUsername || null,
             },
         });
         // revalidate the list of accounts page after updating an account.
@@ -169,6 +174,14 @@ export async function login(
                 },
             }
         };
+        if (user.deletedAt) {
+            return {
+                status: "ERROR",
+                error: {
+                    email: ['Account is deactivated'],
+                },
+            }
+        };
         const passwordsMatch = await bcrypt.compare(validatedFields.data.password, user.password);
         if (!passwordsMatch) {
             return {
@@ -184,6 +197,8 @@ export async function login(
 
         if (user.role === 'ADMIN') {
             redirectRoute = `/${DASHBOARD_URL}`;
+        } else {
+            redirectRoute = '/home';
         }
     } catch (error) {
         return {

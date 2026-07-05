@@ -1,6 +1,6 @@
 'use client';
 import { Center, Tabs, rem } from "@mantine/core";
-import { IconCash, IconDashboard, IconIdBadge2, IconMoneybag, IconSettings, IconUsers } from '@tabler/icons-react';
+import { IconBrandTelegram, IconCash, IconDashboard, IconIdBadge2, IconMoneybag, IconSettings, IconUsers } from '@tabler/icons-react';
 import { usePathname, useRouter } from "next/navigation";
 import { DASHBOARD_URL } from "utils/configs";
 
@@ -19,6 +19,9 @@ const MainMenu = () => {
                     </Tabs.Tab>
                     <Tabs.Tab value={`/${DASHBOARD_URL}/users`} leftSection={<IconUsers style={iconStyle} />}>
                         Users
+                    </Tabs.Tab>
+                    <Tabs.Tab value={`/${DASHBOARD_URL}/telegram-members`} leftSection={<IconBrandTelegram style={iconStyle} />}>
+                        Telegram
                     </Tabs.Tab>
                     <Tabs.Tab value={`/${DASHBOARD_URL}/accounts`} leftSection={<IconIdBadge2 style={iconStyle} />}>
                         Accounts

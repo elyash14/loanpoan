@@ -1,5 +1,27 @@
 /** @type {import('next').NextConfig} */
+function getAllowedDevOrigins() {
+    const origins = new Set();
+
+    if (process.env.DEV_ALLOWED_ORIGINS) {
+        for (const entry of process.env.DEV_ALLOWED_ORIGINS.split(",")) {
+            const trimmed = entry.trim();
+            if (trimmed) origins.add(trimmed);
+        }
+    }
+
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+        try {
+            origins.add(new URL(process.env.NEXT_PUBLIC_APP_URL).hostname);
+        } catch {
+            // ignore invalid URL
+        }
+    }
+
+    return [...origins];
+}
+
 const nextConfig = {
+    allowedDevOrigins: getAllowedDevOrigins(),
     experimental: {
         optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
     },

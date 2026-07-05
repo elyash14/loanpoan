@@ -1,8 +1,14 @@
-import Logout from "@dashboard/components/navbar/Logout";
+import UserShell from "../components/shell/UserShell";
+import LoadHome from "./components/LoadHome";
+import { Suspense } from "react";
+import { Skeleton } from "../components/ui/skeleton";
 
 export default function HomePage() {
-    return <>
-        <h1>Home Page</h1>
-        <Logout />
-    </>;
+    return (
+        <UserShell title="Home">
+            <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+                <LoadHome />
+            </Suspense>
+        </UserShell>
+    );
 }

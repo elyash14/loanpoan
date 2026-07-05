@@ -30,6 +30,8 @@ export async function paginatedLoanList(
       where.payments = {
         some: { paidAt: null, dueDate: { lt: now } },
       };
+    } else if (status === 'IN_PROGRESS' || status === 'FINISHED') {
+      where.status = status;
     }
 
     if (search) {

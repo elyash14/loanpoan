@@ -26,6 +26,9 @@
       "@dashboard/*": [
         "dashboard/*"
       ],
+      "@user/*": [
+        "(user-application)/*"
+      ],
       "@database/*": [
         "../../prisma/database/*"
       ]

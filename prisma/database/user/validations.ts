@@ -20,3 +20,13 @@ export async function checkEmailUniqueness(email: string, id?: number){
     });
     return count === 0;
 }
+
+export async function checkTelegramIdUniqueness(telegramId: bigint, id?: number) {
+    const count = await prisma.user.count({
+        where: {
+            telegramId,
+            ...(id && { id: { not: id } }),
+        },
+    });
+    return count === 0;
+}

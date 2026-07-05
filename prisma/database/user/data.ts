@@ -151,6 +151,16 @@ export async function getUserByEmail(email: string) {
     }
 }
 
+export async function getUserByTelegramId(telegramId: bigint) {
+    try {
+        return await prisma.user.findUnique({
+            where: { telegramId },
+        });
+    } catch (error) {
+        return null;
+    }
+}
+
 export async function getUserById(id: number) {
     try {
         // save data and return object

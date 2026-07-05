@@ -7,26 +7,37 @@ import 'server-only'
 const secretKey = process.env.AUTH_SECRET
 const encodedKey = new TextEncoder().encode(secretKey)
 
-export async function createSession(user: User) {
-    //TODO use shorter time and use updateSession
+function sessionCookieOptions(expiresAt: Date) {
+    const useSecure =
+        process.env.NODE_ENV === "production" ||
+        process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://");
+
+    return {
+        httpOnly: true,
+        secure: useSecure,
+        expires: expiresAt,
+        sameSite: "lax" as const,
+        path: "/",
+    };
+}
+
+export async function createSession(
+    user: User,
+    authProvider: "email" | "telegram" = "email",
+) {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     const session = await encrypt({
         userId: String(user.id),
         email: user.email,
         role: user.role,
         fullName: `${user.firstName} ${user.lastName}`,
-        // image: user.image,
+        authProvider,
+        telegramId: user.telegramId?.toString(),
         expiresAt
     })
 
     const cookieStore = await cookies()
-    cookieStore.set('session', session, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        expires: expiresAt,
-        sameSite: 'lax',
-        path: '/',
-    })
+    cookieStore.set('session', session, sessionCookieOptions(expiresAt))
 }
 
 export async function updateSession() {
@@ -39,13 +50,7 @@ export async function updateSession() {
     }
 
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    cookieStore.set('session', session, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        expires: expires,
-        sameSite: 'lax',
-        path: '/',
-    })
+    cookieStore.set('session', session, sessionCookieOptions(expires))
 }
 
 export async function deleteSession() {
@@ -58,6 +63,8 @@ export type SessionUser = {
     email: string,
     role: string,
     fullName: string,
+    authProvider?: string,
+    telegramId?: string,
     image?: string,
 }
 export type SessionPayload = SessionUser & {

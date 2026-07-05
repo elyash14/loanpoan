@@ -9,6 +9,7 @@ export type PageSearchParams = {
     account?: string;
     user?: string;
     loanId?: string;
+    loan?: string;
     status?: string;
 };
 

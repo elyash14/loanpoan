@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "telegram-mini-app": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/telegram-mini-app/SKILL.md",
+      "computedHash": "e19acb241d3d9d8dd2f275be5588dd129fd36f97f93d0dd18fa7b93b67d2e205"
+    }
+  }
+}

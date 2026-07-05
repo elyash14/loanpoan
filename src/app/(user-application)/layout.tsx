@@ -1,14 +1,15 @@
+import "./user-globals.css";
+import TelegramProvider from "./components/telegram/TelegramProvider";
+import { ReactNode } from "react";
 
-import MainLayout from './_components/MainLayout';
-
-export default async function RootLayout({
+export default function UserApplicationLayout({
     children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
+}: {
+    children: ReactNode;
+}) {
     return (
-        <MainLayout>
-            {children}
-        </MainLayout>
+        <div id="user-app" className="min-h-dvh">
+            <TelegramProvider>{children}</TelegramProvider>
+        </div>
     );
 }
