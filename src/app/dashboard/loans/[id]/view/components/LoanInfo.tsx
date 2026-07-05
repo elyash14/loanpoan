@@ -31,11 +31,11 @@ const LoanInfo = ({ data, current, paymentRemainAmount }: Props) => {
   const infoList: ListInfoType[] = [
     {
       title: 'User Info',
-      value: <Link href={`/${DASHBOARD_URL}/users/${user.id}`}>{(user as any).fullName}</Link>
+      value: <Link href={`/${DASHBOARD_URL}/users/${user.id}/view`}>{(user as any).fullName}</Link>
     },
     {
       title: 'Account Info',
-      value: <Link href={`/${DASHBOARD_URL}/accounts/${account.id}`}>{account.code}</Link>
+      value: <Link href={`/${DASHBOARD_URL}/accounts/${account.id}/view`}>{account.code}</Link>
     },
     {
       title: 'Loan Amount',

@@ -9,6 +9,7 @@ export default async function LoadAccountList({ searchParams }: { searchParams: 
     const limit = Number(searchParams?.limit) || ITEMS_PER_PAGE;
     const sortBy = searchParams?.sortBy || "openedAt";
     const sortDir = searchParams?.sortDir || "-";
+    const userId = searchParams?.user ? Number(searchParams.user) : undefined;
 
     const { data, total } = await paginatedAccountList(
         page,
@@ -16,6 +17,7 @@ export default async function LoadAccountList({ searchParams }: { searchParams: 
         search,
         sortBy,
         sortDir,
+        userId,
     );
 
     return (

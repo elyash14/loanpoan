@@ -12,35 +12,27 @@ export async function paginatedInstallmentsList(
     search?: string,
     sortBy?: string,
     sortDir?: RichTableSortDir,
-    accountId?: number) {
+    accountId?: number,
+    userId?: number) {
     try {
-        let where = {};
+        let where: Record<string, unknown> = {};
 
-        // Add account filter if accountId is provided
         if (accountId) {
-            where = {
-                accountId
-            }
+            where.accountId = accountId;
         }
 
-        // load all payments of a loan
+        if (userId) {
+            where.account = { userId };
+        }
+
         if (loanId) {
-            where = {
-                ...where,
-                loanId
-            }
+            where.loanId = loanId;
         }
         if (status === 'Not Paid') {
-            where = {
-                ...where,
-                paidAt: null
-            }
+            where.paidAt = null;
         }
         if (status === 'Paid') {
-            where = {
-                ...where,
-                paidAt: { not: null }
-            }
+            where.paidAt = { not: null };
         }
 
         // if (search) {

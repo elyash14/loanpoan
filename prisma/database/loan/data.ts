@@ -10,19 +10,22 @@ export async function paginatedLoanList(
   search?: string,
   sortBy?: string,
   sortDir?: RichTableSortDir,
-  accountId?: number) {
+  accountId?: number,
+  userId?: number) {
   try {
-    let where: any = {};
+    let where: Record<string, unknown> = {};
 
-    // Add account filter if accountId is provided
     if (accountId) {
       where.accountId = accountId;
     }
 
-    // Existing search logic
+    if (userId) {
+      where.account = { userId };
+    }
+
     if (search) {
       where = {
-        ...where, // Keep the account filter if it exists
+        ...where,
         account: {
           OR: [
             {

@@ -10,6 +10,7 @@ export default async function LoadLoanList({ searchParams }: { searchParams: Pag
     const sortBy = searchParams?.sortBy || 'startedAt';
     const sortDir = searchParams?.sortDir || '-';
     const accountId = searchParams?.account ? Number(searchParams.account) : undefined;
+    const userId = searchParams?.user ? Number(searchParams.user) : undefined;
 
     const { data, total } = await paginatedLoanList(
         page,
@@ -17,7 +18,8 @@ export default async function LoadLoanList({ searchParams }: { searchParams: Pag
         search,
         sortBy,
         sortDir,
-        accountId
+        accountId,
+        userId,
     );
 
     return <LoanList

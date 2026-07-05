@@ -161,3 +161,110 @@ export async function getUserById(id: number) {
         return null
     }
 }
+
+export async function getUserForView(id: number) {
+    try {
+        return await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                fullName: true,
+                gender: true,
+                role: true,
+                cardNumber: true,
+                accountNumber: true,
+                avatar: true,
+                createdAt: true,
+                deletedAt: true,
+                _count: {
+                    select: { accounts: true },
+                },
+            },
+        });
+    } catch (error) {
+        throw new Error("Failed to fetch the user information");
+    }
+}
+
+export async function getUserRelatedData(userId: number) {
+    try {
+        const accountWhere = { userId };
+
+        const [
+            accounts,
+            accountsCount,
+            loansCount,
+            currentLoan,
+            installmentsCount,
+            installmentsPaidCount,
+            latestInstallments,
+        ] = await Promise.all([
+            prisma.account.findMany({
+                where: accountWhere,
+                take: 5,
+                orderBy: { openedAt: "desc" },
+                select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                    balance: true,
+                    openedAt: true,
+                },
+            }),
+            prisma.account.count({ where: accountWhere }),
+            prisma.loan.count({
+                where: { account: accountWhere },
+            }),
+            prisma.loan.findFirst({
+                where: {
+                    account: accountWhere,
+                    status: "IN_PROGRESS",
+                },
+                include: {
+                    _count: {
+                        select: {
+                            payments: {
+                                where: { paidAt: { not: null } },
+                            },
+                        },
+                    },
+                },
+            }),
+            prisma.installment.count({
+                where: { account: accountWhere },
+            }),
+            prisma.installment.count({
+                where: {
+                    account: accountWhere,
+                    paidAt: { not: null },
+                },
+            }),
+            prisma.installment.findMany({
+                where: { account: accountWhere },
+                orderBy: { dueDate: "desc" },
+                take: 3,
+                select: {
+                    id: true,
+                    amount: true,
+                    dueDate: true,
+                    paidAt: true,
+                },
+            }),
+        ]);
+
+        return {
+            accounts,
+            accountsCount,
+            loansCount,
+            currentLoan,
+            installmentsCount,
+            installmentsPaidCount,
+            latestInstallments,
+        };
+    } catch (error) {
+        throw new Error("Failed to fetch the user related data");
+    }
+}

@@ -7,6 +7,7 @@ export type PageSearchParams = {
     sortBy?: string;
     sortDir?: RichTableSortDir;
     account?: string;
+    user?: string;
     loanId?: string;
     status?: string;
 };

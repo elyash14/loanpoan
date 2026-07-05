@@ -9,11 +9,18 @@ export async function paginatedAccountList(
     limit: number,
     search?: string,
     sortBy?: string,
-    sortDir?: RichTableSortDir) {
+    sortDir?: RichTableSortDir,
+    userId?: number) {
     try {
-        let where = {};
+        let where: Record<string, unknown> = {};
+
+        if (userId) {
+            where.userId = userId;
+        }
+
         if (search) {
             where = {
+                ...where,
                 OR: [
                     { name: { contains: search.toLowerCase(), mode: 'insensitive' } },
                     { code: { contains: search.toLowerCase(), mode: 'insensitive' } },

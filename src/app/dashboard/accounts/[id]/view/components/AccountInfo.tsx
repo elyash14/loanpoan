@@ -28,7 +28,7 @@ const AccountInfo = ({ data, currentLoanData }: Props) => {
     const infoList: ListInfoType[] = [
         {
             title: 'User Info',
-            value: <Link href={`/${DASHBOARD_URL}/users/${user.id}`}>{(user as any).fullName}</Link>
+            value: <Link href={`/${DASHBOARD_URL}/users/${user.id}/view`}>{(user as any).fullName}</Link>
         },
         {
             title: 'Account Code',

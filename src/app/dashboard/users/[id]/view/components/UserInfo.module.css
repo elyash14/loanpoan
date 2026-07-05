@@ -1,0 +1,35 @@
+.summaryBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.accountsCount {
+    width: fit-content;
+}
+
+.accountsCountValue {
+    color: var(--mantine-color-teal-6);
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--mantine-spacing-xs);
+}
+
+.loansWrapper,
+.installmentsWrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.loansCount,
+.installmentsCount {
+    display: block;
+    color: var(--mantine-primary-color-6);
+}
+
+.accountsTable {
+    width: 100%;
+}

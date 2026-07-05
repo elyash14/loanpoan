@@ -21,6 +21,7 @@ export default async function LoadInstallmentsList({
     const sortDir = searchParams?.sortDir || '-';
     const loanId = Number(searchParams?.loanId);
     const status = searchParams?.status || 'All';
+    const userId = searchParams?.user ? Number(searchParams.user) : undefined;
 
     const { data, total } = await paginatedInstallmentsList(
         page,
@@ -30,7 +31,8 @@ export default async function LoadInstallmentsList({
         search,
         sortBy,
         sortDir,
-        accountId
+        accountId,
+        userId,
     );
 
     return <InstallmentsList
