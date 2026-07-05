@@ -4,7 +4,6 @@ import {
     IRichTableData, IRichTableSort
 } from "@dashboard/components/table/interface";
 import { Box, Button, NumberFormatter, Select, Tooltip } from "@mantine/core";
-import { Installment } from "@prisma/client";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -14,14 +13,7 @@ import { globalConfigAtom } from "utils/stores/configs";
 import { ListComponentProps } from "utils/types/generalComponentTypes";
 import GenerateMonthlyInstallments from "./GenerateMonthlyInstallments";
 import InstallmentListAction from "./InstallmentListAction";
-
-type InstallmentListRow = Installment & {
-    account: {
-        id: number;
-        code: string;
-        user: { fullName: string };
-    };
-};
+import { InstallmentListRow } from "./InstallmentDetailsModal";
 
 type props = ListComponentProps & {
     payments: string,

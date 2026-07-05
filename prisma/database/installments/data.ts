@@ -64,10 +64,16 @@ export async function paginatedInstallmentsList(
                     account: {
                         include: {
                             user: {
-                                select: { id: true, fullName: true }
-                            }
-                        }
-                    }
+                                select: { id: true, fullName: true },
+                            },
+                        },
+                    },
+                    approvedBy: {
+                        select: { id: true, fullName: true },
+                    },
+                    installmentAmount: {
+                        select: { id: true, amount: true },
+                    },
                 },
                 take: limit ?? ITEMS_PER_PAGE,
                 skip: (page - 1) * (limit ?? ITEMS_PER_PAGE),
