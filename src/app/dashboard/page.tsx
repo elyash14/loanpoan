@@ -1,9 +1,19 @@
-import styles from "./page.module.css";
+import PagePaper from "@dashboard/components/paper/PagePaper";
+import LoadDashboardOverview from "@dashboard/components/overview/LoadDashboardOverview";
+import DashboardSkeleton from "@dashboard/components/overview/DashboardSkeleton";
+import { IconDashboard } from "@tabler/icons-react";
+import { Suspense } from "react";
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <h1>Hello world!</h1>
-    </main>
-  );
+export default function DashboardPage() {
+    return (
+        <PagePaper>
+            <h2>
+                <IconDashboard />
+                &nbsp;Dashboard
+            </h2>
+            <Suspense fallback={<DashboardSkeleton />}>
+                <LoadDashboardOverview />
+            </Suspense>
+        </PagePaper>
+    );
 }

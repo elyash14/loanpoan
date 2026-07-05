@@ -13,26 +13,26 @@ export async function paginatedPaymentsList(
     sortBy?: string,
     sortDir?: RichTableSortDir) {
     try {
-        let where = {};
+        const now = new Date();
+        let where: Record<string, unknown> = {};
 
         if (loanId) {
-            where = {
-                loanId
-            }
+            where.loanId = loanId;
         }
         if (status === 'Not Paid') {
-            where = {
-                paidAt: null
-            }
+            where.paidAt = null;
         }
         if (status === 'Paid') {
-            where = {
-                paidAt: { not: null }
-            }
+            where.paidAt = { not: null };
+        }
+        if (status === 'Overdue') {
+            where.paidAt = null;
+            where.dueDate = { lt: now };
         }
 
         if (search) {
             where = {
+                ...where,
                 loan: {
                     account: {
                         OR: [

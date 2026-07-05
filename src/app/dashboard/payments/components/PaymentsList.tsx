@@ -122,11 +122,11 @@ const PaymentsList = (props: props) => {
       handleSearch={handleSearch}
       actions={
         <Select
-          defaultValue={status}
+          value={status}
           size="xs"
           style={{ float: "right", width: 150, marginRight: 5 }}
-          data={['All', 'Paid', 'Not Paid']}
-          onChange={(_value, option) => handleChangeStatus(option.value)}
+          data={['All', 'Paid', 'Not Paid', 'Overdue']}
+          onChange={(value) => handleChangeStatus(value ?? 'All')}
         />
       }
       bottomActions={loanId ?

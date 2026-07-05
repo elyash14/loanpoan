@@ -124,11 +124,11 @@ const InstallmentsList = (props: props) => {
             actions={
                 <Box style={{ display: 'flex', gap: 5 }}>
                     <Select
-                        defaultValue={status}
+                        value={status}
                         size="xs"
                         style={{ float: "right", width: 150, marginRight: 5 }}
-                        data={['All', 'Paid', 'Not Paid']}
-                        onChange={(_value, option) => handleChangeStatus(option.value)}
+                        data={['All', 'Paid', 'Not Paid', 'Overdue']}
+                        onChange={(value) => handleChangeStatus(value ?? 'All')}
                     />
                     <GenerateMonthlyInstallments />
                 </Box>

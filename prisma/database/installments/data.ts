@@ -15,6 +15,7 @@ export async function paginatedInstallmentsList(
     accountId?: number,
     userId?: number) {
     try {
+        const now = new Date();
         let where: Record<string, unknown> = {};
 
         if (accountId) {
@@ -33,6 +34,10 @@ export async function paginatedInstallmentsList(
         }
         if (status === 'Paid') {
             where.paidAt = { not: null };
+        }
+        if (status === 'Overdue') {
+            where.paidAt = null;
+            where.dueDate = { lt: now };
         }
 
         // if (search) {

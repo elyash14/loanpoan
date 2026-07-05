@@ -11,8 +11,10 @@ export async function paginatedLoanList(
   sortBy?: string,
   sortDir?: RichTableSortDir,
   accountId?: number,
-  userId?: number) {
+  userId?: number,
+  status?: string) {
   try {
+    const now = new Date();
     let where: Record<string, unknown> = {};
 
     if (accountId) {
@@ -21,6 +23,13 @@ export async function paginatedLoanList(
 
     if (userId) {
       where.account = { userId };
+    }
+
+    if (status === 'Overdue') {
+      where.status = 'IN_PROGRESS';
+      where.payments = {
+        some: { paidAt: null, dueDate: { lt: now } },
+      };
     }
 
     if (search) {

@@ -4,7 +4,7 @@ import {
     IRichTableData, IRichTableSort
 } from "@dashboard/components/table/interface";
 import { statusValue } from "@database/loan/utils";
-import { NumberFormatter, Tooltip } from "@mantine/core";
+import { NumberFormatter, Select, Tooltip } from "@mantine/core";
 import { Loan, LoanStatus } from "@prisma/client";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
@@ -24,9 +24,9 @@ type LoanListRow = Loan & {
     };
 };
 
-type props = ListComponentProps & { loans: string }
+type props = ListComponentProps & { loans: string; status: string }
 
-const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, search }: props) => {
+const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, search, status }: props) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -55,6 +55,13 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
     const handleSearch = (search: string) => {
         const params = new URLSearchParams(searchParams);
         params.set('search', search);
+        params.delete('page');
+        router.replace(`${pathname}?${params.toString()}`);
+    }
+
+    const handleChangeStatus = (value: string) => {
+        const params = new URLSearchParams(searchParams);
+        params.set('status', value);
         params.delete('page');
         router.replace(`${pathname}?${params.toString()}`);
     }
@@ -134,6 +141,15 @@ const LoanList = ({ loans, totalPages, currentPage, pageSize, sortBy, sortDir, s
             handleSort={handleSort}
             search={search}
             handleSearch={handleSearch}
+            actions={
+                <Select
+                    value={status}
+                    size="xs"
+                    style={{ float: "right", width: 150, marginRight: 5 }}
+                    data={['All', 'Overdue']}
+                    onChange={(value) => handleChangeStatus(value ?? 'All')}
+                />
+            }
         />
     );
 };
