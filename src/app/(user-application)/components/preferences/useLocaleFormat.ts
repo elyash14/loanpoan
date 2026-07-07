@@ -1,8 +1,7 @@
 'use client';
 
-import dayjs from "dayjs";
-import "dayjs/locale/fa";
 import { useMemo } from "react";
+import { formatJalaliDate } from "utils/formatJalaliDate";
 import {
     formatMoney as formatMoneyBase,
     formatNumber as formatNumberBase,
@@ -16,19 +15,19 @@ export function useLocaleFormat() {
     const { locale } = useUserPreferences();
 
     return useMemo(() => {
+        const formatLocale = locale as FormatLocale;
         const formatNumber = (value: string | number | null | undefined) =>
-            formatNumberBase(value, locale as FormatLocale);
+            formatNumberBase(value, formatLocale);
         const formatMoney = (value: string | number | null | undefined) =>
-            formatMoneyBase(value, locale as FormatLocale);
+            formatMoneyBase(value, formatLocale);
         const formatPercent = (value: string | number | null | undefined) =>
-            formatPercentBase(value, locale as FormatLocale);
+            formatPercentBase(value, formatLocale);
         const formatDigits = (value: string | number) =>
-            toLocaleDigits(value, locale as FormatLocale);
-        const formatDate = (value: string | Date, format = "YYYY-MM-DD") =>
-            toLocaleDigits(
-                dayjs(value).locale(locale === "fa" ? "fa" : "en").format(format),
-                locale as FormatLocale,
-            );
+            toLocaleDigits(value, formatLocale);
+        const formatDate = (
+            value: string | Date | null | undefined,
+            format = "YYYY-MM-DD",
+        ) => formatJalaliDate(value, format, formatLocale);
 
         return {
             locale,

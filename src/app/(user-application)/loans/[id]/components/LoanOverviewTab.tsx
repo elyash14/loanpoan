@@ -3,6 +3,7 @@
 import { Card, CardContent } from "../../../components/ui/card";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
+import { formatJalaliDate, getJalaliYearMonth } from "utils/formatJalaliDate";
 import { cn } from "utils/cn";
 import type { LoanDetailData } from "./types";
 
@@ -11,29 +12,6 @@ type Props = {
 };
 
 type PaymentStatus = "paid" | "unpaid" | "overdue";
-
-function normalizeDigits(value: string) {
-    return value
-        .replaceAll("۰", "0")
-        .replaceAll("۱", "1")
-        .replaceAll("۲", "2")
-        .replaceAll("۳", "3")
-        .replaceAll("۴", "4")
-        .replaceAll("۵", "5")
-        .replaceAll("۶", "6")
-        .replaceAll("۷", "7")
-        .replaceAll("۸", "8")
-        .replaceAll("۹", "9");
-}
-
-function getPersianYearMonth(date: Date) {
-    const formatted = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-        year: "numeric",
-        month: "numeric",
-    }).format(date);
-    const [rawYear, rawMonth] = normalizeDigits(formatted).split("/");
-    return { year: Number(rawYear), month: Number(rawMonth) };
-}
 
 function getSeason(month: number) {
     if (month <= 3) return "spring" as const;
@@ -52,16 +30,12 @@ export default function LoanOverviewTab({ loan }: Props) {
         autumn: t("loans.seasonAutumn"),
         winter: t("loans.seasonWinter"),
     } as const;
-    const monthFormatter = new Intl.DateTimeFormat(
-        locale === "fa" ? "fa-IR-u-ca-persian" : "en-US-u-ca-persian",
-        { month: "long" },
-    );
 
     const paymentsWithSeason = loan.payments.map((payment) => {
         const dueDate = new Date(payment.dueDate);
-        const { year, month } = getPersianYearMonth(dueDate);
+        const { year, month } = getJalaliYearMonth(dueDate);
         const season = getSeason(month);
-        const rawMonth = monthFormatter.format(dueDate).replace(/\./g, "").trim();
+        const rawMonth = formatJalaliDate(dueDate, "MMMM", locale);
         const status: PaymentStatus = payment.paidAt
             ? "paid"
             : dueDate < now
