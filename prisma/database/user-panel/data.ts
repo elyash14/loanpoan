@@ -202,22 +202,80 @@ export async function getUserAccountIfOwned(userId: number, accountId: number) {
 export async function getUserLoanIfOwned(userId: number, loanId: number) {
     const loan = await prisma.loan.findFirst({
         where: { id: loanId, account: { userId } },
-        include: {
-            account: { select: { id: true, code: true } },
-            _count: {
-                select: {
-                    payments: { where: { paidAt: { not: null } } },
-                },
-            },
+        select: {
+            id: true,
+            description: true,
+            amount: true,
+            status: true,
+            paymentCount: true,
+            createdAt: true,
+            startedAt: true,
+            finishedAt: true,
+            account: { select: { id: true, code: true, name: true } },
             payments: {
-                where: { paidAt: null },
+                select: {
+                    id: true,
+                    amount: true,
+                    dueDate: true,
+                    paidAt: true,
+                },
                 orderBy: { dueDate: "asc" },
-                take: 1,
             },
         },
     });
     if (!loan) notFound();
-    return loan;
+
+    const now = new Date();
+    const payments = loan.payments;
+    const paidPayments = payments.filter((row) => row.paidAt);
+    const unpaidPayments = payments.filter((row) => !row.paidAt);
+    const overduePayments = payments.filter((row) => !row.paidAt && row.dueDate < now);
+
+    const paidAmount = paidPayments.reduce((sum, row) => sum + Number(row.amount), 0);
+    const unpaidAmount = unpaidPayments.reduce((sum, row) => sum + Number(row.amount), 0);
+    const overdueAmount = overduePayments.reduce((sum, row) => sum + Number(row.amount), 0);
+    const remainingAmount = unpaidAmount;
+    const paidCount = paidPayments.length;
+    const progressPercent = loan.paymentCount > 0
+        ? Math.min(100, Math.round((paidCount / loan.paymentCount) * 100))
+        : 0;
+
+    const timeline = payments
+        .map((row) => {
+            const overdue = !row.paidAt && row.dueDate < now;
+            const at = row.paidAt ?? row.dueDate;
+            return {
+                id: `payment-${row.id}`,
+                type: row.paidAt ? "payment-paid" : overdue ? "payment-overdue" : "payment-upcoming",
+                at: at.toISOString(),
+                amount: decimalToString(row.amount),
+                href: `/payments?loan=${loan.id}`,
+            };
+        })
+        .sort((a, b) => +new Date(b.at) - +new Date(a.at))
+        .slice(0, 8);
+
+    return {
+        ...loan,
+        stats: {
+            paidCount,
+            unpaidCount: unpaidPayments.length,
+            overdueCount: overduePayments.length,
+            paidAmount: String(Math.round(paidAmount)),
+            unpaidAmount: String(Math.round(unpaidAmount)),
+            overdueAmount: String(Math.round(overdueAmount)),
+            remainingAmount: String(Math.round(remainingAmount)),
+            progressPercent,
+        },
+        charts: {
+            statusBreakdown: {
+                paid: paidPayments.length,
+                unpaid: unpaidPayments.length,
+                overdue: overduePayments.length,
+            },
+        },
+        timeline,
+    };
 }
 
 export async function paginatedUserAccounts(
