@@ -11,6 +11,8 @@ export type PageSearchParams = {
     loanId?: string;
     loan?: string;
     status?: string;
+    from?: string;
+    fromAccount?: string;
 };
 
 export type ListPage = {

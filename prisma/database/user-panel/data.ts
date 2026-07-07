@@ -277,7 +277,7 @@ export async function getUserAccountIfOwned(userId: number, accountId: number) {
                 at: when.toISOString(),
                 type: row.paidAt ? "installment-paid" : overdue ? "installment-overdue" : "installment-due",
                 amount: decimalToString(row.amount),
-                href: `/installments?account=${accountId}`,
+                href: `/installments?account=${accountId}&from=account&fromAccount=${accountId}`,
             };
         }),
         ...latestPayments.map((row) => {
@@ -467,6 +467,35 @@ export async function paginatedUserInstallments(
     return paginatedInstallmentsList(
         page, limit, status, undefined, search, sortBy, sortDir, accountId, userId,
     );
+}
+
+export async function getUserAccountFilterOptions(userId: number) {
+    return prisma.account.findMany({
+        where: { userId, deletedAt: null },
+        select: { id: true, code: true, name: true, installmentFactor: true },
+        orderBy: { code: "asc" },
+    });
+}
+
+export async function getUserInstallmentsSummary(userId: number, accountId?: number) {
+    const now = new Date();
+    const baseWhere = {
+        account: { userId },
+        ...(accountId ? { accountId } : {}),
+    };
+
+    const [total, paid, overdue] = await Promise.all([
+        prisma.installment.count({ where: baseWhere }),
+        prisma.installment.count({ where: { ...baseWhere, paidAt: { not: null } } }),
+        prisma.installment.count({
+            where: { ...baseWhere, paidAt: null, dueDate: { lt: now } },
+        }),
+    ]);
+
+    const unpaid = total - paid;
+    const upcoming = unpaid - overdue;
+
+    return { total, paid, unpaid, overdue, upcoming };
 }
 
 export async function paginatedUserPayments(

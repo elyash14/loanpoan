@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function TelegramBackButton() {
+type Props = {
+    href?: string;
+};
+
+export default function TelegramBackButton({ href }: Props) {
     const router = useRouter();
 
     useEffect(() => {
@@ -11,14 +15,20 @@ export default function TelegramBackButton() {
         if (!tg) return;
 
         tg.BackButton.show();
-        const handler = () => router.back();
+        const handler = () => {
+            if (href) {
+                router.push(href);
+            } else {
+                router.back();
+            }
+        };
         tg.BackButton.onClick(handler);
 
         return () => {
             tg.BackButton.offClick(handler);
             tg.BackButton.hide();
         };
-    }, [router]);
+    }, [router, href]);
 
     return null;
 }

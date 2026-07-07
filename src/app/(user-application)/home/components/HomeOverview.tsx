@@ -70,7 +70,7 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
     const quickActions = [
         { href: "/accounts", labelKey: "pages.accounts" as const, icon: Wallet },
         { href: "/loans", labelKey: "pages.loans" as const, icon: LoanIcon },
-        { href: "/installments", labelKey: "pages.installments" as const, icon: CalendarClock },
+        { href: "/installments?from=home", labelKey: "pages.installments" as const, icon: CalendarClock },
         { href: "/payments", labelKey: "pages.payments" as const, icon: WalletCards },
     ];
 
@@ -130,7 +130,7 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
             </Card>
 
             {hasNotice ? (
-                <Link href="/installments" className="block">
+                <Link href="/installments?from=home" className="block">
                     <Card className="border-destructive/30 transition-colors hover:bg-destructive/5">
                         <CardContent className="space-y-2 py-4">
                             {data.notice.overdueCount > 0 ? (

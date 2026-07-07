@@ -10,7 +10,7 @@ export default function MorePage() {
 
     const links = [
         {
-            href: "/installments",
+            href: "/installments?from=more",
             labelKey: "more.installments" as const,
             descKey: "more.installmentsDesc" as const,
             icon: Calendar,

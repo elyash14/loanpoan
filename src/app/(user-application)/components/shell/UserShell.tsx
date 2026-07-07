@@ -53,7 +53,7 @@ export default function UserShell({
                 <div className="mx-auto flex h-[var(--shell-header-height)] w-full max-w-lg items-center gap-3 px-4">
                     {showBack ? (
                         <>
-                            <TelegramBackButton />
+                            <TelegramBackButton href={backHref} />
                             <Link
                                 href={backHref}
                                 aria-label={t("profile.back")}
