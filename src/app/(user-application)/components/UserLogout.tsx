@@ -1,12 +1,21 @@
 'use client';
 
 import { logout } from "@database/user/actions";
-import { Button } from "./ui/button";
+import { LogOut } from "lucide-react";
 
-export default function UserLogout() {
+type Props = {
+    label?: string;
+};
+
+export default function UserLogout({ label = "Log out" }: Props) {
     return (
-        <Button variant="outline" className="w-full" onClick={() => logout()}>
-            Log out
-        </Button>
+        <button
+            type="button"
+            onClick={() => logout()}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/15 active:bg-destructive/20"
+        >
+            <LogOut className="h-4 w-4 shrink-0" />
+            {label}
+        </button>
     );
 }

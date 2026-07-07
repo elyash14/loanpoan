@@ -39,7 +39,9 @@ model User {
     cardNumber    String?
     accountNumber String?
     avatar        String?
+    profileColor  String?       @default("#3B82F6")
     createdAt     DateTime      @default(now())
+    lastLoginAt   DateTime?
     deletedAt     DateTime?
     role          Role          @default(USER)
     telegramId       BigInt?       @unique

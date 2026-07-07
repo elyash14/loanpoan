@@ -1,9 +1,12 @@
 'use client';
 
 import BottomNav from "./BottomNav";
+import TelegramBackButton from "../telegram/TelegramBackButton";
 import { cn } from "utils/cn";
 import type { MessageKey } from "../../i18n";
 import { useUserPreferences } from "../preferences/UserPreferencesProvider";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { ReactNode } from "react";
 
 type Props = {
@@ -13,6 +16,8 @@ type Props = {
     hideNav?: boolean;
     description?: string;
     descriptionKey?: MessageKey;
+    showBack?: boolean;
+    backHref?: string;
 };
 
 export default function UserShell({
@@ -22,6 +27,8 @@ export default function UserShell({
     hideNav,
     description,
     descriptionKey,
+    showBack = false,
+    backHref = "/more",
 }: Props) {
     const { t } = useUserPreferences();
     const pageTitle = titleKey ? t(titleKey) : title ?? t("app.name");
@@ -44,12 +51,29 @@ export default function UserShell({
                 )}
             >
                 <div className="mx-auto flex h-[var(--shell-header-height)] w-full max-w-lg items-center gap-3 px-4">
-                    <div
-                        aria-hidden
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] text-xs font-bold tracking-tight text-[var(--color-primary-foreground)] shadow-[inset_0_1px_0_hsl(0_0%_100%_/0.2)]"
-                    >
-                        NF
-                    </div>
+                    {showBack ? (
+                        <>
+                            <TelegramBackButton />
+                            <Link
+                                href={backHref}
+                                aria-label={t("profile.back")}
+                                className={cn(
+                                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)]",
+                                    "border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-foreground)]",
+                                    "transition-colors hover:bg-[var(--color-muted)]",
+                                )}
+                            >
+                                <ChevronLeft className="h-5 w-5 rtl-flip" strokeWidth={2} />
+                            </Link>
+                        </>
+                    ) : (
+                        <div
+                            aria-hidden
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] text-xs font-bold tracking-tight text-[var(--color-primary-foreground)] shadow-[inset_0_1px_0_hsl(0_0%_100%_/0.2)]"
+                        >
+                            NF
+                        </div>
+                    )}
                     <div className="min-w-0 flex-1">
                         <p className="truncate text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-muted-foreground)]">
                             {t("app.name")}

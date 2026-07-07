@@ -1,6 +1,6 @@
 import { createSession } from "utils/auth/session";
 import { validateTelegramInitData } from "utils/auth/telegram";
-import { getUserByTelegramId } from "@database/user/data";
+import { getUserByTelegramId, recordUserLastLogin } from "@database/user/data";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -21,6 +21,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ code: "NOT_LINKED" }, { status: 403 });
     }
 
+    await recordUserLastLogin(user.id);
     await createSession(user, "telegram");
 
     return NextResponse.json({ ok: true, userId: user.id });

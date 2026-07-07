@@ -494,7 +494,10 @@ export async function getUserProfile(userId: number) {
             accountNumber: true,
             telegramId: true,
             telegramUsername: true,
+            avatar: true,
+            profileColor: true,
             createdAt: true,
+            lastLoginAt: true,
         },
     });
     if (!user) notFound();

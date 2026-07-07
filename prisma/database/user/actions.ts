@@ -10,7 +10,7 @@ import { LoginFormResponseType, loginValidatorSchema } from "utils/form-validati
 import { ChangePasswordResponseType, changePasswordValidationSchema } from "utils/form-validations/user/changePasswordValidation";
 import { CreateUserResponseType, createUserValidationSchemaOnTheServer } from "utils/form-validations/user/createUserValidation";
 import { editUserValidationSchemaOnTheServer } from "utils/form-validations/user/editUserValidation";
-import { getUserByEmail } from "./data";
+import { getUserByEmail, recordUserLastLogin } from "./data";
 
 export async function createUser(formData: FormData): Promise<CreateUserResponseType> {
     // validate the form data on the server
@@ -193,6 +193,7 @@ export async function login(
         };
 
         // create user session
+        await recordUserLastLogin(user.id);
         await createSession(user)
 
         if (user.role === 'ADMIN') {

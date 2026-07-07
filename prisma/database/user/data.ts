@@ -278,3 +278,10 @@ export async function getUserRelatedData(userId: number) {
         throw new Error("Failed to fetch the user related data");
     }
 }
+
+export async function recordUserLastLogin(userId: number) {
+    await prisma.user.update({
+        where: { id: userId },
+        data: { lastLoginAt: new Date() },
+    });
+}
