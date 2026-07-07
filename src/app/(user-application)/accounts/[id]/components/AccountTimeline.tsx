@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
+import Money from "../../../components/preferences/Money";
 import Link from "next/link";
 import type { AccountDetailData } from "./types";
 
@@ -35,7 +36,7 @@ function activityLabel(type: string, t: (k: string) => string) {
 
 export default function AccountTimeline({ account }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatDate } = useLocaleFormat();
+    const { formatDate } = useLocaleFormat();
 
     return (
         <Card>
@@ -62,7 +63,7 @@ export default function AccountTimeline({ account }: Props) {
                                     {formatDate(event.at, "YYYY-MM-DD HH:mm")}
                                 </p>
                             </div>
-                            <p className="pt-0.5 text-sm font-semibold tabular-nums">{formatMoney(event.amount)}</p>
+                            <Money value={event.amount} className="pt-0.5 text-sm font-semibold" />
                         </Link>
                     )) : (
                         <p className="text-sm text-muted-foreground">{t("accounts.noActivity")}</p>

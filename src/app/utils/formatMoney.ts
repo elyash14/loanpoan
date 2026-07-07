@@ -2,8 +2,12 @@ export type FormatLocale = "en" | "fa";
 
 const CURRENCY: Record<FormatLocale, string> = {
     en: "IRT",
-    fa: "ریال",
+    fa: "تومان",
 };
+
+export function getCurrencyLabel(locale: FormatLocale = "en"): string {
+    return CURRENCY[locale];
+}
 
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 

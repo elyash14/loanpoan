@@ -5,6 +5,7 @@ import { ChevronRight, Wallet } from "lucide-react";
 import { LoanIcon } from "../../components/icons/LoanIcon";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
+import Money from "../../components/preferences/Money";
 import Link from "next/link";
 
 export type AccountCardData = {
@@ -26,7 +27,7 @@ type Props = {
 
 export default function AccountCard({ account }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatDate } = useLocaleFormat();
+    const { formatDate } = useLocaleFormat();
     const balance = Number(account.balance ?? 0);
     const isPositive = balance > 0;
     const hasActiveLoan = account.loans.some((loan) => loan.status === "IN_PROGRESS");
@@ -88,14 +89,13 @@ export default function AccountCard({ account }: Props) {
                 <div className="relative mt-4 border-t border-[var(--color-border)]/60 pt-4">
                     <p className="text-xs text-[var(--color-muted-foreground)]">{t("common.balance")}</p>
                     <div className="mt-1 flex items-center justify-between gap-3">
-                        <p
+                        <Money
+                            value={account.balance}
                             className={cn(
-                                "text-xl font-semibold tracking-tight tabular-nums",
+                                "text-xl font-semibold tracking-tight",
                                 isPositive ? "text-[var(--color-foreground)]" : "text-[var(--color-muted-foreground)]",
                             )}
-                        >
-                            {formatMoney(account.balance)}
-                        </p>
+                        />
                         {hasActiveLoan ? (
                             <span
                                 className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-[var(--color-muted-foreground)]"

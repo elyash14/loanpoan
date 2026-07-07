@@ -4,6 +4,7 @@ import { Badge } from "../../components/ui/badge";
 import { Card, CardContent } from "../../components/ui/card";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
+import Money from "../../components/preferences/Money";
 import SimplePagination from "../../components/SimplePagination";
 import { useMemo } from "react";
 import dayjs from "dayjs";
@@ -33,7 +34,7 @@ export default function InstallmentsList({
     installments, totalPages, currentPage, searchParams,
 }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatDate } = useLocaleFormat();
+    const { formatDate } = useLocaleFormat();
     const rows = useMemo(() => JSON.parse(installments) as InstallmentRow[], [installments]);
 
     if (!rows.length) {
@@ -59,7 +60,7 @@ export default function InstallmentsList({
                                     {status}
                                 </Badge>
                             </div>
-                            <p className="font-semibold">{formatMoney(row.amount)}</p>
+                            <Money value={row.amount} className="font-semibold" />
                         </CardContent>
                     </Card>
                 );

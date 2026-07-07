@@ -340,8 +340,9 @@ export async function getUserLoanIfOwned(userId: number, loanId: number) {
     const now = new Date();
     const payments = loan.payments;
     const paidPayments = payments.filter((row) => row.paidAt);
-    const unpaidPayments = payments.filter((row) => !row.paidAt);
     const overduePayments = payments.filter((row) => !row.paidAt && row.dueDate < now);
+    const unpaidPayments = payments.filter((row) => !row.paidAt);
+    const upcomingUnpaidPayments = payments.filter((row) => !row.paidAt && row.dueDate >= now);
 
     const paidAmount = paidPayments.reduce((sum, row) => sum + Number(row.amount), 0);
     const unpaidAmount = unpaidPayments.reduce((sum, row) => sum + Number(row.amount), 0);
@@ -382,7 +383,7 @@ export async function getUserLoanIfOwned(userId: number, loanId: number) {
         charts: {
             statusBreakdown: {
                 paid: paidPayments.length,
-                unpaid: unpaidPayments.length,
+                unpaid: upcomingUnpaidPayments.length,
                 overdue: overduePayments.length,
             },
         },

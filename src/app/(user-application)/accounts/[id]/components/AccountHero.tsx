@@ -2,6 +2,7 @@
 
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
+import Money from "../../../components/preferences/Money";
 import { LoanIcon } from "../../../components/icons/LoanIcon";
 import { Badge } from "../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
@@ -13,7 +14,7 @@ type Props = {
 
 export default function AccountHero({ account }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatNumber, formatDigits, formatDate } = useLocaleFormat();
+    const { formatNumber, formatDigits, formatDate } = useLocaleFormat();
     const currentLoan = account.loans[0];
     const dateLabel = account.openedAt
         ? formatDate(account.openedAt)
@@ -38,8 +39,8 @@ export default function AccountHero({ account }: Props) {
             <CardContent className="space-y-4">
                 <div>
                     <p className="text-xs text-muted-foreground">{t("common.balance")}</p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">
-                        {formatMoney(account.balance)}
+                    <p className="mt-1 text-3xl font-bold tracking-tight">
+                        <Money value={account.balance} />
                     </p>
                 </div>
 

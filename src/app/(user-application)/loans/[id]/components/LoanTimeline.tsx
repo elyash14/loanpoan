@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
+import Money from "../../../components/preferences/Money";
 import Link from "next/link";
 import type { LoanDetailData } from "./types";
 
@@ -18,7 +19,7 @@ function eventLabel(type: string, t: (key: string) => string) {
 
 export default function LoanTimeline({ loan }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatDate } = useLocaleFormat();
+    const { formatDate } = useLocaleFormat();
     return (
         <Card>
             <CardHeader>
@@ -44,7 +45,7 @@ export default function LoanTimeline({ loan }: Props) {
                                     {formatDate(event.at, "YYYY-MM-DD HH:mm")}
                                 </p>
                             </div>
-                            <p className="pt-0.5 text-sm font-semibold tabular-nums">{formatMoney(event.amount)}</p>
+                            <Money value={event.amount} className="pt-0.5 text-sm font-semibold" />
                         </Link>
                     )) : (
                         <p className="text-sm text-muted-foreground">{t("loans.noPaymentsYet")}</p>

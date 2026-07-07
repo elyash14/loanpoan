@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui
 import { LoanIcon } from "../../../components/icons/LoanIcon";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
+import Money from "../../../components/preferences/Money";
 import type { LoanDetailData } from "./types";
 
 type Props = {
@@ -13,7 +14,7 @@ type Props = {
 
 export default function LoanHero({ loan }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatPercent, formatDate } = useLocaleFormat();
+    const { formatPercent, formatDate } = useLocaleFormat();
     const statusLabel = loan.status === "IN_PROGRESS"
         ? t("status.inProgress")
         : loan.status === "FINISHED"
@@ -42,11 +43,11 @@ export default function LoanHero({ loan }: Props) {
             <CardContent className="space-y-3">
                 <div>
                     <p className="text-xs text-muted-foreground">{t("loans.amount")}</p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">
-                        {formatMoney(loan.amount)}
+                    <p className="mt-1 text-3xl font-bold tracking-tight">
+                        <Money value={loan.amount} />
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground tabular-nums">
-                        {t("loans.kpiRemainingAmount")}: {formatMoney(loan.stats.remainingAmount)}
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {t("loans.kpiRemainingAmount")}: <Money value={loan.stats.remainingAmount} />
                     </p>
                 </div>
                 <div className="rounded-md bg-muted/30 px-3 py-2">

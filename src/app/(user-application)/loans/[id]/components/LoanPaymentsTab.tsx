@@ -4,6 +4,7 @@ import { Card, CardContent } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
+import Money from "../../../components/preferences/Money";
 import type { LoanDetailData } from "./types";
 
 type PaymentFilter = "all" | "paid" | "unpaid" | "overdue";
@@ -16,7 +17,7 @@ type Props = {
 
 export default function LoanPaymentsTab({ loan, filter, onFilterChange }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatDate } = useLocaleFormat();
+    const { formatDate } = useLocaleFormat();
     const now = new Date();
 
     const withStatus = loan.payments.map((payment) => {
@@ -69,7 +70,7 @@ export default function LoanPaymentsTab({ loan, filter, onFilterChange }: Props)
                     <CardContent className="space-y-2 py-3">
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold tabular-nums">{formatMoney(payment.amount)}</p>
+                                <Money value={payment.amount} className="text-sm font-semibold" />
                                 <p className="text-xs text-muted-foreground">
                                     {t("loans.due", { date: formatDate(payment.dueDate) })}
                                 </p>

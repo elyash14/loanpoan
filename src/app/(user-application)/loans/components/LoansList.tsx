@@ -1,13 +1,14 @@
 'use client';
 
-import { Badge } from "../../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
+import SimplePagination from "../../components/SimplePagination";
+import Money from "../../components/preferences/Money";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
-import Link from "next/link";
-import SimplePagination from "../../components/SimplePagination";
-import { useMemo } from "react";
-import { ChevronRight } from "lucide-react";
+import { Badge } from "../../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 
 type LoanRow = {
     id: number;
@@ -26,7 +27,7 @@ type Props = {
 
 export default function LoansList({ loans, totalPages, currentPage, searchParams }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatNumber, formatDate, formatDigits } = useLocaleFormat();
+    const { formatNumber, formatDate, formatDigits } = useLocaleFormat();
     const rows = useMemo(() => JSON.parse(loans) as LoanRow[], [loans]);
     const activeLoans = rows.filter((row) => row.status === "IN_PROGRESS").length;
     const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount), 0);
@@ -63,17 +64,19 @@ export default function LoansList({ loans, totalPages, currentPage, searchParams
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 gap-2 pt-3">
-                    <div className="rounded-lg bg-muted/25 px-2.5 py-2">
-                        <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{t("loans.summaryTotal")}</p>
-                        <p className="text-lg font-semibold tabular-nums leading-6">{formatNumber(rows.length)}</p>
+                    <div className="col-span-1 flex min-w-0 flex-col gap-2">
+                        <div className="rounded-lg bg-muted/25 px-2.5 py-2">
+                            <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{t("loans.summaryTotal")}</p>
+                            <p className="text-lg font-semibold tabular-nums leading-6">{formatNumber(rows.length)}</p>
+                        </div>
+                        <div className="rounded-lg bg-muted/25 px-2.5 py-2">
+                            <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{t("loans.summaryActive")}</p>
+                            <p className="text-lg font-semibold tabular-nums leading-6">{formatNumber(activeLoans)}</p>
+                        </div>
                     </div>
-                    <div className="rounded-lg bg-muted/25 px-2.5 py-2">
-                        <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{t("loans.summaryActive")}</p>
-                        <p className="text-lg font-semibold tabular-nums leading-6">{formatNumber(activeLoans)}</p>
-                    </div>
-                    <div className="rounded-lg bg-muted/25 px-2.5 py-2">
+                    <div className="col-span-2 flex min-w-0 flex-col justify-center rounded-lg bg-muted/25 px-2.5 py-2">
                         <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{t("loans.summaryAmount")}</p>
-                        <p className="truncate text-lg font-semibold tabular-nums leading-6">{formatMoney(totalAmount)}</p>
+                        <Money value={totalAmount} className="mt-0.5 text-xl font-semibold leading-tight" />
                     </div>
                 </CardContent>
             </Card>
@@ -112,7 +115,7 @@ export default function LoansList({ loans, totalPages, currentPage, searchParams
                                 </Badge>
                             </div>
                             <div className="flex items-center justify-between gap-2 border-t border-border/40 pt-2">
-                                <p className="shrink-0 text-2xl font-bold tabular-nums tracking-tight">{formatMoney(loan.amount)}</p>
+                                <Money value={loan.amount} className="shrink-0 text-2xl font-bold tracking-tight" />
                                 <ChevronRight className="h-4 w-4 text-muted-foreground rtl-flip transition-transform duration-200 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 group-hover:text-(--color-primary)" />
                             </div>
                         </CardContent>

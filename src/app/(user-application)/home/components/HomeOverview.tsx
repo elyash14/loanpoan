@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { LoanIcon } from "../../components/icons/LoanIcon";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
+import Money from "../../components/preferences/Money";
 import Link from "next/link";
 import { useMemo } from "react";
 import {
@@ -89,8 +90,8 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
                 <CardContent className="space-y-4 pt-5">
                     <div>
                         <p className="text-xs text-muted-foreground">{t("home.totalBalance")}</p>
-                        <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">
-                            {formatMoney(data.totalBalance)}
+                        <p className="mt-1 text-3xl font-bold tracking-tight">
+                            <Money value={data.totalBalance} />
                         </p>
                     </div>
 
@@ -113,8 +114,8 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
                                 <span className="text-muted-foreground">
                                     {formatNumber(data.activeLoan.paidCount)}/{formatNumber(data.activeLoan.paymentCount)}
                                 </span>
-                                <span className="font-medium tabular-nums">
-                                    {t("home.remainingAmount")}: {formatMoney(data.activeLoan.remainingAmount)}
+                                <span className="font-medium">
+                                    {t("home.remainingAmount")}: <Money value={data.activeLoan.remainingAmount} />
                                 </span>
                             </div>
                             <Link
