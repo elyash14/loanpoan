@@ -1,5 +1,12 @@
 'use client';
 
+import { clearUserPanelAvatar, updateUserPanelProfile } from "@database/user-panel/actions";
+import { Camera, ChevronRight, KeyRound, type LucideIcon } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { cn } from "utils/cn";
+import UserLogout from "../../components/UserLogout";
+import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
 import UserAvatar from "../../components/profile/UserAvatar";
 import {
     SUGGESTED_PROFILE_COLORS,
@@ -7,15 +14,8 @@ import {
     normalizeProfileColor,
 } from "../../components/profile/profileColors";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import UserLogout from "../../components/UserLogout";
-import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
-import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
-import { clearUserPanelAvatar, updateUserPanelProfile } from "@database/user-panel/actions";
 import ProfileAvatarDrawer from "./ProfileAvatarDrawer";
 import ProfilePasswordDrawer from "./ProfilePasswordDrawer";
-import { cn } from "utils/cn";
-import { Camera, ChevronRight, KeyRound, Trash2, type LucideIcon } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
 
 type Profile = {
     id: number;
@@ -42,39 +42,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
             <span className="text-sm text-muted-foreground">{label}</span>
             <span className="text-end text-sm font-medium break-all">{value}</span>
         </div>
-    );
-}
-
-function AvatarIconButton({
-    icon: Icon,
-    label,
-    onClick,
-    disabled = false,
-    destructive = false,
-}: {
-    icon: LucideIcon;
-    label: string;
-    onClick: () => void;
-    disabled?: boolean;
-    destructive?: boolean;
-}) {
-    return (
-        <button
-            type="button"
-            aria-label={label}
-            title={label}
-            onClick={onClick}
-            disabled={disabled}
-            className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-full border transition-colors",
-                "disabled:pointer-events-none disabled:opacity-40",
-                destructive
-                    ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15"
-                    : "border-[var(--color-border)] bg-[var(--color-muted)]/50 text-[var(--color-foreground)] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-primary)]/12 hover:text-[var(--color-primary)]",
-            )}
-        >
-            <Icon className="h-5 w-5" strokeWidth={1.75} />
-        </button>
     );
 }
 
@@ -171,27 +138,38 @@ export default function ProfileView({ profile, authProvider }: Props) {
         <div className="space-y-4">
             <Card className="overflow-hidden">
                 <CardContent className="flex flex-col items-center gap-3 pt-6 pb-5 text-center">
-                    <UserAvatar
-                        name={user.fullName}
-                        avatar={avatar}
-                        profileColor={profileColor}
-                        size="lg"
-                    />
-
-                    <div className="flex items-center justify-center gap-3">
-                        <AvatarIconButton
-                            icon={Camera}
-                            label={t("profile.changeAvatar")}
+                    <div className="relative">
+                        <UserAvatar
+                            name={user.fullName}
+                            avatar={avatar}
+                            profileColor={profileColor}
+                            size="lg"
+                        />
+                        <button
+                            type="button"
+                            aria-label={t("profile.changeAvatar")}
+                            title={t("profile.changeAvatar")}
                             onClick={() => setAvatarDrawerOpen(true)}
-                        />
-                        <AvatarIconButton
-                            icon={Trash2}
-                            label={t("profile.clearAvatar")}
-                            onClick={handleClearAvatar}
-                            disabled={!avatar || isClearingAvatar}
-                            destructive
-                        />
+                            className={cn(
+                                "absolute -bottom-0.5 -end-0.5 flex h-9 w-9 items-center justify-center rounded-full",
+                                "border-2 border-[var(--color-card)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]",
+                                "shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 active:scale-95",
+                            )}
+                        >
+                            <Camera className="h-4 w-4" strokeWidth={2} />
+                        </button>
                     </div>
+
+                    {avatar ? (
+                        <button
+                            type="button"
+                            onClick={handleClearAvatar}
+                            disabled={isClearingAvatar}
+                            className="text-[11px] font-normal leading-4 text-muted-foreground/80 underline-offset-2 transition-colors hover:text-destructive hover:underline disabled:pointer-events-none disabled:opacity-50"
+                        >
+                            {isClearingAvatar ? t("profile.clearingAvatar") : t("profile.clearAvatar")}
+                        </button>
+                    ) : null}
 
                     {avatarMessage ? (
                         <p className="text-xs text-muted-foreground">{avatarMessage}</p>

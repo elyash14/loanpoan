@@ -1,13 +1,5 @@
 'use client';
 
-import { Badge } from "../../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { LoanIcon } from "../../components/icons/LoanIcon";
-import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
-import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
-import Money from "../../components/preferences/Money";
-import Link from "next/link";
-import { useMemo } from "react";
 import {
     Award,
     CalendarClock,
@@ -15,7 +7,15 @@ import {
     Wallet,
     WalletCards,
 } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
 import { cn } from "utils/cn";
+import { LoanIcon } from "../../components/icons/LoanIcon";
+import Money from "../../components/preferences/Money";
+import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
+import { Badge } from "../../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 
 export type HomeDashboardData = {
     totalBalance: string;
@@ -204,20 +204,18 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
 
             <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground">{t("home.quickActions")}</p>
-                <Card className="p-2">
-                    <div className="grid grid-cols-2 gap-2">
-                        {quickActions.map(({ href, labelKey, icon: Icon }) => (
-                            <Link
-                                key={href}
-                                href={href}
-                                className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-muted/40"
-                            >
-                                <Icon className="h-4 w-4 shrink-0 text-primary" />
-                                <span className="truncate">{t(labelKey)}</span>
-                            </Link>
-                        ))}
-                    </div>
-                </Card>
+                <div className="grid grid-cols-2 gap-2">
+                    {quickActions.map(({ href, labelKey, icon: Icon }) => (
+                        <Link
+                            key={href}
+                            href={href}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-muted/40"
+                        >
+                            <Icon className="h-4 w-4 shrink-0 text-primary" />
+                            <span className="truncate">{t(labelKey)}</span>
+                        </Link>
+                    ))}
+                </div>
             </div>
         </div>
     );
