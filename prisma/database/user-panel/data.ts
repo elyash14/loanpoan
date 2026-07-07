@@ -1,7 +1,6 @@
 "use server";
 
 import prisma from "@database/prisma";
-import { getUserRelatedData } from "@database/user/data";
 import { paginatedLoanList } from "@database/loan/data";
 import { paginatedInstallmentsList } from "@database/installments/data";
 import { paginatedPaymentsList } from "@database/payment/data";
@@ -12,92 +11,205 @@ function decimalToString(value: { toString(): string } | null | undefined): stri
     return value?.toString() ?? "0";
 }
 
-export async function getUserPanelOverview(userId: number) {
-    const related = await getUserRelatedData(userId);
-    const stats = await getUserPanelStats(userId);
-    return { related, stats };
+type DueItem = {
+    amount: { toString(): string };
+    dueDate: Date;
+};
+
+function sumAmount(items: DueItem[]): string {
+    const total = items.reduce((sum, item) => sum + Number(item.amount), 0);
+    return String(Math.round(total));
 }
 
-export async function getUserPanelStats(userId: number) {
-    const now = new Date();
-    const accountWhere = { userId };
-    const overdueUnpaid = { paidAt: null, dueDate: { lt: now } };
-
-    const [
-        loansTotal,
-        paymentsTotal,
-        installmentsTotal,
-        overdueLoansTotal,
-        overduePaymentsTotal,
-        overdueInstallmentsTotal,
-        balanceSum,
-    ] = await Promise.all([
-        prisma.loan.aggregate({
-            _sum: { amount: true },
-            where: { account: accountWhere },
-        }),
-        prisma.payment.aggregate({
-            _sum: { amount: true },
-            where: { loan: { account: accountWhere } },
-        }),
-        prisma.installment.aggregate({
-            _sum: { amount: true },
-            where: { account: accountWhere },
-        }),
-        prisma.loan.aggregate({
-            _sum: { amount: true },
-            where: {
-                status: "IN_PROGRESS",
-                account: accountWhere,
-                payments: { some: overdueUnpaid },
-            },
-        }),
-        prisma.payment.aggregate({
-            _sum: { amount: true },
-            where: { ...overdueUnpaid, loan: { account: accountWhere } },
-        }),
-        prisma.installment.aggregate({
-            _sum: { amount: true },
-            where: { ...overdueUnpaid, account: accountWhere },
-        }),
-        prisma.account.aggregate({
-            _sum: { balance: true },
-            where: { userId, deletedAt: null },
-        }),
-    ]);
-
+function findSoonestDue(items: DueItem[]): { dueDate: string; amount: string } | null {
+    if (!items.length) return null;
+    const soonest = items.reduce((best, item) =>
+        item.dueDate < best.dueDate ? item : best,
+    );
     return {
-        totalBalance: decimalToString(balanceSum._sum.balance),
-        totals: {
-            loans: decimalToString(loansTotal._sum.amount),
-            payments: decimalToString(paymentsTotal._sum.amount),
-            installments: decimalToString(installmentsTotal._sum.amount),
-        },
-        overdue: {
-            loans: decimalToString(overdueLoansTotal._sum.amount),
-            payments: decimalToString(overduePaymentsTotal._sum.amount),
-            installments: decimalToString(overdueInstallmentsTotal._sum.amount),
-        },
+        dueDate: soonest.dueDate.toISOString(),
+        amount: decimalToString(soonest.amount),
     };
 }
 
-export async function getSystemAbstractStats() {
-    const [userCount, accountCount, loanCount, installmentAmount] = await Promise.all([
-        prisma.user.count({ where: { deletedAt: null, role: "USER" } }),
-        prisma.account.count({ where: { deletedAt: null } }),
-        prisma.loan.count(),
-        prisma.installmentAmount.findFirst({
-            where: { deprecatedAt: null },
+export async function getUserHomeDashboard(userId: number) {
+    const now = new Date();
+    const accountWhere = { userId, deletedAt: null };
+    const overdueWhere = { paidAt: null, dueDate: { lt: now } };
+    const upcomingWhere = { paidAt: null, dueDate: { gte: now } };
+
+    const [
+        balanceSum,
+        overdueInstallments,
+        overduePayments,
+        upcomingInstallments,
+        upcomingPayments,
+        activeLoan,
+        userEligibleAccounts,
+        allEligibleAccounts,
+        onTimeInstallments,
+        onTimePayments,
+        latePaidInstallments,
+        latePaidPayments,
+    ] = await Promise.all([
+        prisma.account.aggregate({
+            _sum: { balance: true },
+            where: accountWhere,
+        }),
+        prisma.installment.findMany({
+            where: { ...overdueWhere, account: accountWhere },
+            select: { amount: true, dueDate: true },
+        }),
+        prisma.payment.findMany({
+            where: { ...overdueWhere, loan: { account: accountWhere } },
+            select: { amount: true, dueDate: true },
+        }),
+        prisma.installment.findMany({
+            where: { ...upcomingWhere, account: accountWhere },
+            select: { amount: true, dueDate: true },
+        }),
+        prisma.payment.findMany({
+            where: { ...upcomingWhere, loan: { account: accountWhere } },
+            select: { amount: true, dueDate: true },
+        }),
+        prisma.loan.findFirst({
+            where: {
+                status: "IN_PROGRESS",
+                account: accountWhere,
+            },
             orderBy: { createdAt: "desc" },
-            select: { amount: true },
+            select: {
+                id: true,
+                amount: true,
+                paymentCount: true,
+                account: { select: { id: true, code: true } },
+                payments: {
+                    select: { amount: true, paidAt: true },
+                },
+            },
+        }),
+        prisma.account.findMany({
+            where: {
+                ...accountWhere,
+                loans: { none: { status: "IN_PROGRESS" } },
+            },
+            select: { id: true },
+        }),
+        prisma.account.findMany({
+            where: {
+                deletedAt: null,
+                loans: { none: { status: "IN_PROGRESS" } },
+            },
+            select: {
+                id: true,
+                userId: true,
+                openedAt: true,
+                _count: { select: { loans: true } },
+            },
+        }),
+        prisma.installment.count({
+            where: {
+                account: accountWhere,
+                paidAt: { not: null },
+                dueDate: { gte: prisma.installment.fields.paidAt },
+            },
+        }),
+        prisma.payment.count({
+            where: {
+                loan: { account: accountWhere },
+                paidAt: { not: null },
+                dueDate: { gte: prisma.payment.fields.paidAt },
+            },
+        }),
+        prisma.installment.count({
+            where: {
+                account: accountWhere,
+                paidAt: { not: null, gt: prisma.installment.fields.dueDate },
+            },
+        }),
+        prisma.payment.count({
+            where: {
+                loan: { account: accountWhere },
+                paidAt: { not: null, gt: prisma.payment.fields.paidAt },
+            },
         }),
     ]);
 
+    const overdueItems = [...overdueInstallments, ...overduePayments];
+    const upcomingItems = [...upcomingInstallments, ...upcomingPayments];
+
+    const notice = {
+        overdueCount: overdueItems.length,
+        overdueAmount: sumAmount(overdueItems),
+        upcomingCount: upcomingItems.length,
+        upcomingAmount: sumAmount(upcomingItems),
+        nextDue: findSoonestDue(upcomingItems),
+    };
+
+    let activeLoanSnapshot: {
+        id: number;
+        accountCode: string;
+        accountId: number;
+        amount: string;
+        paidCount: number;
+        paymentCount: number;
+        progressPercent: number;
+        remainingAmount: string;
+    } | null = null;
+
+    if (activeLoan?.account) {
+        const paidPayments = activeLoan.payments.filter((row) => row.paidAt);
+        const unpaidAmount = activeLoan.payments
+            .filter((row) => !row.paidAt)
+            .reduce((sum, row) => sum + Number(row.amount), 0);
+        const paidCount = paidPayments.length;
+        const progressPercent = activeLoan.paymentCount > 0
+            ? Math.min(100, Math.round((paidCount / activeLoan.paymentCount) * 100))
+            : 0;
+
+        activeLoanSnapshot = {
+            id: activeLoan.id,
+            accountCode: activeLoan.account.code,
+            accountId: activeLoan.account.id,
+            amount: decimalToString(activeLoan.amount),
+            paidCount,
+            paymentCount: activeLoan.paymentCount,
+            progressPercent,
+            remainingAmount: String(Math.round(unpaidAmount)),
+        };
+    }
+
+    const rankedEligible = [...allEligibleAccounts].sort((a, b) => {
+        if (a._count.loans !== b._count.loans) {
+            return a._count.loans - b._count.loans;
+        }
+        const aOpened = a.openedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+        const bOpened = b.openedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+        return aOpened - bOpened;
+    });
+
+    const userEligibleIds = new Set(userEligibleAccounts.map((row) => row.id));
+    const positions = rankedEligible
+        .map((row, index) => ({ accountId: row.id, position: index + 1 }))
+        .filter((row) => userEligibleIds.has(row.accountId));
+
+    const queue = positions.length
+        ? {
+            position: positions[0].position,
+            totalEligible: rankedEligible.length,
+        }
+        : null;
+
+    const overdueUnpaidCount = overdueItems.length;
+    const punctualityScore =
+        onTimeInstallments + onTimePayments - (latePaidInstallments + latePaidPayments + overdueUnpaidCount);
+
     return {
-        userCount,
-        accountCount,
-        loanCount,
-        currentInstallmentAmount: decimalToString(installmentAmount?.amount),
+        totalBalance: decimalToString(balanceSum._sum.balance),
+        notice,
+        activeLoan: activeLoanSnapshot,
+        queue,
+        punctualityScore,
     };
 }
 

@@ -7,120 +7,217 @@ import { useUserPreferences } from "../../components/preferences/UserPreferences
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
 import Link from "next/link";
 import { useMemo } from "react";
-import dayjs from "dayjs";
+import {
+    Award,
+    CalendarClock,
+    Trophy,
+    Wallet,
+    WalletCards,
+} from "lucide-react";
+import { cn } from "utils/cn";
 
-type Stats = {
+export type HomeDashboardData = {
     totalBalance: string;
-    totals: { loans: string; payments: string; installments: string };
-    overdue: { loans: string; payments: string; installments: string };
-};
-
-type Related = {
-    accountsCount: number;
-    loansCount: number;
-    installmentsCount: number;
-    installmentsPaidCount: number;
-};
-
-type SystemStats = {
-    userCount: number;
-    accountCount: number;
-    loanCount: number;
-    currentInstallmentAmount: string;
+    notice: {
+        overdueCount: number;
+        overdueAmount: string;
+        upcomingCount: number;
+        upcomingAmount: string;
+        nextDue: { dueDate: string; amount: string } | null;
+    };
+    activeLoan: {
+        id: number;
+        accountCode: string;
+        accountId: number;
+        amount: string;
+        paidCount: number;
+        paymentCount: number;
+        progressPercent: number;
+        remainingAmount: string;
+    } | null;
+    queue: {
+        position: number;
+        totalEligible: number;
+    } | null;
+    punctualityScore: number;
 };
 
 type Props = {
     fullName: string;
-    stats: string;
-    related: string;
-    systemStats: string;
+    dashboard: string;
 };
 
-export default function HomeOverview({ fullName, stats, related, systemStats }: Props) {
+function initialsFromName(name: string) {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "?";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
+}
+
+export default function HomeOverview({ fullName, dashboard }: Props) {
     const { t } = useUserPreferences();
-    const { formatMoney, formatNumber, formatDate } = useLocaleFormat();
-    const parsedStats = useMemo(() => JSON.parse(stats) as Stats, [stats]);
-    const parsedRelated = useMemo(() => JSON.parse(related) as Related, [related]);
-    const parsedSystem = useMemo(() => JSON.parse(systemStats) as SystemStats, [systemStats]);
+    const { formatMoney, formatNumber, formatPercent, formatDate } = useLocaleFormat();
+    const data = useMemo(() => JSON.parse(dashboard) as HomeDashboardData, [dashboard]);
 
-    const cards = [
-        { labelKey: "home.balance" as const, value: parsedStats.totalBalance, href: "/accounts" },
-        { labelKey: "home.loans" as const, value: parsedStats.totals.loans, href: "/loans", count: parsedRelated.loansCount, icon: LoanIcon },
-        { labelKey: "home.installments" as const, value: parsedStats.totals.installments, href: "/installments", count: parsedRelated.installmentsCount },
-        { labelKey: "home.payments" as const, value: parsedStats.totals.payments, href: "/payments" },
-    ];
+    const hasNotice = data.notice.overdueCount > 0 || data.notice.upcomingCount > 0;
+    const punctualityPositive = data.punctualityScore > 0;
+    const punctualityNegative = data.punctualityScore < 0;
+    const punctualityLabel = punctualityPositive
+        ? `+${formatNumber(data.punctualityScore)}`
+        : formatNumber(data.punctualityScore);
 
-    const overdueCards = [
-        { labelKey: "home.overdueLoans" as const, value: parsedStats.overdue.loans, href: "/loans?status=Overdue", icon: LoanIcon },
-        { labelKey: "home.overduePayments" as const, value: parsedStats.overdue.payments, href: "/payments?status=Overdue" },
-        { labelKey: "home.overdueInstallments" as const, value: parsedStats.overdue.installments, href: "/installments?status=Overdue" },
+    const quickActions = [
+        { href: "/accounts", labelKey: "pages.accounts" as const, icon: Wallet },
+        { href: "/loans", labelKey: "pages.loans" as const, icon: LoanIcon },
+        { href: "/installments", labelKey: "pages.installments" as const, icon: CalendarClock },
+        { href: "/payments", labelKey: "pages.payments" as const, icon: WalletCards },
     ];
 
     return (
-        <div className="space-y-6">
-            <div>
-                <p className="text-sm text-[var(--color-muted-foreground)]">{t("home.welcome")}</p>
-                <h2 className="text-xl font-semibold">{fullName}</h2>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-                {cards.map((card) => (
-                    <Link key={card.href} href={card.href}>
-                        <Card className="transition hover:border-[var(--color-primary)]">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-muted-foreground)]">
-                                    {"icon" in card && card.icon ? (
-                                        <card.icon className="h-4 w-4 text-[var(--color-primary)]" />
-                                    ) : null}
-                                    {t(card.labelKey)}
-                                    {"count" in card && card.count != null ? (
-                                        <Badge className="ms-2" variant="secondary">{formatNumber(card.count)}</Badge>
-                                    ) : null}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-lg font-semibold tabular-nums">{formatMoney(card.value)}</p>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
-            </div>
-
-            <div>
-                <h3 className="mb-3 text-sm font-medium text-[var(--color-muted-foreground)]">{t("home.overdue")}</h3>
-                <div className="space-y-2">
-                    {overdueCards.map((card) => (
-                        <Link key={card.href} href={card.href}>
-                            <Card className="border-[var(--color-destructive)]/30">
-                                <CardContent className="flex items-center justify-between py-3">
-                                    <span className="flex items-center gap-1.5 text-sm">
-                                        {"icon" in card && card.icon ? (
-                                            <card.icon className="h-4 w-4 text-[var(--color-destructive)]" />
-                                        ) : null}
-                                        {t(card.labelKey)}
-                                    </span>
-                                    <span className="font-semibold tabular-nums text-[var(--color-destructive)]">
-                                        {formatMoney(card.value)}
-                                    </span>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    ))}
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary ring-1 ring-primary/25">
+                    {initialsFromName(fullName)}
+                </span>
+                <div className="min-w-0">
+                    <p className="text-sm text-muted-foreground">{t("home.welcome")}</p>
+                    <h2 className="truncate text-xl font-semibold tracking-tight">{fullName}</h2>
                 </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-base">{t("home.systemOverview")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm text-[var(--color-muted-foreground)]">
-                    <p>{t("home.activeMembers")}: {formatNumber(parsedSystem.userCount)}</p>
-                    <p>{t("home.accountsInSystem")}: {formatNumber(parsedSystem.accountCount)}</p>
-                    <p>{t("home.loansInSystem")}: {formatNumber(parsedSystem.loanCount)}</p>
-                    <p>{t("home.standardInstallment")}: {formatMoney(parsedSystem.currentInstallmentAmount)}</p>
-                    <p className="text-xs">{t("home.updated", { date: formatDate(dayjs().toDate()) })}</p>
+            <Card className="overflow-hidden">
+                <CardContent className="space-y-4 pt-5">
+                    <div>
+                        <p className="text-xs text-muted-foreground">{t("home.totalBalance")}</p>
+                        <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">
+                            {formatMoney(data.totalBalance)}
+                        </p>
+                    </div>
+
+                    {data.activeLoan ? (
+                        <div className="rounded-md bg-muted/30 px-3 py-2">
+                            <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                                <span className="inline-flex items-center gap-1.5">
+                                    <LoanIcon className="h-3.5 w-3.5 text-primary" />
+                                    {t("home.activeLoanProgress")} · {data.activeLoan.accountCode}
+                                </span>
+                                <span>{formatPercent(data.activeLoan.progressPercent)}</span>
+                            </div>
+                            <div className="mt-2 h-2 rounded-full bg-muted">
+                                <div
+                                    className="h-2 rounded-full bg-primary transition-[width] duration-300"
+                                    style={{ width: `${data.activeLoan.progressPercent}%` }}
+                                />
+                            </div>
+                            <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+                                <span className="text-muted-foreground">
+                                    {formatNumber(data.activeLoan.paidCount)}/{formatNumber(data.activeLoan.paymentCount)}
+                                </span>
+                                <span className="font-medium tabular-nums">
+                                    {t("home.remainingAmount")}: {formatMoney(data.activeLoan.remainingAmount)}
+                                </span>
+                            </div>
+                            <Link
+                                href={`/loans/${data.activeLoan.id}`}
+                                className="mt-2 inline-flex text-xs font-medium text-primary hover:underline"
+                            >
+                                {t("common.view")}
+                            </Link>
+                        </div>
+                    ) : null}
                 </CardContent>
             </Card>
+
+            {hasNotice ? (
+                <Link href="/installments" className="block">
+                    <Card className="border-destructive/30 transition-colors hover:bg-destructive/5">
+                        <CardContent className="space-y-2 py-4">
+                            {data.notice.overdueCount > 0 ? (
+                                <p className="text-sm font-semibold text-destructive">
+                                    {t("home.noticeOverdue", {
+                                        count: formatNumber(data.notice.overdueCount),
+                                        amount: formatMoney(data.notice.overdueAmount),
+                                    })}
+                                </p>
+                            ) : null}
+                            {data.notice.upcomingCount > 0 ? (
+                                <p className="text-sm font-medium">
+                                    {t("home.noticeUpcoming", {
+                                        count: formatNumber(data.notice.upcomingCount),
+                                        amount: formatMoney(data.notice.upcomingAmount),
+                                    })}
+                                </p>
+                            ) : null}
+                            {data.notice.nextDue ? (
+                                <p className="text-xs text-muted-foreground">
+                                    {t("home.nextDue", {
+                                        date: formatDate(data.notice.nextDue.dueDate),
+                                        amount: formatMoney(data.notice.nextDue.amount),
+                                    })}
+                                </p>
+                            ) : null}
+                            <p className="text-xs text-muted-foreground">{t("home.noticeHint")}</p>
+                        </CardContent>
+                    </Card>
+                </Link>
+            ) : null}
+
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <Trophy className="h-4 w-4 text-primary" />
+                        {t("home.punctualityScore")}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {data.queue ? (
+                        <div className="rounded-md bg-muted/30 px-3 py-2">
+                            <p className="text-sm font-semibold">
+                                {t("home.queuePosition", {
+                                    position: formatNumber(data.queue.position),
+                                    total: formatNumber(data.queue.totalEligible),
+                                })}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">{t("home.queueEligibleNote")}</p>
+                        </div>
+                    ) : null}
+
+                    <div className="flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2">
+                        <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground">{t("home.punctualityHint")}</p>
+                        </div>
+                        <Badge
+                            className={cn(
+                                "shrink-0 px-2.5 py-1 text-sm font-bold tabular-nums",
+                                punctualityPositive && "border-emerald-500/40 bg-emerald-500/10 text-emerald-600",
+                                punctualityNegative && "border-rose-500/40 bg-rose-500/10 text-rose-600",
+                                !punctualityPositive && !punctualityNegative && "border-border bg-muted/40 text-muted-foreground",
+                            )}
+                        >
+                            <Award className="me-1 inline h-3.5 w-3.5" />
+                            {punctualityLabel}
+                        </Badge>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">{t("home.quickActions")}</p>
+                <Card className="p-2">
+                    <div className="grid grid-cols-2 gap-2">
+                        {quickActions.map(({ href, labelKey, icon: Icon }) => (
+                            <Link
+                                key={href}
+                                href={href}
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-muted/40"
+                            >
+                                <Icon className="h-4 w-4 shrink-0 text-primary" />
+                                <span className="truncate">{t(labelKey)}</span>
+                            </Link>
+                        ))}
+                    </div>
+                </Card>
+            </div>
         </div>
     );
 }
