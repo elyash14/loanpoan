@@ -102,18 +102,101 @@ export async function getSystemAbstractStats() {
 }
 
 export async function getUserAccountIfOwned(userId: number, accountId: number) {
+    const now = new Date();
+
     const account = await prisma.account.findFirst({
-        where: { id: accountId, userId },
-        include: {
+        where: { id: accountId, userId, deletedAt: null },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+            balance: true,
+            openedAt: true,
+            installmentFactor: true,
+            _count: { select: { loans: true, installments: true } },
             loans: {
                 where: { status: "IN_PROGRESS" },
                 take: 1,
+                select: {
+                    id: true,
+                    amount: true,
+                    status: true,
+                },
             },
-            _count: { select: { loans: true, installments: true } },
         },
     });
     if (!account) notFound();
-    return account;
+
+    const [
+        unpaidInstallments,
+        latestInstallments,
+        latestPayments,
+        latestLoans,
+    ] = await Promise.all([
+        prisma.installment.count({
+            where: { accountId, paidAt: null },
+        }),
+        prisma.installment.findMany({
+            where: { accountId },
+            orderBy: { dueDate: "desc" },
+            take: 5,
+            select: { id: true, amount: true, dueDate: true, paidAt: true },
+        }),
+        prisma.payment.findMany({
+            where: { loan: { accountId } },
+            orderBy: { dueDate: "desc" },
+            take: 5,
+            select: { id: true, amount: true, dueDate: true, paidAt: true, loanId: true },
+        }),
+        prisma.loan.findMany({
+            where: { accountId },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: { id: true, amount: true, startedAt: true, createdAt: true, status: true },
+        }),
+    ]);
+
+    const activities = [
+        ...latestInstallments.map((row) => {
+            const when = row.paidAt ?? row.dueDate;
+            const overdue = !row.paidAt && row.dueDate < now;
+            return {
+                id: `installment-${row.id}`,
+                at: when.toISOString(),
+                type: row.paidAt ? "installment-paid" : overdue ? "installment-overdue" : "installment-due",
+                amount: decimalToString(row.amount),
+                href: `/installments?account=${accountId}`,
+            };
+        }),
+        ...latestPayments.map((row) => {
+            const when = row.paidAt ?? row.dueDate;
+            const overdue = !row.paidAt && row.dueDate < now;
+            return {
+                id: `payment-${row.id}`,
+                at: when.toISOString(),
+                type: row.paidAt ? "payment-paid" : overdue ? "payment-overdue" : "payment-due",
+                amount: decimalToString(row.amount),
+                href: row.loanId ? `/payments?loan=${row.loanId}` : "/payments",
+            };
+        }),
+        ...latestLoans.map((row) => ({
+            id: `loan-${row.id}`,
+            at: (row.startedAt ?? row.createdAt).toISOString(),
+            type: row.status === "IN_PROGRESS" ? "loan-active" : "loan-finished",
+            amount: decimalToString(row.amount),
+            href: `/loans/${row.id}`,
+        })),
+    ]
+        .sort((a, b) => +new Date(b.at) - +new Date(a.at))
+        .slice(0, 8);
+
+    return {
+        ...account,
+        kpis: {
+            unpaidInstallments,
+        },
+        activities,
+    };
 }
 
 export async function getUserLoanIfOwned(userId: number, loanId: number) {

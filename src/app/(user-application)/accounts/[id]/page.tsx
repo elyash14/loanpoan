@@ -9,7 +9,7 @@ type Props = { params: Promise<{ id: string }> };
 export default async function AccountDetailPage({ params }: Props) {
     const { id } = await params;
     return (
-        <UserShell titleKey="pages.account" hideNav>
+        <UserShell titleKey="pages.account">
             <TelegramBackButton />
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
                 <LoadAccountDetail id={Number(id)} />
