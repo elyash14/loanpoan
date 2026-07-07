@@ -4,9 +4,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { LoanIcon } from "../../../components/icons/LoanIcon";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
-import { formatMoney } from "utils/formatMoney";
-import dayjs from "dayjs";
-import "dayjs/locale/fa";
+import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
 import type { LoanDetailData } from "./types";
 
 type Props = {
@@ -14,7 +12,8 @@ type Props = {
 };
 
 export default function LoanHero({ loan }: Props) {
-    const { t, locale } = useUserPreferences();
+    const { t } = useUserPreferences();
+    const { formatMoney, formatPercent, formatDate } = useLocaleFormat();
     const statusLabel = loan.status === "IN_PROGRESS"
         ? t("status.inProgress")
         : loan.status === "FINISHED"
@@ -53,7 +52,7 @@ export default function LoanHero({ loan }: Props) {
                 <div className="rounded-md bg-muted/30 px-3 py-2">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>{t("loans.progress")}</span>
-                        <span>{loan.stats.progressPercent}%</span>
+                        <span>{formatPercent(loan.stats.progressPercent)}</span>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-muted">
                         <div
@@ -63,7 +62,7 @@ export default function LoanHero({ loan }: Props) {
                     </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                    {t("loans.createdAt")}: {dayjs(loan.createdAt).locale(locale).format("YYYY-MM-DD")}
+                    {t("loans.createdAt")}: {formatDate(loan.createdAt)}
                 </p>
             </CardContent>
         </Card>

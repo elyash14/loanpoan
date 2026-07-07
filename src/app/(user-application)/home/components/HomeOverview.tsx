@@ -4,7 +4,7 @@ import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { LoanIcon } from "../../components/icons/LoanIcon";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
-import { formatMoney } from "utils/formatMoney";
+import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
 import Link from "next/link";
 import { useMemo } from "react";
 import dayjs from "dayjs";
@@ -38,6 +38,7 @@ type Props = {
 
 export default function HomeOverview({ fullName, stats, related, systemStats }: Props) {
     const { t } = useUserPreferences();
+    const { formatMoney, formatNumber, formatDate } = useLocaleFormat();
     const parsedStats = useMemo(() => JSON.parse(stats) as Stats, [stats]);
     const parsedRelated = useMemo(() => JSON.parse(related) as Related, [related]);
     const parsedSystem = useMemo(() => JSON.parse(systemStats) as SystemStats, [systemStats]);
@@ -73,7 +74,7 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                                     ) : null}
                                     {t(card.labelKey)}
                                     {"count" in card && card.count != null ? (
-                                        <Badge className="ms-2" variant="secondary">{card.count}</Badge>
+                                        <Badge className="ms-2" variant="secondary">{formatNumber(card.count)}</Badge>
                                     ) : null}
                                 </CardTitle>
                             </CardHeader>
@@ -113,11 +114,11 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                     <CardTitle className="text-base">{t("home.systemOverview")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-[var(--color-muted-foreground)]">
-                    <p>{t("home.activeMembers")}: {parsedSystem.userCount}</p>
-                    <p>{t("home.accountsInSystem")}: {parsedSystem.accountCount}</p>
-                    <p>{t("home.loansInSystem")}: {parsedSystem.loanCount}</p>
+                    <p>{t("home.activeMembers")}: {formatNumber(parsedSystem.userCount)}</p>
+                    <p>{t("home.accountsInSystem")}: {formatNumber(parsedSystem.accountCount)}</p>
+                    <p>{t("home.loansInSystem")}: {formatNumber(parsedSystem.loanCount)}</p>
                     <p>{t("home.standardInstallment")}: {formatMoney(parsedSystem.currentInstallmentAmount)}</p>
-                    <p className="text-xs">{t("home.updated", { date: dayjs().format("YYYY-MM-DD") })}</p>
+                    <p className="text-xs">{t("home.updated", { date: formatDate(dayjs().toDate()) })}</p>
                 </CardContent>
             </Card>
         </div>

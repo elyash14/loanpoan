@@ -8,6 +8,7 @@ import {
     Tooltip,
 } from "recharts";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import type { LoanDetailData } from "./types";
 
@@ -18,6 +19,7 @@ type Props = {
 
 export default function LoanCharts({ loan, onSelectFilter }: Props) {
     const { t } = useUserPreferences();
+    const { formatNumber, formatPercent } = useLocaleFormat();
     const donutData = [
         { key: "paid", label: t("status.paid"), value: loan.charts.statusBreakdown.paid, color: "var(--color-accent)" },
         { key: "unpaid", label: t("status.unpaid"), value: loan.charts.statusBreakdown.unpaid, color: "var(--color-muted-foreground)" },
@@ -67,9 +69,9 @@ export default function LoanCharts({ loan, onSelectFilter }: Props) {
                     <div className="space-y-2">
                         <div className="rounded-md bg-muted/30 px-3 py-2">
                             <p className="text-xs text-muted-foreground">{t("loans.kpiPaymentPercent")}</p>
-                            <p className="text-2xl font-bold tabular-nums">{loan.stats.progressPercent}%</p>
+                            <p className="text-2xl font-bold tabular-nums">{formatPercent(loan.stats.progressPercent)}</p>
                             <p className="text-xs text-muted-foreground">
-                                {loan.stats.paidCount}/{loan.paymentCount} {t("loans.kpiPaidCount").toLowerCase()}
+                                {formatNumber(loan.stats.paidCount)}/{formatNumber(loan.paymentCount)} {t("loans.kpiPaidCount").toLowerCase()}
                             </p>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-3 text-xs">
@@ -81,7 +83,7 @@ export default function LoanCharts({ loan, onSelectFilter }: Props) {
                                     className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
                                 >
                                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                                    {entry.label}: {entry.value}
+                                    {entry.label}: {formatNumber(entry.value)}
                                 </button>
                             ))}
                         </div>

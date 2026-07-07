@@ -2,10 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
-import { formatMoney } from "utils/formatMoney";
+import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
 import Link from "next/link";
-import dayjs from "dayjs";
-import "dayjs/locale/fa";
 import type { LoanDetailData } from "./types";
 
 type Props = {
@@ -19,7 +17,8 @@ function eventLabel(type: string, t: (key: string) => string) {
 }
 
 export default function LoanTimeline({ loan }: Props) {
-    const { t, locale } = useUserPreferences();
+    const { t } = useUserPreferences();
+    const { formatMoney, formatDate } = useLocaleFormat();
     return (
         <Card>
             <CardHeader>
@@ -42,7 +41,7 @@ export default function LoanTimeline({ loan }: Props) {
                             <div className="min-w-0">
                                 <p className="text-sm font-medium leading-5">{eventLabel(event.type, t)}</p>
                                 <p className="text-xs leading-5 text-muted-foreground">
-                                    {dayjs(event.at).locale(locale).format("YYYY-MM-DD HH:mm")}
+                                    {formatDate(event.at, "YYYY-MM-DD HH:mm")}
                                 </p>
                             </div>
                             <p className="pt-0.5 text-sm font-semibold tabular-nums">{formatMoney(event.amount)}</p>

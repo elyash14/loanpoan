@@ -3,9 +3,7 @@
 import { Card, CardContent } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
-import { formatMoney } from "utils/formatMoney";
-import dayjs from "dayjs";
-import "dayjs/locale/fa";
+import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
 import type { LoanDetailData } from "./types";
 
 type PaymentFilter = "all" | "paid" | "unpaid" | "overdue";
@@ -17,7 +15,8 @@ type Props = {
 };
 
 export default function LoanPaymentsTab({ loan, filter, onFilterChange }: Props) {
-    const { t, locale } = useUserPreferences();
+    const { t } = useUserPreferences();
+    const { formatMoney, formatDate } = useLocaleFormat();
     const now = new Date();
 
     const withStatus = loan.payments.map((payment) => {
@@ -72,11 +71,11 @@ export default function LoanPaymentsTab({ loan, filter, onFilterChange }: Props)
                             <div>
                                 <p className="text-sm font-semibold tabular-nums">{formatMoney(payment.amount)}</p>
                                 <p className="text-xs text-muted-foreground">
-                                    {t("loans.due", { date: dayjs(payment.dueDate).locale(locale).format("YYYY-MM-DD") })}
+                                    {t("loans.due", { date: formatDate(payment.dueDate) })}
                                 </p>
                                 {payment.paidAt ? (
                                     <p className="text-xs text-muted-foreground">
-                                        {t("status.paid")}: {dayjs(payment.paidAt).locale(locale).format("YYYY-MM-DD")}
+                                        {t("status.paid")}: {formatDate(payment.paidAt)}
                                     </p>
                                 ) : null}
                             </div>

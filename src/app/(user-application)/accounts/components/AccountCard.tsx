@@ -1,13 +1,11 @@
 'use client';
 
 import { cn } from "utils/cn";
-import { formatMoney } from "utils/formatMoney";
 import { ChevronRight, Wallet } from "lucide-react";
 import { LoanIcon } from "../../components/icons/LoanIcon";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
 import Link from "next/link";
-import dayjs from "dayjs";
-import "dayjs/locale/fa";
 
 export type AccountCardData = {
     id: number;
@@ -27,7 +25,8 @@ type Props = {
 };
 
 export default function AccountCard({ account }: Props) {
-    const { t, locale } = useUserPreferences();
+    const { t } = useUserPreferences();
+    const { formatMoney, formatDate } = useLocaleFormat();
     const balance = Number(account.balance ?? 0);
     const isPositive = balance > 0;
     const hasActiveLoan = account.loans.some((loan) => loan.status === "IN_PROGRESS");
@@ -112,7 +111,7 @@ export default function AccountCard({ account }: Props) {
                 {account.openedAt ? (
                     <p className="relative mt-3 text-xs text-[var(--color-muted-foreground)]">
                         {t("common.opened", {
-                            date: dayjs(account.openedAt).locale(locale).format("MMM D, YYYY"),
+                            date: formatDate(account.openedAt, "MMM D, YYYY"),
                         })}
                     </p>
                 ) : null}

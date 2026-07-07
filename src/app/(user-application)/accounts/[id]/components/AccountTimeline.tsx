@@ -2,10 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
-import { formatMoney } from "utils/formatMoney";
+import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
 import Link from "next/link";
-import dayjs from "dayjs";
-import "dayjs/locale/fa";
 import type { AccountDetailData } from "./types";
 
 type Props = {
@@ -36,7 +34,8 @@ function activityLabel(type: string, t: (k: string) => string) {
 }
 
 export default function AccountTimeline({ account }: Props) {
-    const { t, locale } = useUserPreferences();
+    const { t } = useUserPreferences();
+    const { formatMoney, formatDate } = useLocaleFormat();
 
     return (
         <Card>
@@ -60,7 +59,7 @@ export default function AccountTimeline({ account }: Props) {
                             <div className="min-w-0">
                                 <p className="text-sm font-medium leading-5">{activityLabel(event.type, t)}</p>
                                 <p className="text-xs leading-5 text-muted-foreground">
-                                    {dayjs(event.at).locale(locale).format("YYYY-MM-DD HH:mm")}
+                                    {formatDate(event.at, "YYYY-MM-DD HH:mm")}
                                 </p>
                             </div>
                             <p className="pt-0.5 text-sm font-semibold tabular-nums">{formatMoney(event.amount)}</p>

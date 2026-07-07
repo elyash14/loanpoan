@@ -2,7 +2,8 @@
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent } from "../../components/ui/card";
-import { formatMoney } from "utils/formatMoney";
+import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
 import SimplePagination from "../../components/SimplePagination";
 import { useMemo } from "react";
 import dayjs from "dayjs";
@@ -31,6 +32,8 @@ type Props = {
 export default function PaymentsList({
     payments, totalPages, currentPage, searchParams,
 }: Props) {
+    const { t } = useUserPreferences();
+    const { formatMoney, formatDate } = useLocaleFormat();
     const rows = useMemo(() => JSON.parse(payments) as PaymentRow[], [payments]);
 
     if (!rows.length) {
@@ -47,7 +50,7 @@ export default function PaymentsList({
                             <div>
                                 <p className="font-medium">{row.loan.account.code}</p>
                                 <p className="text-xs text-[var(--color-muted-foreground)]">
-                                    Due {dayjs(row.dueDate).format("YYYY-MM-DD")}
+                                    Due {formatDate(row.dueDate)}
                                 </p>
                                 <Badge
                                     variant={status === "Overdue" ? "destructive" : "secondary"}

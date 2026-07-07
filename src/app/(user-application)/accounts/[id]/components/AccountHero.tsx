@@ -1,10 +1,8 @@
 'use client';
 
-import dayjs from "dayjs";
-import "dayjs/locale/fa";
-import { formatMoney } from "utils/formatMoney";
-import { LoanIcon } from "../../../components/icons/LoanIcon";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
+import { LoanIcon } from "../../../components/icons/LoanIcon";
 import { Badge } from "../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import type { AccountDetailData } from "./types";
@@ -14,10 +12,11 @@ type Props = {
 };
 
 export default function AccountHero({ account }: Props) {
-    const { t, locale } = useUserPreferences();
+    const { t } = useUserPreferences();
+    const { formatMoney, formatNumber, formatDigits, formatDate } = useLocaleFormat();
     const currentLoan = account.loans[0];
     const dateLabel = account.openedAt
-        ? dayjs(account.openedAt).locale(locale).format("YYYY-MM-DD")
+        ? formatDate(account.openedAt)
         : null;
 
     return (
@@ -32,7 +31,7 @@ export default function AccountHero({ account }: Props) {
                     </div>
                     <div className="shrink-0 rounded-md bg-muted/60 px-2.5 py-1.5 text-end">
                         <p className="text-[11px] leading-4 text-muted-foreground inline-block">{t("accounts.kpiInstallmentFactor")}: &nbsp;</p>
-                        <p className="text-sm font-semibold tabular-nums leading-5 inline-block">{account.installmentFactor}</p>
+                        <p className="text-sm font-semibold tabular-nums leading-5 inline-block">{formatDigits(account.installmentFactor)}</p>
                     </div>
                 </div>
             </CardHeader>
@@ -46,10 +45,10 @@ export default function AccountHero({ account }: Props) {
 
                 <div className="flex flex-wrap gap-2">
                     <Badge variant="secondary">
-                        {t("accounts.loans")}: {account._count.loans}
+                        {t("accounts.loans")}: {formatNumber(account._count.loans)}
                     </Badge>
                     <Badge variant="secondary">
-                        {t("accounts.installments")}: {account._count.installments}
+                        {t("accounts.installments")}: {formatNumber(account._count.installments)}
                     </Badge>
                     {currentLoan ? (
                         <Badge className="inline-flex items-center gap-1">
@@ -62,7 +61,7 @@ export default function AccountHero({ account }: Props) {
                 {account.kpis.unpaidInstallments > 0 ? (
                     <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2">
                         <p className="text-sm font-semibold text-destructive">
-                            {t("accounts.unpaidInstallmentsNotice", { count: String(account.kpis.unpaidInstallments) })}
+                            {t("accounts.unpaidInstallmentsNotice", { count: formatNumber(account.kpis.unpaidInstallments) })}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
                             {t("accounts.unpaidInstallmentsHint")}

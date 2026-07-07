@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "../../../components/ui/card";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
 import { cn } from "utils/cn";
 import type { LoanDetailData } from "./types";
 
@@ -43,6 +44,7 @@ function getSeason(month: number) {
 
 export default function LoanOverviewTab({ loan }: Props) {
     const { t, locale } = useUserPreferences();
+    const { formatNumber } = useLocaleFormat();
     const now = new Date();
     const seasonLabels = {
         spring: t("loans.seasonSpring"),
@@ -111,7 +113,7 @@ export default function LoanOverviewTab({ loan }: Props) {
                                 {/* Season Title */}
                                 <div className="absolute inset-x-0 top-0 flex justify-center">
                                     <span className="text-[13px] font-bold text-muted-foreground/70">
-                                        {seasonLabels[group.season]} {group.year}
+                                        {seasonLabels[group.season]} {formatNumber(group.year)}
                                     </span>
                                 </div>
 

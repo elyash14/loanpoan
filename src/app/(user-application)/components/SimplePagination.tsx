@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { cn } from "utils/cn";
 import { Button } from "./ui/button";
+import { useLocaleFormat } from "./preferences/useLocaleFormat";
 
 type Props = {
     currentPage: number;
@@ -20,6 +21,8 @@ export default function SimplePagination({
     basePath,
     searchParams = {},
 }: Props) {
+    const { formatNumber } = useLocaleFormat();
+
     if (totalPages <= 1) return null;
 
     const makeHref = (page: number) => {
@@ -40,7 +43,7 @@ export default function SimplePagination({
                 </Button>
             )}
             <span className="text-sm text-[var(--color-muted-foreground)]">
-                Page {currentPage} of {totalPages}
+                Page {formatNumber(currentPage)} of {formatNumber(totalPages)}
             </span>
             {currentPage < totalPages ? (
                 <Link href={makeHref(currentPage + 1)} className={cn(linkClass)}>
