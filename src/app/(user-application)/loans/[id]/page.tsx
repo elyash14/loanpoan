@@ -9,7 +9,7 @@ type Props = { params: Promise<{ id: string }> };
 export default async function LoanDetailPage({ params }: Props) {
     const { id } = await params;
     return (
-        <UserShell title="Loan" hideNav>
+        <UserShell titleKey="pages.loan" hideNav>
             <TelegramBackButton />
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
                 <LoadLoanDetail id={Number(id)} />

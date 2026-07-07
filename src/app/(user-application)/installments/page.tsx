@@ -10,7 +10,7 @@ export default async function InstallmentsPage({
     searchParams: Promise<PageSearchParams>;
 }) {
     return (
-        <UserShell title="Installments">
+        <UserShell titleKey="pages.installments">
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
                 <LoadInstallments searchParams={searchParams} />
             </Suspense>

@@ -5,7 +5,7 @@ import { DASHBOARD_URL } from 'utils/configs';
 
 const publicRoutes = ['/login', '/link-required'];
 
-const userAppRoute = /^\/(home|accounts|loans|installments|payments|profile|more)(\/|$)/;
+const userAppRoute = /^\/(home|accounts|loans|installments|payments|profile|more|settings)(\/|$)/;
 
 export default async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;

@@ -3,6 +3,7 @@
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent } from "../../components/ui/card";
 import { LoanIcon } from "../../components/icons/LoanIcon";
+import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { formatMoney } from "utils/formatMoney";
 import Link from "next/link";
 import SimplePagination from "../../components/SimplePagination";
@@ -25,10 +26,11 @@ type Props = {
 };
 
 export default function LoansList({ loans, totalPages, currentPage, searchParams }: Props) {
+    const { t } = useUserPreferences();
     const rows = useMemo(() => JSON.parse(loans) as LoanRow[], [loans]);
 
     if (!rows.length) {
-        return <p className="text-sm text-[var(--color-muted-foreground)]">No loans found.</p>;
+        return <p className="text-sm text-[var(--color-muted-foreground)]">{t("loans.empty")}</p>;
     }
 
     return (

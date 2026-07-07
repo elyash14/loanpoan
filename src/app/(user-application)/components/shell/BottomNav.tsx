@@ -3,18 +3,10 @@
 import { cn } from "utils/cn";
 import { Home, LayoutGrid, Wallet } from "lucide-react";
 import { LoanIcon } from "../icons/LoanIcon";
+import { useUserPreferences } from "../preferences/UserPreferencesProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback } from "react";
-
-const tabs = [
-    { href: "/home", label: "Home", icon: Home },
-    { href: "/accounts", label: "Accounts", icon: Wallet },
-    { href: "/loans", label: "Loans", icon: LoanIcon },
-    { href: "/more", label: "More", icon: LayoutGrid },
-] as const;
-
-const moreRoutes = ["/more", "/installments", "/payments", "/profile"];
+import { useCallback, useMemo } from "react";
 
 function triggerHaptic() {
     window.Telegram?.WebApp?.HapticFeedback?.impactOccurred?.("light");
@@ -22,6 +14,19 @@ function triggerHaptic() {
 
 export default function BottomNav() {
     const pathname = usePathname();
+    const { t } = useUserPreferences();
+
+    const tabs = useMemo(
+        () => [
+            { href: "/home", labelKey: "nav.home" as const, icon: Home },
+            { href: "/accounts", labelKey: "nav.accounts" as const, icon: Wallet },
+            { href: "/loans", labelKey: "nav.loans" as const, icon: LoanIcon },
+            { href: "/more", labelKey: "nav.more" as const, icon: LayoutGrid },
+        ],
+        [],
+    );
+
+    const moreRoutes = ["/more", "/installments", "/payments", "/profile", "/settings"];
 
     const isActive = useCallback(
         (href: string) => {
@@ -35,7 +40,7 @@ export default function BottomNav() {
 
     return (
         <nav
-            aria-label="Main navigation"
+            aria-label={t("nav.main")}
             className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
         >
             <div
@@ -47,15 +52,16 @@ export default function BottomNav() {
                 )}
             >
                 <div className="grid grid-cols-4 items-end">
-                    {tabs.map(({ href, label, icon: Icon }) => {
+                    {tabs.map(({ href, labelKey, icon: Icon }) => {
                         const active = isActive(href);
+                        const label = t(labelKey);
 
                         return (
                             <Link
                                 key={href}
                                 href={href}
                                 aria-current={active ? "page" : undefined}
-                                aria-label={active ? label : `${label} page`}
+                                aria-label={label}
                                 onClick={triggerHaptic}
                                 className={cn(
                                     "relative flex flex-col items-center justify-end",

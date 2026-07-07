@@ -1,18 +1,44 @@
+'use client';
+
 import UserShell from "../components/shell/UserShell";
 import Link from "next/link";
-import { Calendar, ChevronRight, CreditCard, User } from "lucide-react";
-
-const links = [
-    { href: "/installments", label: "Installments", description: "Upcoming and paid schedules", icon: Calendar },
-    { href: "/payments", label: "Payments", description: "Payment history and status", icon: CreditCard },
-    { href: "/profile", label: "Profile", description: "Account and security", icon: User },
-];
+import { Calendar, ChevronRight, CreditCard, Settings, User } from "lucide-react";
+import { useUserPreferences } from "../components/preferences/UserPreferencesProvider";
 
 export default function MorePage() {
+    const { t } = useUserPreferences();
+
+    const links = [
+        {
+            href: "/installments",
+            labelKey: "more.installments" as const,
+            descKey: "more.installmentsDesc" as const,
+            icon: Calendar,
+        },
+        {
+            href: "/payments",
+            labelKey: "more.payments" as const,
+            descKey: "more.paymentsDesc" as const,
+            icon: CreditCard,
+        },
+        {
+            href: "/profile",
+            labelKey: "more.profile" as const,
+            descKey: "more.profileDesc" as const,
+            icon: User,
+        },
+        {
+            href: "/settings",
+            labelKey: "more.settings" as const,
+            descKey: "more.settingsDesc" as const,
+            icon: Settings,
+        },
+    ];
+
     return (
-        <UserShell title="More" description="Shortcuts and settings">
+        <UserShell titleKey="pages.more" descriptionKey="pages.moreDesc">
             <div className="space-y-2">
-                {links.map(({ href, label, description, icon: Icon }) => (
+                {links.map(({ href, labelKey, descKey, icon: Icon }) => (
                     <Link
                         key={href}
                         href={href}
@@ -22,12 +48,12 @@ export default function MorePage() {
                             <Icon className="h-5 w-5" strokeWidth={1.75} />
                         </span>
                         <span className="min-w-0 flex-1">
-                            <span className="block font-medium">{label}</span>
+                            <span className="block font-medium">{t(labelKey)}</span>
                             <span className="block text-xs text-[var(--color-muted-foreground)]">
-                                {description}
+                                {t(descKey)}
                             </span>
                         </span>
-                        <ChevronRight className="h-4 w-4 shrink-0 text-[var(--color-muted-foreground)] transition-transform duration-200 group-hover:translate-x-0.5" />
+                        <ChevronRight className="rtl-flip h-4 w-4 shrink-0 text-[var(--color-muted-foreground)] transition-transform duration-200 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                     </Link>
                 ))}
             </div>

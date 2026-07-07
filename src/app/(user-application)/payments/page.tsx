@@ -10,7 +10,7 @@ export default async function PaymentsPage({
     searchParams: Promise<PageSearchParams>;
 }) {
     return (
-        <UserShell title="Payments">
+        <UserShell titleKey="pages.payments">
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
                 <LoadPayments searchParams={searchParams} />
             </Suspense>

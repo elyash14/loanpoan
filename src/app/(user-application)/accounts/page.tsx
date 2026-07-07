@@ -10,7 +10,7 @@ export default async function AccountsPage({
     searchParams: Promise<PageSearchParams>;
 }) {
     return (
-        <UserShell title="My accounts" description="Balances and account details">
+        <UserShell titleKey="pages.accounts" descriptionKey="pages.accountsDesc">
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
                 <LoadAccounts searchParams={searchParams} />
             </Suspense>

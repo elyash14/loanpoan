@@ -3,6 +3,7 @@
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { LoanIcon } from "../../components/icons/LoanIcon";
+import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { formatMoney } from "utils/formatMoney";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -36,27 +37,28 @@ type Props = {
 };
 
 export default function HomeOverview({ fullName, stats, related, systemStats }: Props) {
+    const { t } = useUserPreferences();
     const parsedStats = useMemo(() => JSON.parse(stats) as Stats, [stats]);
     const parsedRelated = useMemo(() => JSON.parse(related) as Related, [related]);
     const parsedSystem = useMemo(() => JSON.parse(systemStats) as SystemStats, [systemStats]);
 
     const cards = [
-        { label: "Balance", value: parsedStats.totalBalance, href: "/accounts" },
-        { label: "Loans", value: parsedStats.totals.loans, href: "/loans", count: parsedRelated.loansCount, icon: LoanIcon },
-        { label: "Installments", value: parsedStats.totals.installments, href: "/installments", count: parsedRelated.installmentsCount },
-        { label: "Payments", value: parsedStats.totals.payments, href: "/payments" },
+        { labelKey: "home.balance" as const, value: parsedStats.totalBalance, href: "/accounts" },
+        { labelKey: "home.loans" as const, value: parsedStats.totals.loans, href: "/loans", count: parsedRelated.loansCount, icon: LoanIcon },
+        { labelKey: "home.installments" as const, value: parsedStats.totals.installments, href: "/installments", count: parsedRelated.installmentsCount },
+        { labelKey: "home.payments" as const, value: parsedStats.totals.payments, href: "/payments" },
     ];
 
     const overdueCards = [
-        { label: "Overdue loans", value: parsedStats.overdue.loans, href: "/loans?status=Overdue", icon: LoanIcon },
-        { label: "Overdue payments", value: parsedStats.overdue.payments, href: "/payments?status=Overdue" },
-        { label: "Overdue installments", value: parsedStats.overdue.installments, href: "/installments?status=Overdue" },
+        { labelKey: "home.overdueLoans" as const, value: parsedStats.overdue.loans, href: "/loans?status=Overdue", icon: LoanIcon },
+        { labelKey: "home.overduePayments" as const, value: parsedStats.overdue.payments, href: "/payments?status=Overdue" },
+        { labelKey: "home.overdueInstallments" as const, value: parsedStats.overdue.installments, href: "/installments?status=Overdue" },
     ];
 
     return (
         <div className="space-y-6">
             <div>
-                <p className="text-sm text-[var(--color-muted-foreground)]">Welcome back</p>
+                <p className="text-sm text-[var(--color-muted-foreground)]">{t("home.welcome")}</p>
                 <h2 className="text-xl font-semibold">{fullName}</h2>
             </div>
 
@@ -69,9 +71,9 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                                     {"icon" in card && card.icon ? (
                                         <card.icon className="h-4 w-4 text-[var(--color-primary)]" />
                                     ) : null}
-                                    {card.label}
+                                    {t(card.labelKey)}
                                     {"count" in card && card.count != null ? (
-                                        <Badge className="ml-2" variant="secondary">{card.count}</Badge>
+                                        <Badge className="ms-2" variant="secondary">{card.count}</Badge>
                                     ) : null}
                                 </CardTitle>
                             </CardHeader>
@@ -84,7 +86,7 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
             </div>
 
             <div>
-                <h3 className="mb-3 text-sm font-medium text-[var(--color-muted-foreground)]">Overdue</h3>
+                <h3 className="mb-3 text-sm font-medium text-[var(--color-muted-foreground)]">{t("home.overdue")}</h3>
                 <div className="space-y-2">
                     {overdueCards.map((card) => (
                         <Link key={card.href} href={card.href}>
@@ -94,7 +96,7 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                                         {"icon" in card && card.icon ? (
                                             <card.icon className="h-4 w-4 text-[var(--color-destructive)]" />
                                         ) : null}
-                                        {card.label}
+                                        {t(card.labelKey)}
                                     </span>
                                     <span className="font-semibold tabular-nums text-[var(--color-destructive)]">
                                         {formatMoney(card.value)}
@@ -108,14 +110,14 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base">System overview</CardTitle>
+                    <CardTitle className="text-base">{t("home.systemOverview")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-[var(--color-muted-foreground)]">
-                    <p>Active members: {parsedSystem.userCount}</p>
-                    <p>Accounts in system: {parsedSystem.accountCount}</p>
-                    <p>Loans in system: {parsedSystem.loanCount}</p>
-                    <p>Standard installment: {formatMoney(parsedSystem.currentInstallmentAmount)}</p>
-                    <p className="text-xs">Updated {dayjs().format("YYYY-MM-DD")}</p>
+                    <p>{t("home.activeMembers")}: {parsedSystem.userCount}</p>
+                    <p>{t("home.accountsInSystem")}: {parsedSystem.accountCount}</p>
+                    <p>{t("home.loansInSystem")}: {parsedSystem.loanCount}</p>
+                    <p>{t("home.standardInstallment")}: {formatMoney(parsedSystem.currentInstallmentAmount)}</p>
+                    <p className="text-xs">{t("home.updated", { date: dayjs().format("YYYY-MM-DD") })}</p>
                 </CardContent>
             </Card>
         </div>

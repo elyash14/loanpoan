@@ -4,8 +4,10 @@ import { cn } from "utils/cn";
 import { formatMoney } from "utils/formatMoney";
 import { ChevronRight, Wallet } from "lucide-react";
 import { LoanIcon } from "../../components/icons/LoanIcon";
+import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import Link from "next/link";
 import dayjs from "dayjs";
+import "dayjs/locale/fa";
 
 export type AccountCardData = {
     id: number;
@@ -25,6 +27,7 @@ type Props = {
 };
 
 export default function AccountCard({ account }: Props) {
+    const { t, locale } = useUserPreferences();
     const balance = Number(account.balance ?? 0);
     const isPositive = balance > 0;
     const hasActiveLoan = account.loans.some((loan) => loan.status === "IN_PROGRESS");
@@ -65,7 +68,7 @@ export default function AccountCard({ account }: Props) {
                         </span>
                         <div className="min-w-0">
                             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-muted-foreground)]">
-                                Account
+                                {t("common.account")}
                             </p>
                             <h3 className="truncate text-base font-semibold tracking-tight">
                                 {account.code}
@@ -78,13 +81,13 @@ export default function AccountCard({ account }: Props) {
                         </div>
                     </div>
                     <ChevronRight
-                        className="mt-1 h-4 w-4 shrink-0 text-[var(--color-muted-foreground)] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--color-primary)]"
+                        className="rtl-flip mt-1 h-4 w-4 shrink-0 text-[var(--color-muted-foreground)] transition-transform duration-200 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 group-hover:text-[var(--color-primary)]"
                         strokeWidth={1.75}
                     />
                 </div>
 
                 <div className="relative mt-4 border-t border-[var(--color-border)]/60 pt-4">
-                    <p className="text-xs text-[var(--color-muted-foreground)]">Balance</p>
+                    <p className="text-xs text-[var(--color-muted-foreground)]">{t("common.balance")}</p>
                     <div className="mt-1 flex items-center justify-between gap-3">
                         <p
                             className={cn(
@@ -97,10 +100,10 @@ export default function AccountCard({ account }: Props) {
                         {hasActiveLoan ? (
                             <span
                                 className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-[var(--color-muted-foreground)]"
-                                title="This account has an active loan"
+                                title={t("common.onLoan")}
                             >
                                 <LoanIcon className="h-5 w-5 text-[var(--color-accent)]" />
-                                <span>On loan</span>
+                                <span>{t("common.onLoan")}</span>
                             </span>
                         ) : null}
                     </div>
@@ -108,7 +111,9 @@ export default function AccountCard({ account }: Props) {
 
                 {account.openedAt ? (
                     <p className="relative mt-3 text-xs text-[var(--color-muted-foreground)]">
-                        Opened {dayjs(account.openedAt).format("MMM D, YYYY")}
+                        {t("common.opened", {
+                            date: dayjs(account.openedAt).locale(locale).format("MMM D, YYYY"),
+                        })}
                     </p>
                 ) : null}
             </article>

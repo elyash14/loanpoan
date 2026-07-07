@@ -2,6 +2,7 @@
 
 import AccountCard, { AccountCardData } from "./AccountCard";
 import SimplePagination from "../../components/SimplePagination";
+import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { Wallet } from "lucide-react";
 import { useMemo } from "react";
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export default function AccountsList({ accounts, totalPages, currentPage, searchParams }: Props) {
+    const { t } = useUserPreferences();
     const rows = useMemo(() => JSON.parse(accounts) as AccountCardData[], [accounts]);
 
     if (!rows.length) {
@@ -21,9 +23,9 @@ export default function AccountsList({ accounts, totalPages, currentPage, search
                 <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-muted)] text-[var(--color-muted-foreground)]">
                     <Wallet className="h-5 w-5" strokeWidth={1.75} />
                 </span>
-                <p className="font-medium">No accounts yet</p>
+                <p className="font-medium">{t("accounts.emptyTitle")}</p>
                 <p className="mt-1 max-w-[240px] text-sm text-[var(--color-muted-foreground)]">
-                    Your linked accounts will show up here once they are assigned to you.
+                    {t("accounts.emptyDesc")}
                 </p>
             </div>
         );

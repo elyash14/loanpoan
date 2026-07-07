@@ -1,11 +1,13 @@
 'use client';
 
 import { isTelegramWebApp } from "./telegram/TelegramProvider";
+import { useUserPreferences } from "./preferences/UserPreferencesProvider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function UserPageAwaitingAuth() {
     const router = useRouter();
+    const { t } = useUserPreferences();
 
     useEffect(() => {
         const refresh = () => router.refresh();
@@ -25,7 +27,7 @@ export default function UserPageAwaitingAuth() {
 
     return (
         <div className="flex min-h-[40vh] items-center justify-center">
-            <p className="text-sm text-[var(--color-muted-foreground)]">Signing you in…</p>
+            <p className="text-sm text-[var(--color-muted-foreground)]">{t("common.signingInShort")}</p>
         </div>
     );
 }

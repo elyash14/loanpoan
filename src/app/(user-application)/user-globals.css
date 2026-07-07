@@ -36,6 +36,14 @@
   scroll-padding-bottom: calc(var(--shell-nav-offset) + env(safe-area-inset-bottom, 0px));
 }
 
+#user-app[data-locale="fa"] {
+  font-family: var(--font-user-panel-fa), system-ui, -apple-system, sans-serif;
+}
+
+#user-app[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
 #user-app.light {
   --color-background: hsl(220 33% 97%);
   --color-foreground: hsl(222 47% 11%);

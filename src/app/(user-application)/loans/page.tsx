@@ -10,7 +10,7 @@ export default async function LoansPage({
     searchParams: Promise<PageSearchParams>;
 }) {
     return (
-        <UserShell title="My loans">
+        <UserShell titleKey="pages.loans">
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
                 <LoadLoans searchParams={searchParams} />
             </Suspense>

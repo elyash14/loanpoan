@@ -4,16 +4,9 @@ import { ITEMS_PER_PAGE } from "utils/configs";
 import { PageSearchParams } from "utils/types/pageTypes";
 import PaymentsList from "./PaymentsList";
 import { serializeClient } from "utils/serialize";
-import StatusFilter from "../../components/StatusFilter";
+import TranslatedStatusFilter from "../../components/TranslatedStatusFilter";
 import { paginatedPaymentsList } from "@database/payment/data";
 import UserPageAwaitingAuth from "../../components/UserPageAwaitingAuth";
-
-const STATUS_OPTIONS = [
-    { label: "All", value: "" },
-    { label: "Not paid", value: "Not Paid" },
-    { label: "Paid", value: "Paid" },
-    { label: "Overdue", value: "Overdue" },
-];
 
 type Props = { searchParams: Promise<PageSearchParams> };
 
@@ -37,7 +30,7 @@ export default async function LoadPayments({ searchParams }: Props) {
 
     return (
         <>
-            <StatusFilter options={STATUS_OPTIONS} value={status} basePath="/payments" />
+            <TranslatedStatusFilter variant="payments" value={status} basePath="/payments" />
             <PaymentsList
                 payments={serializeClient(data)}
                 totalPages={Math.ceil(total / limit)}

@@ -4,15 +4,8 @@ import { ITEMS_PER_PAGE } from "utils/configs";
 import { PageSearchParams } from "utils/types/pageTypes";
 import InstallmentsList from "./InstallmentsList";
 import { serializeClient } from "utils/serialize";
-import StatusFilter from "../../components/StatusFilter";
+import TranslatedStatusFilter from "../../components/TranslatedStatusFilter";
 import UserPageAwaitingAuth from "../../components/UserPageAwaitingAuth";
-
-const STATUS_OPTIONS = [
-    { label: "All", value: "" },
-    { label: "Not paid", value: "Not Paid" },
-    { label: "Paid", value: "Paid" },
-    { label: "Overdue", value: "Overdue" },
-];
 
 type Props = { searchParams: Promise<PageSearchParams> };
 
@@ -36,7 +29,7 @@ export default async function LoadInstallments({ searchParams }: Props) {
 
     return (
         <>
-            <StatusFilter options={STATUS_OPTIONS} value={status} basePath="/installments" />
+            <TranslatedStatusFilter variant="installments" value={status} basePath="/installments" />
             <InstallmentsList
                 installments={serializeClient(data)}
                 totalPages={Math.ceil(total / limit)}

@@ -4,15 +4,8 @@ import { ITEMS_PER_PAGE } from "utils/configs";
 import { PageSearchParams } from "utils/types/pageTypes";
 import LoansList from "./LoansList";
 import { serializeClient } from "utils/serialize";
-import StatusFilter from "../../components/StatusFilter";
+import TranslatedStatusFilter from "../../components/TranslatedStatusFilter";
 import UserPageAwaitingAuth from "../../components/UserPageAwaitingAuth";
-
-const STATUS_OPTIONS = [
-    { label: "All", value: "" },
-    { label: "In progress", value: "IN_PROGRESS" },
-    { label: "Finished", value: "FINISHED" },
-    { label: "Overdue", value: "Overdue" },
-];
 
 type Props = { searchParams: Promise<PageSearchParams> };
 
@@ -35,7 +28,7 @@ export default async function LoadLoans({ searchParams }: Props) {
 
     return (
         <>
-            <StatusFilter options={STATUS_OPTIONS} value={status} basePath="/loans" />
+            <TranslatedStatusFilter variant="loans" value={status} basePath="/loans" />
             <LoansList
                 loans={serializeClient(data)}
                 totalPages={Math.ceil(total / limit)}

@@ -2,25 +2,38 @@
 
 import BottomNav from "./BottomNav";
 import { cn } from "utils/cn";
+import type { MessageKey } from "../../i18n";
+import { useUserPreferences } from "../preferences/UserPreferencesProvider";
 import { ReactNode } from "react";
 
 type Props = {
     children: ReactNode;
     title?: string;
+    titleKey?: MessageKey;
     hideNav?: boolean;
     description?: string;
+    descriptionKey?: MessageKey;
 };
 
-export default function UserShell({ children, title, hideNav, description }: Props) {
-    const pageTitle = title ?? "Next Financial";
+export default function UserShell({
+    children,
+    title,
+    titleKey,
+    hideNav,
+    description,
+    descriptionKey,
+}: Props) {
+    const { t } = useUserPreferences();
+    const pageTitle = titleKey ? t(titleKey) : title ?? t("app.name");
+    const pageDescription = descriptionKey ? t(descriptionKey) : description;
 
     return (
         <div className="user-shell-bg flex min-h-dvh flex-col">
             <a
                 href="#user-main"
-                className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-[var(--radius-md)] focus:bg-[var(--color-primary)] focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--color-primary-foreground)]"
+                className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-[100] focus:rounded-[var(--radius-md)] focus:bg-[var(--color-primary)] focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--color-primary-foreground)]"
             >
-                Skip to content
+                {t("common.skipToContent")}
             </a>
 
             <header
@@ -39,14 +52,14 @@ export default function UserShell({ children, title, hideNav, description }: Pro
                     </div>
                     <div className="min-w-0 flex-1">
                         <p className="truncate text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-muted-foreground)]">
-                            Next Financial
+                            {t("app.name")}
                         </p>
                         <h1 className="truncate text-base font-semibold leading-tight tracking-tight">
                             {pageTitle}
                         </h1>
-                        {description ? (
+                        {pageDescription ? (
                             <p className="truncate text-xs text-[var(--color-muted-foreground)]">
-                                {description}
+                                {pageDescription}
                             </p>
                         ) : null}
                     </div>
