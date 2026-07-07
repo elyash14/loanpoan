@@ -2,14 +2,15 @@
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import LoadMoreButton from "../../components/LoadMoreButton";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
 import Money from "../../components/preferences/Money";
-import SimplePagination from "../../components/SimplePagination";
+import { loadMoreUserInstallments } from "@database/user-panel/data";
 import { cn } from "utils/cn";
 import { CalendarClock } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type InstallmentRow = {
     id: number;
@@ -38,31 +39,69 @@ function getInstallmentStatus(row: InstallmentRow): InstallmentStatus {
 type Props = {
     installments: string;
     summary: string;
-    totalPages: number;
-    currentPage: number;
-    searchParams: Record<string, string>;
+    total: number;
+    hasMore: boolean;
+    status: string;
+    search: string;
+    sortBy: string;
+    sortDir: "+" | "-";
+    accountId?: number;
 };
 
 export default function InstallmentsList({
     installments,
     summary,
-    totalPages,
-    currentPage,
-    searchParams,
+    total,
+    hasMore: initialHasMore,
+    status,
+    search,
+    sortBy,
+    sortDir,
+    accountId,
 }: Props) {
     const { t } = useUserPreferences();
     const { formatDate, formatNumber } = useLocaleFormat();
-    const rows = useMemo(() => JSON.parse(installments) as InstallmentRow[], [installments]);
+    const initialRows = useMemo(() => JSON.parse(installments) as InstallmentRow[], [installments]);
     const stats = useMemo(() => JSON.parse(summary) as Summary, [summary]);
+    const [rows, setRows] = useState(initialRows);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(initialHasMore);
+    const [loading, setLoading] = useState(false);
 
-    const statusInfo = (status: InstallmentStatus) => {
-        if (status === "paid") {
+    useEffect(() => {
+        setRows(initialRows);
+        setPage(1);
+        setHasMore(initialHasMore);
+    }, [installments, initialHasMore, initialRows]);
+
+    const handleLoadMore = async () => {
+        const nextPage = page + 1;
+        setLoading(true);
+        try {
+            const result = await loadMoreUserInstallments({
+                page: nextPage,
+                status,
+                search,
+                sortBy,
+                sortDir,
+                accountId,
+            });
+            setRows((current) => [...current, ...result.data]);
+            setPage(nextPage);
+            setHasMore(result.hasMore);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const statusInfo = (installmentStatus: InstallmentStatus) => {
+        if (installmentStatus === "paid") {
             return {
                 label: t("status.paid"),
                 className: "border border-emerald-400/25 bg-emerald-500/15 text-emerald-300",
             };
         }
-        if (status === "overdue") {
+        if (installmentStatus === "overdue") {
             return {
                 label: t("status.overdue"),
                 className: "border border-rose-400/25 bg-rose-500/15 text-rose-200",
@@ -110,8 +149,8 @@ export default function InstallmentsList({
                 <p className="text-sm text-muted-foreground">{t("installments.empty")}</p>
             ) : (
                 rows.map((row) => {
-                    const status = getInstallmentStatus(row);
-                    const badge = statusInfo(status);
+                    const installmentStatus = getInstallmentStatus(row);
+                    const badge = statusInfo(installmentStatus);
 
                     return (
                         <Card
@@ -155,12 +194,16 @@ export default function InstallmentsList({
                 })
             )}
 
-            <SimplePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                basePath="/installments"
-                searchParams={searchParams}
-            />
+            {rows.length > 0 && total > rows.length ? (
+                <p className="text-center text-xs text-muted-foreground">
+                    {t("common.showingCount", {
+                        shown: formatNumber(rows.length),
+                        total: formatNumber(total),
+                    })}
+                </p>
+            ) : null}
+
+            <LoadMoreButton hasMore={hasMore} loading={loading} onClick={handleLoadMore} />
         </div>
     );
 }

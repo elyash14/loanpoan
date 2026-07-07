@@ -13,6 +13,7 @@ export type PageSearchParams = {
     status?: string;
     from?: string;
     fromAccount?: string;
+    fromLoan?: string;
 };
 
 export type ListPage = {

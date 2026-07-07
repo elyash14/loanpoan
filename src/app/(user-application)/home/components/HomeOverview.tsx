@@ -71,7 +71,7 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
         { href: "/accounts", labelKey: "pages.accounts" as const, icon: Wallet },
         { href: "/loans", labelKey: "pages.loans" as const, icon: LoanIcon },
         { href: "/installments?from=home", labelKey: "pages.installments" as const, icon: CalendarClock },
-        { href: "/payments", labelKey: "pages.payments" as const, icon: WalletCards },
+        { href: "/payments?from=home", labelKey: "pages.payments" as const, icon: WalletCards },
     ];
 
     return (

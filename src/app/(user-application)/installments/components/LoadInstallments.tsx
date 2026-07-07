@@ -21,8 +21,7 @@ export default async function LoadInstallments({ searchParams }: Props) {
         return <UserPageAwaitingAuth />;
     }
 
-    const page = Number(params?.page) || 1;
-    const limit = Number(params?.limit) || ITEMS_PER_PAGE;
+    const limit = ITEMS_PER_PAGE;
     const sortBy = params?.sortBy || "dueDate";
     const sortDir = (params?.sortDir || "-") as "+" | "-";
     const search = params?.search || "";
@@ -38,18 +37,8 @@ export default async function LoadInstallments({ searchParams }: Props) {
     const [accounts, summary, { data, total }] = await Promise.all([
         getUserAccountFilterOptions(userId),
         getUserInstallmentsSummary(userId, accountId),
-        paginatedUserInstallments(userId, page, limit, status, search, sortBy, sortDir, accountId),
+        paginatedUserInstallments(userId, 1, limit, status, search, sortBy, sortDir, accountId),
     ]);
-
-    const queryParams = {
-        search,
-        sortBy,
-        sortDir,
-        ...(from ? { from } : {}),
-        ...(fromAccount ? { fromAccount: String(fromAccount) } : {}),
-        ...(status ? { status } : {}),
-        ...(accountId ? { account: String(accountId) } : {}),
-    };
 
     return (
         <>
@@ -63,9 +52,13 @@ export default async function LoadInstallments({ searchParams }: Props) {
             <InstallmentsList
                 installments={serializeClient(data)}
                 summary={serializeClient(summary)}
-                totalPages={Math.ceil(total / limit)}
-                currentPage={page}
-                searchParams={queryParams}
+                total={total}
+                hasMore={data.length < total}
+                status={status}
+                search={search}
+                sortBy={sortBy}
+                sortDir={sortDir}
+                accountId={accountId}
             />
         </>
     );

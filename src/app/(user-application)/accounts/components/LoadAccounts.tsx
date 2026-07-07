@@ -14,20 +14,22 @@ export default async function LoadAccounts({ searchParams }: Props) {
     if (!userId) {
         return <UserPageAwaitingAuth />;
     }
-    const page = Number(params?.page) || 1;
-    const limit = Number(params?.limit) || ITEMS_PER_PAGE;
+
+    const limit = ITEMS_PER_PAGE;
     const sortBy = params?.sortBy || "openedAt";
     const sortDir = (params?.sortDir || "-") as "+" | "-";
     const search = params?.search || "";
 
-    const { data, total } = await paginatedUserAccounts(userId, page, limit, search, sortBy, sortDir);
+    const { data, total } = await paginatedUserAccounts(userId, 1, limit, search, sortBy, sortDir);
 
     return (
         <AccountsList
             accounts={serializeClient(data)}
-            totalPages={Math.ceil(total / limit)}
-            currentPage={page}
-            searchParams={{ search, sortBy, sortDir }}
+            total={total}
+            hasMore={data.length < total}
+            search={search}
+            sortBy={sortBy}
+            sortDir={sortDir}
         />
     );
 }

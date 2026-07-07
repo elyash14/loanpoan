@@ -1,21 +1,61 @@
 'use client';
 
 import AccountCard, { AccountCardData } from "./AccountCard";
-import SimplePagination from "../../components/SimplePagination";
+import LoadMoreButton from "../../components/LoadMoreButton";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
+import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
+import { loadMoreUserAccounts } from "@database/user-panel/data";
 import { Wallet } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
     accounts: string;
-    totalPages: number;
-    currentPage: number;
-    searchParams: Record<string, string>;
+    total: number;
+    hasMore: boolean;
+    search: string;
+    sortBy: string;
+    sortDir: "+" | "-";
 };
 
-export default function AccountsList({ accounts, totalPages, currentPage, searchParams }: Props) {
+export default function AccountsList({
+    accounts,
+    total,
+    hasMore: initialHasMore,
+    search,
+    sortBy,
+    sortDir,
+}: Props) {
     const { t } = useUserPreferences();
-    const rows = useMemo(() => JSON.parse(accounts) as AccountCardData[], [accounts]);
+    const { formatNumber } = useLocaleFormat();
+    const initialRows = useMemo(() => JSON.parse(accounts) as AccountCardData[], [accounts]);
+    const [rows, setRows] = useState(initialRows);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(initialHasMore);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setRows(initialRows);
+        setPage(1);
+        setHasMore(initialHasMore);
+    }, [accounts, initialHasMore, initialRows]);
+
+    const handleLoadMore = async () => {
+        const nextPage = page + 1;
+        setLoading(true);
+        try {
+            const result = await loadMoreUserAccounts({
+                page: nextPage,
+                search,
+                sortBy,
+                sortDir,
+            });
+            setRows((current) => [...current, ...result.data]);
+            setPage(nextPage);
+            setHasMore(result.hasMore);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!rows.length) {
         return (
@@ -36,12 +76,17 @@ export default function AccountsList({ accounts, totalPages, currentPage, search
             {rows.map((account) => (
                 <AccountCard key={account.id} account={account} />
             ))}
-            <SimplePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                basePath="/accounts"
-                searchParams={searchParams}
-            />
+
+            {total > rows.length ? (
+                <p className="text-center text-xs text-muted-foreground">
+                    {t("common.showingCount", {
+                        shown: formatNumber(rows.length),
+                        total: formatNumber(total),
+                    })}
+                </p>
+            ) : null}
+
+            <LoadMoreButton hasMore={hasMore} loading={loading} onClick={handleLoadMore} />
         </div>
     );
 }

@@ -16,7 +16,7 @@ export default function MorePage() {
             icon: Calendar,
         },
         {
-            href: "/payments",
+            href: "/payments?from=more",
             labelKey: "more.payments" as const,
             descKey: "more.paymentsDesc" as const,
             icon: CreditCard,

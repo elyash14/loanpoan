@@ -2,11 +2,12 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
-import SimplePagination from "../../components/SimplePagination";
+import { useEffect, useMemo, useState } from "react";
+import LoadMoreButton from "../../components/LoadMoreButton";
 import Money from "../../components/preferences/Money";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
+import { loadMoreUserLoans } from "@database/user-panel/data";
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 
@@ -20,30 +21,71 @@ type LoanRow = {
 
 type Props = {
     loans: string;
-    totalPages: number;
-    currentPage: number;
-    searchParams: Record<string, string>;
+    total: number;
+    hasMore: boolean;
+    search: string;
+    sortBy: string;
+    sortDir: "+" | "-";
+    status: string;
 };
 
-export default function LoansList({ loans, totalPages, currentPage, searchParams }: Props) {
+export default function LoansList({
+    loans,
+    total,
+    hasMore: initialHasMore,
+    search,
+    sortBy,
+    sortDir,
+    status,
+}: Props) {
     const { t } = useUserPreferences();
     const { formatNumber, formatDate, formatDigits } = useLocaleFormat();
-    const rows = useMemo(() => JSON.parse(loans) as LoanRow[], [loans]);
+    const initialRows = useMemo(() => JSON.parse(loans) as LoanRow[], [loans]);
+    const [rows, setRows] = useState(initialRows);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(initialHasMore);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setRows(initialRows);
+        setPage(1);
+        setHasMore(initialHasMore);
+    }, [loans, initialHasMore, initialRows]);
+
     const activeLoans = rows.filter((row) => row.status === "IN_PROGRESS").length;
     const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount), 0);
+
+    const handleLoadMore = async () => {
+        const nextPage = page + 1;
+        setLoading(true);
+        try {
+            const result = await loadMoreUserLoans({
+                page: nextPage,
+                search,
+                sortBy,
+                sortDir,
+                status: status || undefined,
+            });
+            setRows((current) => [...current, ...result.data]);
+            setPage(nextPage);
+            setHasMore(result.hasMore);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!rows.length) {
         return <p className="text-sm text-muted-foreground">{t("loans.empty")}</p>;
     }
 
-    const statusInfo = (status: string) => {
-        if (status === "IN_PROGRESS") {
+    const statusInfo = (loanStatus: string) => {
+        if (loanStatus === "IN_PROGRESS") {
             return {
                 label: t("status.inProgress"),
                 className: "border border-emerald-400/25 bg-emerald-500/15 text-emerald-300",
             };
         }
-        if (status === "FINISHED") {
+        if (loanStatus === "FINISHED") {
             return {
                 label: t("status.finished"),
                 className: "border border-sky-400/20 bg-sky-500/10 text-sky-200",
@@ -67,7 +109,7 @@ export default function LoansList({ loans, totalPages, currentPage, searchParams
                     <div className="col-span-1 flex min-w-0 flex-col gap-2">
                         <div className="rounded-lg bg-muted/25 px-2.5 py-2">
                             <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{t("loans.summaryTotal")}</p>
-                            <p className="text-lg font-semibold tabular-nums leading-6">{formatNumber(rows.length)}</p>
+                            <p className="text-lg font-semibold tabular-nums leading-6">{formatNumber(total)}</p>
                         </div>
                         <div className="rounded-lg bg-muted/25 px-2.5 py-2">
                             <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{t("loans.summaryActive")}</p>
@@ -122,12 +164,17 @@ export default function LoansList({ loans, totalPages, currentPage, searchParams
                     </Card>
                 </Link>
             ))}
-            <SimplePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                basePath="/loans"
-                searchParams={searchParams}
-            />
+
+            {total > rows.length ? (
+                <p className="text-center text-xs text-muted-foreground">
+                    {t("common.showingCount", {
+                        shown: formatNumber(rows.length),
+                        total: formatNumber(total),
+                    })}
+                </p>
+            ) : null}
+
+            <LoadMoreButton hasMore={hasMore} loading={loading} onClick={handleLoadMore} />
         </div>
     );
 }

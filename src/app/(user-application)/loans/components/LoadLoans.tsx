@@ -15,15 +15,15 @@ export default async function LoadLoans({ searchParams }: Props) {
     if (!userId) {
         return <UserPageAwaitingAuth />;
     }
-    const page = Number(params?.page) || 1;
-    const limit = Number(params?.limit) || ITEMS_PER_PAGE;
+
+    const limit = ITEMS_PER_PAGE;
     const sortBy = params?.sortBy || "createdAt";
     const sortDir = (params?.sortDir || "-") as "+" | "-";
     const search = params?.search || "";
     const status = params?.status || "";
 
     const { data, total } = await paginatedUserLoans(
-        userId, page, limit, search, sortBy, sortDir, status || undefined,
+        userId, 1, limit, search, sortBy, sortDir, status || undefined,
     );
 
     return (
@@ -31,9 +31,12 @@ export default async function LoadLoans({ searchParams }: Props) {
             <TranslatedStatusFilter variant="loans" value={status} basePath="/loans" />
             <LoansList
                 loans={serializeClient(data)}
-                totalPages={Math.ceil(total / limit)}
-                currentPage={page}
-                searchParams={{ search, sortBy, sortDir, ...(status ? { status } : {}) }}
+                total={total}
+                hasMore={data.length < total}
+                search={search}
+                sortBy={sortBy}
+                sortDir={sortDir}
+                status={status}
             />
         </>
     );

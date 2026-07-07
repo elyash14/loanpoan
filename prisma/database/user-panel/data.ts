@@ -6,6 +6,8 @@ import { paginatedInstallmentsList } from "@database/installments/data";
 import { paginatedPaymentsList } from "@database/payment/data";
 import { RichTableSortDir } from "@dashboard/components/table/interface";
 import { notFound } from "next/navigation";
+import { getPanelUserId } from "utils/auth/userSession";
+import { ITEMS_PER_PAGE } from "utils/configs";
 
 function decimalToString(value: { toString(): string } | null | undefined): string {
     return value?.toString() ?? "0";
@@ -288,7 +290,9 @@ export async function getUserAccountIfOwned(userId: number, accountId: number) {
                 at: when.toISOString(),
                 type: row.paidAt ? "payment-paid" : overdue ? "payment-overdue" : "payment-due",
                 amount: decimalToString(row.amount),
-                href: row.loanId ? `/payments?loan=${row.loanId}` : "/payments",
+                href: row.loanId
+                    ? `/payments?loan=${row.loanId}&from=loan&fromLoan=${row.loanId}`
+                    : "/payments?from=more",
             };
         }),
         ...latestLoans.map((row) => ({
@@ -362,7 +366,7 @@ export async function getUserLoanIfOwned(userId: number, loanId: number) {
                 type: row.paidAt ? "payment-paid" : overdue ? "payment-overdue" : "payment-upcoming",
                 at: at.toISOString(),
                 amount: decimalToString(row.amount),
-                href: `/payments?loan=${loan.id}`,
+                href: `/payments?loan=${loan.id}&from=loan&fromLoan=${loan.id}`,
             };
         })
         .sort((a, b) => +new Date(b.at) - +new Date(a.at))
@@ -442,6 +446,46 @@ export async function paginatedUserAccounts(
     return { total, data };
 }
 
+export async function loadMoreUserAccounts(options: {
+    page: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    sortDir?: RichTableSortDir;
+}) {
+    const userId = await getPanelUserId();
+    if (!userId) {
+        return { data: [], total: 0, hasMore: false };
+    }
+
+    const limit = options.limit ?? ITEMS_PER_PAGE;
+    const { data, total } = await paginatedUserAccounts(
+        userId,
+        options.page,
+        limit,
+        options.search,
+        options.sortBy,
+        options.sortDir,
+    );
+
+    return {
+        data: data.map((row) => ({
+            id: row.id,
+            code: row.code,
+            name: row.name,
+            balance: decimalToString(row.balance),
+            openedAt: row.openedAt?.toISOString() ?? null,
+            loans: row.loans.map((loan) => ({
+                id: loan.id,
+                amount: decimalToString(loan.amount),
+                status: loan.status,
+            })),
+        })),
+        total,
+        hasMore: options.page * limit < total,
+    };
+}
+
 export async function paginatedUserLoans(
     userId: number,
     page: number,
@@ -452,6 +496,48 @@ export async function paginatedUserLoans(
     status?: string,
 ) {
     return paginatedLoanList(page, limit, search, sortBy, sortDir, undefined, userId, status);
+}
+
+export async function loadMoreUserLoans(options: {
+    page: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    sortDir?: RichTableSortDir;
+    status?: string;
+}) {
+    const userId = await getPanelUserId();
+    if (!userId) {
+        return { data: [], total: 0, hasMore: false };
+    }
+
+    const limit = options.limit ?? ITEMS_PER_PAGE;
+    const { data, total } = await paginatedUserLoans(
+        userId,
+        options.page,
+        limit,
+        options.search,
+        options.sortBy,
+        options.sortDir,
+        options.status,
+    );
+
+    return {
+        data: data
+            .filter((row) => row.account)
+            .map((row) => ({
+                id: row.id,
+                amount: decimalToString(row.amount),
+                status: row.status,
+                createdAt: row.createdAt.toISOString(),
+                account: {
+                    id: row.account!.id,
+                    code: row.account!.code,
+                },
+            })),
+        total,
+        hasMore: options.page * limit < total,
+    };
 }
 
 export async function paginatedUserInstallments(
@@ -467,6 +553,51 @@ export async function paginatedUserInstallments(
     return paginatedInstallmentsList(
         page, limit, status, undefined, search, sortBy, sortDir, accountId, userId,
     );
+}
+
+export async function loadMoreUserInstallments(options: {
+    page: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    sortDir?: RichTableSortDir;
+    accountId?: number;
+}) {
+    const userId = await getPanelUserId();
+    if (!userId) {
+        return { data: [], total: 0, hasMore: false };
+    }
+
+    const limit = options.limit ?? ITEMS_PER_PAGE;
+    const { data, total } = await paginatedUserInstallments(
+        userId,
+        options.page,
+        limit,
+        options.status ?? "",
+        options.search,
+        options.sortBy,
+        options.sortDir,
+        options.accountId,
+    );
+
+    return {
+        data: data
+            .filter((row) => row.account)
+            .map((row) => ({
+                id: row.id,
+                amount: decimalToString(row.amount),
+                dueDate: row.dueDate.toISOString(),
+                paidAt: row.paidAt?.toISOString() ?? null,
+                account: {
+                    id: row.account!.id,
+                    code: row.account!.code,
+                    name: row.account!.name,
+                },
+            })),
+        total,
+        hasMore: options.page * limit < total,
+    };
 }
 
 export async function getUserAccountFilterOptions(userId: number) {
@@ -506,8 +637,89 @@ export async function paginatedUserPayments(
     search?: string,
     sortBy?: string,
     sortDir?: RichTableSortDir,
+    loanId?: number,
 ) {
-    return paginatedPaymentsList(page, limit, status, undefined, search, sortBy, sortDir, userId);
+    return paginatedPaymentsList(page, limit, status, loanId, search, sortBy, sortDir, userId);
+}
+
+export async function getUserLoanFilterOptions(userId: number) {
+    return prisma.loan.findMany({
+        where: { account: { userId, deletedAt: null } },
+        select: {
+            id: true,
+            account: { select: { code: true } },
+        },
+        orderBy: { createdAt: "desc" },
+    });
+}
+
+export async function getUserPaymentsSummary(userId: number, loanId?: number) {
+    const now = new Date();
+    const baseWhere = {
+        loan: { account: { userId } },
+        ...(loanId ? { loanId } : {}),
+    };
+
+    const [total, paid, overdue] = await Promise.all([
+        prisma.payment.count({ where: baseWhere }),
+        prisma.payment.count({ where: { ...baseWhere, paidAt: { not: null } } }),
+        prisma.payment.count({
+            where: { ...baseWhere, paidAt: null, dueDate: { lt: now } },
+        }),
+    ]);
+
+    const unpaid = total - paid;
+    const upcoming = unpaid - overdue;
+
+    return { total, paid, unpaid, overdue, upcoming };
+}
+
+export async function loadMoreUserPayments(options: {
+    page: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    sortDir?: RichTableSortDir;
+    loanId?: number;
+}) {
+    const userId = await getPanelUserId();
+    if (!userId) {
+        return { data: [], total: 0, hasMore: false };
+    }
+
+    const limit = options.limit ?? ITEMS_PER_PAGE;
+    const { data, total } = await paginatedUserPayments(
+        userId,
+        options.page,
+        limit,
+        options.status ?? "",
+        options.search,
+        options.sortBy,
+        options.sortDir,
+        options.loanId,
+    );
+
+    return {
+        data: data
+            .filter((row) => row.loan?.account)
+            .map((row) => ({
+                id: row.id,
+                amount: decimalToString(row.amount),
+                dueDate: row.dueDate.toISOString(),
+                paidAt: row.paidAt?.toISOString() ?? null,
+                loan: {
+                    id: row.loan!.id,
+                    account: {
+                        id: row.loan!.account!.id,
+                        code: row.loan!.account!.code,
+                        name: row.loan!.account!.name,
+                    },
+                },
+            })),
+        total,
+        hasMore: options.page * limit < total,
+    };
 }
 
 export async function getUserProfile(userId: number) {
