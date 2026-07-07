@@ -2,6 +2,7 @@
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { LoanIcon } from "../../components/icons/LoanIcon";
 import { formatMoney } from "utils/formatMoney";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -41,13 +42,13 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
 
     const cards = [
         { label: "Balance", value: parsedStats.totalBalance, href: "/accounts" },
-        { label: "Loans", value: parsedStats.totals.loans, href: "/loans", count: parsedRelated.loansCount },
+        { label: "Loans", value: parsedStats.totals.loans, href: "/loans", count: parsedRelated.loansCount, icon: LoanIcon },
         { label: "Installments", value: parsedStats.totals.installments, href: "/installments", count: parsedRelated.installmentsCount },
         { label: "Payments", value: parsedStats.totals.payments, href: "/payments" },
     ];
 
     const overdueCards = [
-        { label: "Overdue loans", value: parsedStats.overdue.loans, href: "/loans?status=Overdue" },
+        { label: "Overdue loans", value: parsedStats.overdue.loans, href: "/loans?status=Overdue", icon: LoanIcon },
         { label: "Overdue payments", value: parsedStats.overdue.payments, href: "/payments?status=Overdue" },
         { label: "Overdue installments", value: parsedStats.overdue.installments, href: "/installments?status=Overdue" },
     ];
@@ -64,7 +65,10 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                     <Link key={card.href} href={card.href}>
                         <Card className="transition hover:border-[var(--color-primary)]">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-[var(--color-muted-foreground)]">
+                                <CardTitle className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-muted-foreground)]">
+                                    {"icon" in card && card.icon ? (
+                                        <card.icon className="h-4 w-4 text-[var(--color-primary)]" />
+                                    ) : null}
                                     {card.label}
                                     {"count" in card && card.count != null ? (
                                         <Badge className="ml-2" variant="secondary">{card.count}</Badge>
@@ -86,7 +90,12 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                         <Link key={card.href} href={card.href}>
                             <Card className="border-[var(--color-destructive)]/30">
                                 <CardContent className="flex items-center justify-between py-3">
-                                    <span className="text-sm">{card.label}</span>
+                                    <span className="flex items-center gap-1.5 text-sm">
+                                        {"icon" in card && card.icon ? (
+                                            <card.icon className="h-4 w-4 text-[var(--color-destructive)]" />
+                                        ) : null}
+                                        {card.label}
+                                    </span>
                                     <span className="font-semibold tabular-nums text-[var(--color-destructive)]">
                                         {formatMoney(card.value)}
                                     </span>

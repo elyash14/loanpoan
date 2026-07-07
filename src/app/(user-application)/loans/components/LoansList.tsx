@@ -2,6 +2,7 @@
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent } from "../../components/ui/card";
+import { LoanIcon } from "../../components/icons/LoanIcon";
 import { formatMoney } from "utils/formatMoney";
 import Link from "next/link";
 import SimplePagination from "../../components/SimplePagination";
@@ -35,15 +36,20 @@ export default function LoansList({ loans, totalPages, currentPage, searchParams
             {rows.map((loan) => (
                 <Link key={loan.id} href={`/loans/${loan.id}`}>
                     <Card>
-                        <CardContent className="flex items-center justify-between py-4">
-                            <div>
-                                <p className="font-medium">{loan.account.code}</p>
-                                <p className="text-xs text-[var(--color-muted-foreground)]">
-                                    {dayjs(loan.createdAt).format("YYYY-MM-DD")}
-                                </p>
-                                <Badge variant="secondary" className="mt-1">{loan.status}</Badge>
+                        <CardContent className="flex items-center justify-between gap-3 py-4">
+                            <div className="flex min-w-0 items-start gap-3">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)]/12 text-[var(--color-primary)]">
+                                    <LoanIcon className="h-5 w-5" />
+                                </span>
+                                <div className="min-w-0">
+                                    <p className="font-medium">{loan.account.code}</p>
+                                    <p className="text-xs text-[var(--color-muted-foreground)]">
+                                        {dayjs(loan.createdAt).format("YYYY-MM-DD")}
+                                    </p>
+                                    <Badge variant="secondary" className="mt-1">{loan.status}</Badge>
+                                </div>
                             </div>
-                            <p className="font-semibold">{formatMoney(loan.amount)}</p>
+                            <p className="shrink-0 font-semibold tabular-nums">{formatMoney(loan.amount)}</p>
                         </CardContent>
                     </Card>
                 </Link>

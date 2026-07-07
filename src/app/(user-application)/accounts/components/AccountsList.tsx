@@ -1,19 +1,9 @@
 'use client';
 
-import { Card, CardContent } from "../../components/ui/card";
-import { formatMoney } from "utils/formatMoney";
-import Link from "next/link";
+import AccountCard, { AccountCardData } from "./AccountCard";
 import SimplePagination from "../../components/SimplePagination";
+import { Wallet } from "lucide-react";
 import { useMemo } from "react";
-import dayjs from "dayjs";
-
-type AccountRow = {
-    id: number;
-    code: string;
-    name: string | null;
-    balance: string;
-    openedAt: string | null;
-};
 
 type Props = {
     accounts: string;
@@ -23,33 +13,26 @@ type Props = {
 };
 
 export default function AccountsList({ accounts, totalPages, currentPage, searchParams }: Props) {
-    const rows = useMemo(() => JSON.parse(accounts) as AccountRow[], [accounts]);
+    const rows = useMemo(() => JSON.parse(accounts) as AccountCardData[], [accounts]);
 
     if (!rows.length) {
-        return <p className="text-sm text-[var(--color-muted-foreground)]">No accounts found.</p>;
+        return (
+            <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-dashed border-[var(--color-border)] bg-[var(--color-card)]/50 px-6 py-12 text-center">
+                <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-muted)] text-[var(--color-muted-foreground)]">
+                    <Wallet className="h-5 w-5" strokeWidth={1.75} />
+                </span>
+                <p className="font-medium">No accounts yet</p>
+                <p className="mt-1 max-w-[240px] text-sm text-[var(--color-muted-foreground)]">
+                    Your linked accounts will show up here once they are assigned to you.
+                </p>
+            </div>
+        );
     }
 
     return (
         <div className="space-y-3">
             {rows.map((account) => (
-                <Link key={account.id} href={`/accounts/${account.id}`}>
-                    <Card>
-                        <CardContent className="flex items-center justify-between py-4">
-                            <div>
-                                <p className="font-medium">{account.code}</p>
-                                {account.name ? (
-                                    <p className="text-sm text-[var(--color-muted-foreground)]">{account.name}</p>
-                                ) : null}
-                                {account.openedAt ? (
-                                    <p className="text-xs text-[var(--color-muted-foreground)]">
-                                        Opened {dayjs(account.openedAt).format("YYYY-MM-DD")}
-                                    </p>
-                                ) : null}
-                            </div>
-                            <p className="font-semibold">{formatMoney(account.balance)}</p>
-                        </CardContent>
-                    </Card>
-                </Link>
+                <AccountCard key={account.id} account={account} />
             ))}
             <SimplePagination
                 currentPage={currentPage}

@@ -2,6 +2,7 @@
 
 import { Badge } from "../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { LoanIcon } from "../../../components/icons/LoanIcon";
 import { formatMoney } from "utils/formatMoney";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -55,7 +56,8 @@ export default function AccountDetail({ data }: { data: string }) {
 
             {currentLoan ? (
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex-row items-center gap-2 space-y-0">
+                        <LoanIcon className="h-5 w-5 text-[var(--color-primary)]" />
                         <CardTitle className="text-base">Current loan</CardTitle>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">

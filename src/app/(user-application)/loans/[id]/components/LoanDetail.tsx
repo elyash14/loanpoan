@@ -2,6 +2,7 @@
 
 import { Badge } from "../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { LoanIcon } from "../../../components/icons/LoanIcon";
 import { formatMoney } from "utils/formatMoney";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -24,8 +25,11 @@ export default function LoanDetail({ data }: { data: string }) {
     return (
         <div className="space-y-4">
             <Card>
-                <CardHeader>
-                    <CardTitle>{loan.account.code}</CardTitle>
+                <CardHeader className="flex-row items-center justify-between space-y-0">
+                    <div className="flex items-center gap-2">
+                        <LoanIcon className="h-5 w-5 text-[var(--color-primary)]" />
+                        <CardTitle>{loan.account.code}</CardTitle>
+                    </div>
                     <Badge variant="secondary">{loan.status}</Badge>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">

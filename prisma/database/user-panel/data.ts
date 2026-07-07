@@ -2,7 +2,6 @@
 
 import prisma from "@database/prisma";
 import { getUserRelatedData } from "@database/user/data";
-import { paginatedAccountList } from "@database/account/data";
 import { paginatedLoanList } from "@database/loan/data";
 import { paginatedInstallmentsList } from "@database/installments/data";
 import { paginatedPaymentsList } from "@database/payment/data";
@@ -146,7 +145,47 @@ export async function paginatedUserAccounts(
     sortBy?: string,
     sortDir?: RichTableSortDir,
 ) {
-    return paginatedAccountList(page, limit, search, sortBy, sortDir, userId);
+    let where: Record<string, unknown> = { userId, deletedAt: null };
+
+    if (search) {
+        where = {
+            ...where,
+            OR: [
+                { name: { contains: search.toLowerCase(), mode: "insensitive" } },
+                { code: { contains: search.toLowerCase(), mode: "insensitive" } },
+            ],
+        };
+    }
+
+    const [data, total] = await Promise.all([
+        prisma.account.findMany({
+            select: {
+                id: true,
+                code: true,
+                name: true,
+                balance: true,
+                openedAt: true,
+                loans: {
+                    where: { status: "IN_PROGRESS" },
+                    take: 1,
+                    select: {
+                        id: true,
+                        amount: true,
+                        status: true,
+                    },
+                },
+            },
+            where,
+            take: limit,
+            skip: (page - 1) * limit,
+            orderBy: {
+                [sortBy ?? "openedAt"]: sortDir === "+" ? "asc" : "desc",
+            },
+        }),
+        prisma.account.count({ where }),
+    ]);
+
+    return { total, data };
 }
 
 export async function paginatedUserLoans(

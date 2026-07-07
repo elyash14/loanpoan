@@ -1,7 +1,8 @@
 'use client';
 
 import { cn } from "utils/cn";
-import { Home, Landmark, LayoutGrid, Wallet } from "lucide-react";
+import { Home, LayoutGrid, Wallet } from "lucide-react";
+import { LoanIcon } from "../icons/LoanIcon";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";
@@ -9,7 +10,7 @@ import { useCallback } from "react";
 const tabs = [
     { href: "/home", label: "Home", icon: Home },
     { href: "/accounts", label: "Accounts", icon: Wallet },
-    { href: "/loans", label: "Loans", icon: Landmark },
+    { href: "/loans", label: "Loans", icon: LoanIcon },
     { href: "/more", label: "More", icon: LayoutGrid },
 ] as const;
 
