@@ -80,6 +80,11 @@ export const fa: Messages = {
     },
     loans: {
         empty: "وامی یافت نشد.",
+        summaryTitle: "خلاصه وام‌ها",
+        summaryTotal: "کل",
+        summaryActive: "فعال",
+        summaryAmount: "مبلغ",
+        createdAt: "تاریخ ایجاد",
         amount: "مبلغ",
         duration: "مدت",
         durationMonths: "{count} ماه",

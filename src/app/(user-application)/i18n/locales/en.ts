@@ -78,6 +78,11 @@ export const en = {
     },
     loans: {
         empty: "No loans found.",
+        summaryTitle: "Loan summary",
+        summaryTotal: "Total",
+        summaryActive: "Active",
+        summaryAmount: "Amount",
+        createdAt: "Created",
         amount: "Amount",
         duration: "Duration",
         durationMonths: "{count} months",
