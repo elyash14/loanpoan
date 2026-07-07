@@ -1,35 +1,102 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(222.2 84% 4.9%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222.2 84% 4.9%);
-  --color-primary: hsl(221.2 83.2% 53.3%);
-  --color-primary-foreground: hsl(210 40% 98%);
-  --color-muted: hsl(210 40% 96.1%);
-  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
-  --color-border: hsl(214.3 31.8% 91.4%);
-  --color-destructive: hsl(0 84.2% 60.2%);
-  --radius-lg: 0.75rem;
-  --radius-md: 0.5rem;
-  --radius-sm: 0.25rem;
-}
-
-#user-app.dark {
-  --color-background: hsl(222.2 84% 4.9%);
+  --color-background: hsl(222 47% 6%);
   --color-foreground: hsl(210 40% 98%);
-  --color-card: hsl(222.2 84% 6%);
+  --color-card: hsl(222 44% 9%);
   --color-card-foreground: hsl(210 40% 98%);
-  --color-primary: hsl(217.2 91.2% 59.8%);
-  --color-primary-foreground: hsl(222.2 47.4% 11.2%);
-  --color-muted: hsl(217.2 32.6% 17.5%);
-  --color-muted-foreground: hsl(215 20.2% 65.1%);
-  --color-border: hsl(217.2 32.6% 17.5%);
+  --color-primary: hsl(217 91% 60%);
+  --color-primary-foreground: hsl(222 47% 11%);
+  --color-accent: hsl(160 84% 39%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-muted: hsl(217 33% 14%);
+  --color-muted-foreground: hsl(215 20% 65%);
+  --color-border: hsl(217 28% 18%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-ring: hsl(217 91% 60%);
+  --color-nav: hsl(222 44% 10% / 0.82);
+  --radius-lg: 1rem;
+  --radius-md: 0.625rem;
+  --radius-sm: 0.375rem;
+  --radius-xl: 1.25rem;
+  --shadow-soft: 0 8px 32px hsl(222 47% 4% / 0.45);
+  --shadow-nav: 0 12px 40px hsl(222 47% 2% / 0.55);
 }
 
 #user-app {
+  --shell-header-height: 3.75rem;
+  /* nav: outer pb (0.75rem) + inner pt-7 (1.75rem) + tab row (3.25rem) + inner pb-2 (0.5rem) + buffer */
+  --shell-nav-offset: 8.5rem;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-user-panel), system-ui, -apple-system, sans-serif;
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  scroll-padding-bottom: calc(var(--shell-nav-offset) + env(safe-area-inset-bottom, 0px));
+}
+
+#user-app.light {
+  --color-background: hsl(220 33% 97%);
+  --color-foreground: hsl(222 47% 11%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222 47% 11%);
+  --color-primary: hsl(221 83% 53%);
+  --color-primary-foreground: hsl(210 40% 98%);
+  --color-accent: hsl(160 84% 32%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-muted: hsl(220 27% 94%);
+  --color-muted-foreground: hsl(215 16% 47%);
+  --color-border: hsl(220 20% 88%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-ring: hsl(221 83% 53%);
+  --color-nav: hsl(0 0% 100% / 0.88);
+  --shadow-soft: 0 8px 32px hsl(221 83% 53% / 0.08);
+  --shadow-nav: 0 12px 40px hsl(222 47% 11% / 0.12);
+}
+
+#user-app.dark {
+  --color-background: hsl(222 47% 6%);
+  --color-foreground: hsl(210 40% 98%);
+  --color-card: hsl(222 44% 9%);
+  --color-card-foreground: hsl(210 40% 98%);
+  --color-primary: hsl(217 91% 60%);
+  --color-primary-foreground: hsl(222 47% 11%);
+  --color-accent: hsl(160 84% 39%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-muted: hsl(217 33% 14%);
+  --color-muted-foreground: hsl(215 20% 65%);
+  --color-border: hsl(217 28% 18%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-ring: hsl(217 91% 60%);
+  --color-nav: hsl(222 44% 10% / 0.82);
+}
+
+#user-app .user-shell-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, hsl(160 84% 39% / 0.08), transparent 50%),
+    var(--color-background);
+}
+
+#user-app.light .user-shell-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.08), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, hsl(160 84% 32% / 0.06), transparent 50%),
+    var(--color-background);
+}
+
+#user-app .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #user-app *,
+  #user-app *::before,
+  #user-app *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

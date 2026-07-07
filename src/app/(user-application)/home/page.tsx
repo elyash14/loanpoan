@@ -5,7 +5,7 @@ import { Skeleton } from "../components/ui/skeleton";
 
 export default function HomePage() {
     return (
-        <UserShell title="Home">
+        <UserShell title="Overview">
             <Suspense fallback={<Skeleton className="h-48 w-full" />}>
                 <LoadHome />
             </Suspense>

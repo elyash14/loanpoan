@@ -72,7 +72,7 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-lg font-semibold">{formatMoney(card.value)}</p>
+                                <p className="text-lg font-semibold tabular-nums">{formatMoney(card.value)}</p>
                             </CardContent>
                         </Card>
                     </Link>
@@ -87,7 +87,7 @@ export default function HomeOverview({ fullName, stats, related, systemStats }: 
                             <Card className="border-[var(--color-destructive)]/30">
                                 <CardContent className="flex items-center justify-between py-3">
                                     <span className="text-sm">{card.label}</span>
-                                    <span className="font-semibold text-[var(--color-destructive)]">
+                                    <span className="font-semibold tabular-nums text-[var(--color-destructive)]">
                                         {formatMoney(card.value)}
                                     </span>
                                 </CardContent>
