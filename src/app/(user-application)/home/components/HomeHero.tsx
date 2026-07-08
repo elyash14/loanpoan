@@ -3,20 +3,16 @@
 import Money from "../../components/preferences/Money";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { Card, CardContent } from "../../components/ui/card";
+import UserAvatar from "../../components/profile/UserAvatar";
 
 type Props = {
     fullName: string;
     totalBalance: string;
+    userAvatar?: string | null;
+    userProfileColor?: string | null;
 };
 
-function initialsFromName(name: string) {
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return "?";
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
-}
-
-export default function HomeHero({ fullName, totalBalance }: Props) {
+export default function HomeHero({ fullName, totalBalance, userAvatar, userProfileColor }: Props) {
     const { t } = useUserPreferences();
 
     return (
@@ -24,9 +20,12 @@ export default function HomeHero({ fullName, totalBalance }: Props) {
             <div className="pointer-events-none absolute -end-20 -top-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
             <CardContent className="relative space-y-5 pt-6 pb-6">
                 <div className="flex items-center gap-3.5">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary ring-1 ring-primary/20">
-                        {initialsFromName(fullName)}
-                    </span>
+                    <UserAvatar 
+                        name={fullName} 
+                        avatar={userAvatar} 
+                        profileColor={userProfileColor}
+                        className="h-12 w-12 text-base ring-1 ring-primary/20 shadow-sm"
+                    />
                     <div className="min-w-0">
                         <p className="text-sm font-medium text-muted-foreground/80">{t("home.welcome")}</p>
                         <h2 className="truncate text-xl font-bold tracking-tight text-foreground">{fullName}</h2>

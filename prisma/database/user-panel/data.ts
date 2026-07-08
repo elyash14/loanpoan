@@ -106,6 +106,7 @@ export async function getUserHomeDashboard(userId: number) {
         totalLoanAmount,
         activeLoanAmount,
         activeLoanMemberCount,
+        currentUser,
     ] = await Promise.all([
         prisma.account.aggregate({
             _sum: { balance: true },
@@ -225,6 +226,10 @@ export async function getUserHomeDashboard(userId: number) {
                 },
             },
         }),
+        prisma.user.findUnique({
+            where: { id: userId },
+            select: { avatar: true, profileColor: true },
+        }),
     ]);
 
     const overdueItems = [...overdueInstallments, ...overduePayments];
@@ -318,6 +323,8 @@ export async function getUserHomeDashboard(userId: number) {
     };
 
     return {
+        userAvatar: currentUser?.avatar ?? null,
+        userProfileColor: currentUser?.profileColor ?? null,
         totalBalance: decimalToString(balanceSum._sum.balance),
         notice,
         activeLoan: activeLoanSnapshot,

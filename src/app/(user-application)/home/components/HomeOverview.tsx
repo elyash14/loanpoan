@@ -18,7 +18,12 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
 
     return (
         <div className="space-y-4">
-            <HomeHero fullName={fullName} totalBalance={data.totalBalance} />
+            <HomeHero 
+                fullName={fullName} 
+                totalBalance={data.totalBalance} 
+                userAvatar={data.userAvatar}
+                userProfileColor={data.userProfileColor} 
+            />
             <HomeQuickActions />
             <HomeTabs data={data} />
         </div>

@@ -26,7 +26,7 @@ export default function BottomNav() {
         [],
     );
 
-    const moreRoutes = ["/more", "/installments", "/payments", "/profile", "/settings"];
+    const moreRoutes = useMemo(() => ["/more", "/installments", "/payments", "/profile", "/settings"], []);
 
     const isActive = useCallback(
         (href: string) => {
@@ -35,7 +35,7 @@ export default function BottomNav() {
             }
             return pathname === href || pathname.startsWith(`${href}/`);
         },
-        [pathname],
+        [pathname, moreRoutes],
     );
 
     return (
@@ -82,7 +82,7 @@ export default function BottomNav() {
                                                 "absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-[58%]",
                                                 "flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full",
                                                 "border-[5px] border-[var(--color-card)] bg-[var(--color-primary)]",
-                                                "text-[hsl(210_40%_98%)] shadow-[0_8px_24px_hsl(217_91%_60%_/0.45)]",
+                                                "text-[hsl(210_40%_98%)] shadow-[0_8px_24px_color-mix(in_srgb,var(--color-primary)_45%,transparent)]",
                                                 "transition-transform duration-200",
                                             )}
                                         >

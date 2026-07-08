@@ -1,4 +1,6 @@
 export type HomeDashboardData = {
+    userAvatar: string | null;
+    userProfileColor: string | null;
     totalBalance: string;
     notice: {
         overdueCount: number;
