@@ -153,6 +153,12 @@ export const fa: Messages = {
         queueEligibleNote: "بهترین نوبت شما بین حساب‌های واجد شرایط برای وام بعدی",
         punctualityScore: "امتیاز وقت‌شناسی",
         punctualityHint: "پرداخت‌های به‌موقع منهای موارد دیرکرد یا معوق",
+        loanRanking: "رتبه‌بندی وام",
+        loanRankingDesc: "جایگاه شما بین اعضا بر اساس مجموع وام‌ها",
+        rankingByCount: "بر اساس تعداد وام",
+        rankingByAmount: "بر اساس مبلغ وام",
+        rankingPosition: "رتبه {position} از {total}",
+        rankingLoanCount: "{count} وام",
         quickActions: "دسترسی سریع",
     },
     more: {

@@ -3,6 +3,7 @@
 import {
     Award,
     CalendarClock,
+    Hash,
     Trophy,
     Wallet,
     WalletCards,
@@ -41,6 +42,18 @@ export type HomeDashboardData = {
         totalEligible: number;
     } | null;
     punctualityScore: number;
+    loanRanking: {
+        byCount: {
+            position: number;
+            totalUsers: number;
+            loanCount: number;
+        };
+        byAmount: {
+            position: number;
+            totalUsers: number;
+            loanAmount: string;
+        };
+    } | null;
 };
 
 type Props = {
@@ -161,6 +174,50 @@ export default function HomeOverview({ fullName, dashboard }: Props) {
                         </CardContent>
                     </Card>
                 </Link>
+            ) : null}
+
+            {data.loanRanking ? (
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Hash className="h-4 w-4 text-primary" />
+                            {t("home.loanRanking")}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">{t("home.loanRankingDesc")}</p>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-2">
+                        <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+                            <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                                {t("home.rankingByCount")}
+                            </p>
+                            <p className="mt-1 text-lg font-bold tabular-nums">
+                                {t("home.rankingPosition", {
+                                    position: formatNumber(data.loanRanking.byCount.position),
+                                    total: formatNumber(data.loanRanking.byCount.totalUsers),
+                                })}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {t("home.rankingLoanCount", {
+                                    count: formatNumber(data.loanRanking.byCount.loanCount),
+                                })}
+                            </p>
+                        </div>
+                        <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+                            <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                                {t("home.rankingByAmount")}
+                            </p>
+                            <p className="mt-1 text-lg font-bold tabular-nums">
+                                {t("home.rankingPosition", {
+                                    position: formatNumber(data.loanRanking.byAmount.position),
+                                    total: formatNumber(data.loanRanking.byAmount.totalUsers),
+                                })}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                <Money value={data.loanRanking.byAmount.loanAmount} />
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
             ) : null}
 
             <Card>

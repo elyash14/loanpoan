@@ -34,6 +34,52 @@ function findSoonestDue(items: DueItem[]): { dueDate: string; amount: string } |
     };
 }
 
+type UserLoanStats = {
+    userId: number;
+    loanCount: number;
+    loanAmount: number;
+};
+
+function buildUserLoanRankings(panelUsers: UserLoanStats[], userId: number) {
+    const stats = panelUsers;
+    const totalUsers = stats.length;
+    const userStat = stats.find((row) => row.userId === userId);
+
+    if (!userStat || totalUsers === 0) {
+        return null;
+    }
+
+    const positionIn = (sorted: UserLoanStats[]) => {
+        const index = sorted.findIndex((row) => row.userId === userId);
+        return index >= 0 ? index + 1 : totalUsers;
+    };
+
+    const byCount = [...stats].sort((a, b) => {
+        if (b.loanCount !== a.loanCount) return b.loanCount - a.loanCount;
+        if (b.loanAmount !== a.loanAmount) return b.loanAmount - a.loanAmount;
+        return a.userId - b.userId;
+    });
+
+    const byAmount = [...stats].sort((a, b) => {
+        if (b.loanAmount !== a.loanAmount) return b.loanAmount - a.loanAmount;
+        if (b.loanCount !== a.loanCount) return b.loanCount - a.loanCount;
+        return a.userId - b.userId;
+    });
+
+    return {
+        byCount: {
+            position: positionIn(byCount),
+            totalUsers,
+            loanCount: userStat.loanCount,
+        },
+        byAmount: {
+            position: positionIn(byAmount),
+            totalUsers,
+            loanAmount: String(Math.round(userStat.loanAmount)),
+        },
+    };
+}
+
 export async function getUserHomeDashboard(userId: number) {
     const now = new Date();
     const accountWhere = { userId, deletedAt: null };
@@ -53,6 +99,7 @@ export async function getUserHomeDashboard(userId: number) {
         onTimePayments,
         latePaidInstallments,
         latePaidPayments,
+        panelUsers,
     ] = await Promise.all([
         prisma.account.aggregate({
             _sum: { balance: true },
@@ -135,6 +182,18 @@ export async function getUserHomeDashboard(userId: number) {
                 paidAt: { not: null, gt: prisma.payment.fields.paidAt },
             },
         }),
+        prisma.user.findMany({
+            where: { deletedAt: null, role: "USER" },
+            select: {
+                id: true,
+                accounts: {
+                    where: { deletedAt: null },
+                    select: {
+                        loans: { select: { amount: true } },
+                    },
+                },
+            },
+        }),
     ]);
 
     const overdueItems = [...overdueInstallments, ...overduePayments];
@@ -206,12 +265,24 @@ export async function getUserHomeDashboard(userId: number) {
     const punctualityScore =
         onTimeInstallments + onTimePayments - (latePaidInstallments + latePaidPayments + overdueUnpaidCount);
 
+    const userLoanStats: UserLoanStats[] = panelUsers.map((user) => {
+        const loans = user.accounts.flatMap((account) => account.loans);
+        return {
+            userId: user.id,
+            loanCount: loans.length,
+            loanAmount: loans.reduce((sum, loan) => sum + Number(loan.amount), 0),
+        };
+    });
+
+    const loanRanking = buildUserLoanRankings(userLoanStats, userId);
+
     return {
         totalBalance: decimalToString(balanceSum._sum.balance),
         notice,
         activeLoan: activeLoanSnapshot,
         queue,
         punctualityScore,
+        loanRanking,
     };
 }
 
