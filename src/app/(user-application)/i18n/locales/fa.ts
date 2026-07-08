@@ -160,6 +160,26 @@ export const fa: Messages = {
         rankingPosition: "رتبه {position} از {total}",
         rankingLoanCount: "{count} وام",
         quickActions: "دسترسی سریع",
+        tabs: {
+            status: "وضعیت من",
+            personal: "آمار من",
+            global: "آمار صندوق",
+        },
+        status: {
+            allClear: "همه چیز مرتب است — پرداخت معوق یا پیش‌رویی ندارید.",
+            noActiveLoan: "در حال حاضر وام فعالی ندارید.",
+            viewLoans: "مشاهده وام‌ها",
+        },
+        achievements: "دستاوردها",
+        global: {
+            totalBankBalance: "موجودی کل بانک",
+            totalLoanCount: "تعداد کل وام‌ها",
+            activeLoanCount: "تعداد وام‌های فعال",
+            totalLoanAmount: "مبلغ کل وام‌ها",
+            activeLoanAmount: "مبلغ وام‌های فعال",
+            memberCount: "تعداد اعضا",
+            activeLoanMemberCount: "اعضا با وام فعال",
+        },
     },
     more: {
         installments: "پرداخت‌های ماهانه",

@@ -158,6 +158,26 @@ export const en = {
         rankingPosition: "#{position} of {total}",
         rankingLoanCount: "{count} loans",
         quickActions: "Quick actions",
+        tabs: {
+            status: "My status",
+            personal: "My stats",
+            global: "Co-op stats",
+        },
+        status: {
+            allClear: "You're all caught up — no overdue or upcoming payments.",
+            noActiveLoan: "No active loan right now.",
+            viewLoans: "View loans",
+        },
+        achievements: "Achievements",
+        global: {
+            totalBankBalance: "Total bank balance",
+            totalLoanCount: "Total loans",
+            activeLoanCount: "Active loans",
+            totalLoanAmount: "Total loan amount",
+            activeLoanAmount: "Active loan amount",
+            memberCount: "Members",
+            activeLoanMemberCount: "Members with active loan",
+        },
     },
     more: {
         installments: "Monthly payments",
@@ -221,8 +241,8 @@ export const en = {
     },
 } as const;
 
-export type Messages = {
-    [K in keyof typeof en]: {
-        [P in keyof (typeof en)[K]]: string;
-    };
-};
+type DeepStringRecord<T> = T extends object
+    ? { [K in keyof T]: DeepStringRecord<T[K]> }
+    : string;
+
+export type Messages = DeepStringRecord<typeof en>;

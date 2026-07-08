@@ -100,6 +100,12 @@ export async function getUserHomeDashboard(userId: number) {
         latePaidInstallments,
         latePaidPayments,
         panelUsers,
+        globalBankBalance,
+        totalLoanCount,
+        activeLoanCount,
+        totalLoanAmount,
+        activeLoanAmount,
+        activeLoanMemberCount,
     ] = await Promise.all([
         prisma.account.aggregate({
             _sum: { balance: true },
@@ -194,6 +200,31 @@ export async function getUserHomeDashboard(userId: number) {
                 },
             },
         }),
+        prisma.account.aggregate({
+            _sum: { balance: true },
+            where: { deletedAt: null },
+        }),
+        prisma.loan.count(),
+        prisma.loan.count({ where: { status: "IN_PROGRESS" } }),
+        prisma.loan.aggregate({ _sum: { amount: true } }),
+        prisma.loan.aggregate({
+            _sum: { amount: true },
+            where: { status: "IN_PROGRESS" },
+        }),
+        prisma.user.count({
+            where: {
+                deletedAt: null,
+                role: "USER",
+                accounts: {
+                    some: {
+                        deletedAt: null,
+                        loans: {
+                            some: { status: "IN_PROGRESS" },
+                        },
+                    },
+                },
+            },
+        }),
     ]);
 
     const overdueItems = [...overdueInstallments, ...overduePayments];
@@ -276,6 +307,16 @@ export async function getUserHomeDashboard(userId: number) {
 
     const loanRanking = buildUserLoanRankings(userLoanStats, userId);
 
+    const globalStats = {
+        totalBankBalance: decimalToString(globalBankBalance._sum.balance),
+        totalLoanCount,
+        activeLoanCount,
+        totalLoanAmount: decimalToString(totalLoanAmount._sum.amount),
+        activeLoanAmount: decimalToString(activeLoanAmount._sum.amount),
+        memberCount: panelUsers.length,
+        activeLoanMemberCount,
+    };
+
     return {
         totalBalance: decimalToString(balanceSum._sum.balance),
         notice,
@@ -283,6 +324,7 @@ export async function getUserHomeDashboard(userId: number) {
         queue,
         punctualityScore,
         loanRanking,
+        globalStats,
     };
 }
 
