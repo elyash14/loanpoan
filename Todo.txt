@@ -36,4 +36,5 @@ User Application:
     - use a free model to analyze
     - send notice to one of the tab in the telegram group
 - cron:
-    - generate new instalment per each mount
+    - generate new instalment per each mount (*)
+    - send notice to the group
