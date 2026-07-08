@@ -10,18 +10,16 @@ export default function UserPageAwaitingAuth() {
     const { t } = useUserPreferences();
 
     useEffect(() => {
+        if (!isTelegramWebApp()) {
+            router.replace("/login");
+            return;
+        }
+
         const refresh = () => router.refresh();
         const interval = window.setInterval(refresh, 800);
 
-        const timeout = window.setTimeout(() => {
-            if (!isTelegramWebApp()) {
-                router.replace("/login");
-            }
-        }, 5000);
-
         return () => {
             window.clearInterval(interval);
-            window.clearTimeout(timeout);
         };
     }, [router]);
 

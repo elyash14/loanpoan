@@ -7,7 +7,7 @@ export default function TelegramLoginRedirect() {
     const router = useRouter();
 
     useEffect(() => {
-        if (window.Telegram?.WebApp) {
+        if (window.Telegram?.WebApp?.initData) {
             router.replace("/home");
         }
     }, [router]);

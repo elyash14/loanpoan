@@ -5,7 +5,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useUserPreferences } from "../preferences/UserPreferencesProvider";
 
 function isTelegramWebApp(): boolean {
-    return typeof window !== "undefined" && Boolean(window.Telegram?.WebApp);
+    return typeof window !== "undefined" && Boolean(window.Telegram?.WebApp?.initData);
 }
 
 export default function TelegramProvider({ children }: { children: ReactNode }) {
