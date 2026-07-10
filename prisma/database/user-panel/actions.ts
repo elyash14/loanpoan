@@ -1,5 +1,6 @@
 "use server";
 
+import type { UserPreferences } from "@user/i18n";
 import { changePasswordValidationSchema } from "utils/form-validations/user/changePasswordValidation";
 import {
     profileValidationSchema,
@@ -193,3 +194,23 @@ export async function clearUserPanelAvatar(): Promise<AvatarResponseType> {
         return { status: "ERROR", message: "Failed to clear avatar" };
     }
 }
+
+export async function updateUserPreferences(prefs: UserPreferences) {
+    const session = await getSession();
+    if (!session?.userId) {
+        return { status: "ERROR", message: "Unauthorized" };
+    }
+
+    try {
+        await prisma.user.update({
+            where: { id: Number(session.userId) },
+            data: {
+                preferences: prefs as any, // Cast as any because prisma Json type might require it
+            },
+        });
+        return { status: "SUCCESS", message: "Preferences updated successfully" };
+    } catch {
+        return { status: "ERROR", message: "Failed to update preferences" };
+    }
+}
+

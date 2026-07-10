@@ -46,6 +46,7 @@ model User {
     role          Role          @default(USER)
     telegramId       BigInt?       @unique
     telegramUsername String?
+    preferences      Json?
     accounts      Account[]
     Installment   Installment[]
 }

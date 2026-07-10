@@ -13,6 +13,7 @@ import {
     applyPreferences,
     readStoredPreferences,
 } from "./applyPreferences";
+import { updateUserPreferences } from "@database/user-panel/actions";
 import {
     createContext,
     ReactNode,
@@ -40,7 +41,13 @@ function persist(prefs: UserPreferences) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 }
 
-export default function UserPreferencesProvider({ children }: { children: ReactNode }) {
+export default function UserPreferencesProvider({
+    children,
+    dbPreferences,
+}: {
+    children: ReactNode;
+    dbPreferences?: UserPreferences | null;
+}) {
     const [prefs, setPrefs] = useState<UserPreferences>(DEFAULT_PREFERENCES);
     const [ready, setReady] = useState(false);
 
@@ -51,45 +58,63 @@ export default function UserPreferencesProvider({ children }: { children: ReactN
     }, []);
 
     useEffect(() => {
-        const stored = readStoredPreferences();
-        const initial = stored ?? DEFAULT_PREFERENCES;
+        let initial = DEFAULT_PREFERENCES;
+        if (dbPreferences) {
+            initial = dbPreferences;
+            persist(dbPreferences);
+        } else {
+            const stored = readStoredPreferences();
+            initial = stored ?? DEFAULT_PREFERENCES;
+        }
         setPrefs(initial);
         apply(initial);
         setReady(true);
-    }, [apply]);
+    }, [apply, dbPreferences]);
 
     const setLocale = useCallback(
         (locale: Locale) => {
+            let next: UserPreferences | null = null;
             setPrefs((current) => {
-                const next = { ...current, locale };
+                next = { ...current, locale };
                 persist(next);
                 apply(next);
                 return next;
             });
+            if (next) {
+                updateUserPreferences(next).catch(console.error);
+            }
         },
         [apply],
     );
 
     const setTheme = useCallback(
         (theme: Theme) => {
+            let next: UserPreferences | null = null;
             setPrefs((current) => {
-                const next = { ...current, theme };
+                next = { ...current, theme };
                 persist(next);
                 apply(next);
                 return next;
             });
+            if (next) {
+                updateUserPreferences(next).catch(console.error);
+            }
         },
         [apply],
     );
 
     const setPalette = useCallback(
         (palette: Palette) => {
+            let next: UserPreferences | null = null;
             setPrefs((current) => {
-                const next = { ...current, palette };
+                next = { ...current, palette };
                 persist(next);
                 apply(next);
                 return next;
             });
+            if (next) {
+                updateUserPreferences(next).catch(console.error);
+            }
         },
         [apply],
     );
