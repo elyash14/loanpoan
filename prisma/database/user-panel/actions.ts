@@ -1,6 +1,7 @@
 "use server";
 
 import type { UserPreferences } from "@user/i18n";
+import { processPaymentRequestSubmission } from "@database/user-panel/paymentRequestSubmission";
 import { changePasswordValidationSchema } from "utils/form-validations/user/changePasswordValidation";
 import {
     profileValidationSchema,
@@ -212,5 +213,14 @@ export async function updateUserPreferences(prefs: UserPreferences) {
     } catch {
         return { status: "ERROR", message: "Failed to update preferences" };
     }
+}
+
+export async function submitPaymentRequest(formData: FormData) {
+    const session = await getSession();
+    if (!session?.userId) {
+        return { status: "ERROR", code: "unauthorized", message: "Unauthorized" };
+    }
+
+    return processPaymentRequestSubmission(Number(session.userId), formData);
 }
 

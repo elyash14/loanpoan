@@ -12,6 +12,26 @@ export async function POST(request: Request) {
 
     try {
         const update = await request.json();
+
+        if (update.message) {
+            const message = update.message as {
+                chat?: { id?: number; type?: string };
+                message_thread_id?: number;
+                is_topic_message?: boolean;
+                text?: string;
+            };
+            console.log(
+                "[Telegram webhook]",
+                JSON.stringify({
+                    chat_id: message.chat?.id,
+                    chat_type: message.chat?.type,
+                    message_thread_id: message.message_thread_id,
+                    is_topic_message: message.is_topic_message,
+                    text: message.text?.slice(0, 80),
+                }),
+            );
+        }
+
         await processTelegramUpdate(update);
         return NextResponse.json({ ok: true });
     } catch (error) {

@@ -7,17 +7,18 @@ import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { errorNotification, successNotification } from "utils/Notification/notification";
-import { dateTypeOptions } from "utils/form-validations/config/defaultValues";
+import { dateTypeOptions, telegramMessageLocaleOptions } from "utils/form-validations/config/defaultValues";
 import { SaveGeneralConfigFormSchemaInputType, saveGeneralConfigSchema } from "utils/form-validations/config/saveGlobalConfig";
 import { globalConfigAtom } from "utils/stores/configs";
 import { GlobalConfigType } from "utils/types/configs";
 
 type Props = {
     applicationName: GlobalConfigType['applicationName'],
-    dateType: GlobalConfigType["dateType"]
+    dateType: GlobalConfigType["dateType"],
+    telegramMessageLocale: GlobalConfigType["telegramMessageLocale"],
 }
 
-const GeneralConfig = ({ applicationName, dateType }: Props) => {
+const GeneralConfig = ({ applicationName, dateType, telegramMessageLocale }: Props) => {
     const setGlobalConfig = useSetAtom(globalConfigAtom);
     const {
         control,
@@ -27,7 +28,7 @@ const GeneralConfig = ({ applicationName, dateType }: Props) => {
         formState: { errors, isSubmitting },
     } = useForm<SaveGeneralConfigFormSchemaInputType>({
         resolver: zodResolver(saveGeneralConfigSchema, {}, { raw: true }),
-        defaultValues: { applicationName, dateType }
+        defaultValues: { applicationName, dateType, telegramMessageLocale: telegramMessageLocale ?? "fa" }
     });
 
     const onSubmit: SubmitHandler<SaveGeneralConfigFormSchemaInputType> = async (data) => {
@@ -80,6 +81,24 @@ const GeneralConfig = ({ applicationName, dateType }: Props) => {
                     placeholder="Select a date type"
                     data={dateTypeOptions}
                     value={value}
+                />
+            )}
+        />
+
+        <Controller
+            control={control}
+            name="telegramMessageLocale"
+            render={({ field: { onChange, onBlur, value } }) => (
+                <Select
+                    withAsterisk
+                    label="Telegram group message language"
+                    description="Language used for payment receipt notifications sent to the Telegram group"
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    placeholder="Select a language"
+                    data={telegramMessageLocaleOptions}
+                    value={value}
+                    mt="md"
                 />
             )}
         />

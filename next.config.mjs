@@ -24,6 +24,14 @@ const nextConfig = {
     allowedDevOrigins: getAllowedDevOrigins(),
     experimental: {
         optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
+        // Next.js 16 proxy layer defaults to 1MB — must match serverActions limit for uploads
+        proxyClientMaxBodySize: "6mb",
+        serverActions: {
+            bodySizeLimit: "6mb",
+        },
+    },
+    serverActions: {
+        bodySizeLimit: "6mb",
     },
     async redirects() {
         return [

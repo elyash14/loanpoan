@@ -22,3 +22,13 @@ export function validateTelegramGroupChatId(raw: string): bigint {
     }
     return chatId;
 }
+
+export function getTelegramPaymentsTopicId(): number | undefined {
+    const raw = process.env.TELEGRAM_PAYMENTS_TOPIC_ID;
+    if (!raw?.trim()) return undefined;
+    const parsed = Number(raw);
+    if (isNaN(parsed)) {
+        throw new Error(`TELEGRAM_PAYMENTS_TOPIC_ID=${raw} is not a valid number`);
+    }
+    return parsed;
+}

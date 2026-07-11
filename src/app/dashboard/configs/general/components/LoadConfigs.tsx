@@ -9,6 +9,7 @@ const LoadConfigs = async () => {
     return <GeneralConfig
         applicationName={config.applicationName}
         dateType={config.dateType}
+        telegramMessageLocale={config.telegramMessageLocale}
     />;
 }
 

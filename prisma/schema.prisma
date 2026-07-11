@@ -49,6 +49,8 @@ model User {
     preferences      Json?
     accounts      Account[]
     Installment   Installment[]
+    paymentRequests         PaymentRequest[] @relation("UserPaymentRequests")
+    reviewedPaymentRequests PaymentRequest[] @relation("ReviewedPaymentRequests")
 }
 
 model TelegramGroupMember {
@@ -112,12 +114,14 @@ model Loan {
 }
 
 model Payment {
-    id      Int       @id @default(autoincrement())
-    amount  Decimal   @db.Decimal(20, 2)
-    dueDate DateTime
-    paidAt  DateTime?
-    loan    Loan?     @relation(fields: [loanId], references: [id])
-    loanId  Int?
+    id               Int             @id @default(autoincrement())
+    amount           Decimal         @db.Decimal(20, 2)
+    dueDate          DateTime
+    paidAt           DateTime?
+    loan             Loan?           @relation(fields: [loanId], references: [id])
+    loanId           Int?
+    paymentRequestId Int?
+    paymentRequest   PaymentRequest? @relation(fields: [paymentRequestId], references: [id])
 }
 
 model Installment {
@@ -134,4 +138,30 @@ model Installment {
     dueDate             DateTime           @default(now())
     paidAt              DateTime?
     approvedAt          DateTime?
+    paymentRequestId    Int?
+    paymentRequest      PaymentRequest?    @relation(fields: [paymentRequestId], references: [id])
+}
+
+enum PaymentRequestStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+model PaymentRequest {
+    id            Int                  @id @default(autoincrement())
+    userId        Int
+    user          User                 @relation("UserPaymentRequests", fields: [userId], references: [id])
+    amount        Decimal              @db.Decimal(20, 2)
+    receiptFileId String?              // Telegram photo file_id (stored on Telegram servers)
+    status        PaymentRequestStatus @default(PENDING)
+    messageId     Int?                 // Telegram message ID for replying later
+    adminReplyId  Int?                 // ID of the admin's reply in Telegram
+    reviewedById  Int?
+    reviewedBy    User?                @relation("ReviewedPaymentRequests", fields: [reviewedById], references: [id])
+    createdAt     DateTime             @default(now())
+    updatedAt     DateTime             @updatedAt
+    
+    installments  Installment[]
+    payments      Payment[]
 }

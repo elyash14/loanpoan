@@ -90,3 +90,70 @@ export async function paginatedPaymentsList(
         throw new Error("Failed to load payments list");
     }
 }
+
+export async function paginatedPaymentRequestsList(
+    page: number,
+    limit: number,
+    status: string,
+    search?: string,
+    sortBy?: string,
+    sortDir?: RichTableSortDir
+) {
+    try {
+        let where: Record<string, any> = {};
+
+        if (status && status !== 'All') {
+            where.status = status;
+        }
+
+        if (search) {
+            where.user = {
+                OR: [
+                    { firstName: { contains: search.toLowerCase(), mode: 'insensitive' } },
+                    { lastName: { contains: search.toLowerCase(), mode: 'insensitive' } },
+                ],
+            };
+        }
+
+        const [data, total] = await Promise.all([
+            prisma.paymentRequest.findMany({
+                where,
+                include: {
+                    user: {
+                        select: { id: true, firstName: true, lastName: true, email: true },
+                    },
+                    installments: {
+                        include: {
+                            account: true,
+                        },
+                    },
+                    payments: {
+                        include: {
+                            loan: {
+                                include: {
+                                    account: true,
+                                },
+                            },
+                        },
+                    },
+                    reviewedBy: {
+                        select: { id: true, firstName: true, lastName: true },
+                    },
+                },
+                take: limit ?? ITEMS_PER_PAGE,
+                skip: (page - 1) * (limit ?? ITEMS_PER_PAGE),
+                orderBy: {
+                    [sortBy ?? 'createdAt']: sortDir == '+' ? 'asc' : 'desc',
+                },
+            }),
+            prisma.paymentRequest.count({
+                where,
+            })
+        ]);
+
+        return { total, data };
+    } catch (error) {
+        console.error("Failed to load payment requests:", error);
+        throw new Error("Failed to load payment requests list");
+    }
+}

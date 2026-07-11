@@ -5,7 +5,8 @@ import { z } from "zod";
 
 export const saveGeneralConfigSchema = z.object({
     applicationName: z.string(),
-    dateType: z.enum(["GREGORIAN", "JALALI"])
+    dateType: z.enum(["GREGORIAN", "JALALI"]),
+    telegramMessageLocale: z.enum(["en", "fa"]),
 });
 
 export type SaveGeneralConfigResponseType = ActionResponse & {
@@ -13,6 +14,7 @@ export type SaveGeneralConfigResponseType = ActionResponse & {
     error?: {
         applicationName?: string[] | undefined;
         dateType?: string[] | undefined;
+        telegramMessageLocale?: string[] | undefined;
     }
 };
 

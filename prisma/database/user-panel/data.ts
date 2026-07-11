@@ -865,3 +865,91 @@ export async function getUserProfile(userId: number) {
     if (!user) notFound();
     return user;
 }
+
+export type PayableDueItem =
+    | {
+          kind: "installment";
+          id: number;
+          amount: string;
+          dueDate: string;
+          status: "overdue" | "upcoming";
+          accountCode: string;
+          accountName: string | null;
+      }
+    | {
+          kind: "payment";
+          id: number;
+          amount: string;
+          dueDate: string;
+          status: "overdue" | "upcoming";
+          loanId: number;
+          accountCode: string;
+      };
+
+export async function getUserPayableDues(): Promise<PayableDueItem[]> {
+    const userId = await getPanelUserId();
+    if (!userId) return [];
+
+    const now = new Date();
+
+    const [installments, payments] = await Promise.all([
+        prisma.installment.findMany({
+            where: {
+                account: { userId, deletedAt: null },
+                paidAt: null,
+                NOT: {
+                    paymentRequest: { status: "PENDING" },
+                },
+            },
+            include: {
+                account: { select: { code: true, name: true } },
+            },
+            orderBy: { dueDate: "asc" },
+        }),
+        prisma.payment.findMany({
+            where: {
+                loan: { account: { userId, deletedAt: null } },
+                paidAt: null,
+                NOT: {
+                    paymentRequest: { status: "PENDING" },
+                },
+            },
+            include: {
+                loan: {
+                    include: {
+                        account: { select: { code: true } },
+                    },
+                },
+            },
+            orderBy: { dueDate: "asc" },
+        }),
+    ]);
+
+    const installmentItems: PayableDueItem[] = installments
+        .filter((row) => row.account)
+        .map((row) => ({
+            kind: "installment" as const,
+            id: row.id,
+            amount: decimalToString(row.amount),
+            dueDate: row.dueDate.toISOString(),
+            status: row.dueDate < now ? ("overdue" as const) : ("upcoming" as const),
+            accountCode: row.account!.code,
+            accountName: row.account!.name,
+        }));
+
+    const paymentItems: PayableDueItem[] = payments
+        .filter((row) => row.loan?.account)
+        .map((row) => ({
+            kind: "payment" as const,
+            id: row.id,
+            amount: decimalToString(row.amount),
+            dueDate: row.dueDate.toISOString(),
+            status: row.dueDate < now ? ("overdue" as const) : ("upcoming" as const),
+            loanId: row.loan!.id,
+            accountCode: row.loan!.account!.code,
+        }));
+
+    return [...installmentItems, ...paymentItems].sort(
+        (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+    );
+}

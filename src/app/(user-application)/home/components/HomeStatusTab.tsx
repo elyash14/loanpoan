@@ -5,9 +5,12 @@ import Money from "../../components/preferences/Money";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
 import { Card, CardContent } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import PayDuesDrawer from "../../components/payments/PayDuesDrawer";
 import type { HomeDashboardData } from "./types";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 type Props = {
     data: HomeDashboardData;
@@ -17,42 +20,57 @@ export default function HomeStatusTab({ data }: Props) {
     const { t } = useUserPreferences();
     const { formatMoney, formatNumber, formatPercent, formatDate } = useLocaleFormat();
     const hasNotice = data.notice.overdueCount > 0 || data.notice.upcomingCount > 0;
+    const [payDrawerOpen, setPayDrawerOpen] = useState(false);
 
     return (
         <div className="space-y-3">
             {hasNotice ? (
-                <Link href="/installments?from=home" className="block focus-visible:outline-none">
-                    <Card className="group relative overflow-hidden border-destructive/20 shadow-sm transition-all hover:border-destructive/30 hover:shadow-md active:scale-[0.99]">
-                        <div className="absolute inset-y-0 start-0 w-1.5 bg-destructive/60" />
-                        <CardContent className="space-y-2 py-4 ps-5">
-                            {data.notice.overdueCount > 0 ? (
-                                <p className="text-sm font-semibold text-destructive">
-                                    {t("home.noticeOverdue", {
-                                        count: formatNumber(data.notice.overdueCount),
-                                        amount: formatMoney(data.notice.overdueAmount),
-                                    })}
-                                </p>
-                            ) : null}
-                            {data.notice.upcomingCount > 0 ? (
-                                <p className="text-sm font-medium">
-                                    {t("home.noticeUpcoming", {
-                                        count: formatNumber(data.notice.upcomingCount),
-                                        amount: formatMoney(data.notice.upcomingAmount),
-                                    })}
-                                </p>
-                            ) : null}
-                            {data.notice.nextDue ? (
-                                <p className="text-xs text-muted-foreground">
-                                    {t("home.nextDue", {
-                                        date: formatDate(data.notice.nextDue.dueDate),
-                                        amount: formatMoney(data.notice.nextDue.amount),
-                                    })}
-                                </p>
-                            ) : null}
-                            <p className="text-xs text-muted-foreground">{t("home.noticeHint")}</p>
-                        </CardContent>
-                    </Card>
-                </Link>
+                <Card className="group relative overflow-hidden border-destructive/20 shadow-sm">
+                    <div className="absolute inset-y-0 start-0 w-1.5 bg-destructive/60" />
+                    <CardContent className="space-y-2 py-4 ps-5">
+                        {data.notice.overdueCount > 0 ? (
+                            <p className="text-sm font-semibold text-destructive">
+                                {t("home.noticeOverdue", {
+                                    count: formatNumber(data.notice.overdueCount),
+                                    amount: formatMoney(data.notice.overdueAmount),
+                                })}
+                            </p>
+                        ) : null}
+                        {data.notice.upcomingCount > 0 ? (
+                            <p className="text-sm font-medium">
+                                {t("home.noticeUpcoming", {
+                                    count: formatNumber(data.notice.upcomingCount),
+                                    amount: formatMoney(data.notice.upcomingAmount),
+                                })}
+                            </p>
+                        ) : null}
+                        {data.notice.nextDue ? (
+                            <p className="text-xs text-muted-foreground">
+                                {t("home.nextDue", {
+                                    date: formatDate(data.notice.nextDue.dueDate),
+                                    amount: formatMoney(data.notice.nextDue.amount),
+                                })}
+                            </p>
+                        ) : null}
+                        <p className="text-xs text-muted-foreground">{t("home.noticeHint")}</p>
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                            <Button
+                                type="button"
+                                size="sm"
+                                className="rounded-xl px-4 font-semibold"
+                                onClick={() => setPayDrawerOpen(true)}
+                            >
+                                {t("home.payNow")}
+                            </Button>
+                            <Link
+                                href="/installments?from=home"
+                                className="text-xs font-medium text-primary hover:underline"
+                            >
+                                {t("home.viewDues")}
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
             ) : (
                 <Card className="border-emerald-500/20 bg-emerald-500/5">
                     <CardContent className="flex items-start gap-3 py-4">
@@ -61,6 +79,7 @@ export default function HomeStatusTab({ data }: Props) {
                     </CardContent>
                 </Card>
             )}
+            <PayDuesDrawer open={payDrawerOpen} onClose={() => setPayDrawerOpen(false)} />
 
             {data.activeLoan ? (
                 <Card>

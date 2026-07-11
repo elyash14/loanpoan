@@ -35,6 +35,9 @@ const MainMenu = () => {
                     <Tabs.Tab value={`/${DASHBOARD_URL}/payments`} leftSection={<IconCash style={iconStyle} />}>
                         Payments
                     </Tabs.Tab>
+                    <Tabs.Tab value={`/${DASHBOARD_URL}/payment-requests`} leftSection={<IconCash style={iconStyle} />}>
+                        Payment Requests
+                    </Tabs.Tab>
                     <Tabs.Tab value={`/${DASHBOARD_URL}/configs/general`} leftSection={<IconSettings style={iconStyle} />}>
                         Configs
                     </Tabs.Tab>

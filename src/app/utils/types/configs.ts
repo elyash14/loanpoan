@@ -13,7 +13,9 @@ export type GlobalConfigType = {
     installment?: {
         dueDay: number;
         payDay: number;
-    }
+    };
+    /** Language for bot messages sent to the Telegram group */
+    telegramMessageLocale?: "en" | "fa";
 }
 
 //TODO make a seeder to seed a default value for this config

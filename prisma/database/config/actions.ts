@@ -67,6 +67,7 @@ export async function saveGeneralConfig(formData: FormData): Promise<SaveGeneral
     const validatedFields = saveGeneralConfigSchema.safeParse({
         applicationName: formData.get('applicationName'),
         dateType: formData.get('dateType'),
+        telegramMessageLocale: formData.get('telegramMessageLocale'),
     })
     // Return early if the form data is invalid
     if (!validatedFields.success) {
@@ -83,6 +84,7 @@ export async function saveGeneralConfig(formData: FormData): Promise<SaveGeneral
             ...config,
             applicationName: validatedFields.data.applicationName,
             dateType: validatedFields.data.dateType,
+            telegramMessageLocale: validatedFields.data.telegramMessageLocale,
         }
 
         await prisma.config.upsert({

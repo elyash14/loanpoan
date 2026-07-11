@@ -11,6 +11,8 @@ import { cn } from "utils/cn";
 import { CalendarClock } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "../../components/ui/button";
+import PaymentSubmissionDrawer from "../../components/payments/PaymentSubmissionDrawer";
 
 type InstallmentRow = {
     id: number;
@@ -67,11 +69,18 @@ export default function InstallmentsList({
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(initialHasMore);
     const [loading, setLoading] = useState(false);
+    
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    const selectedRows = useMemo(() => rows.filter((r) => selectedIds.has(r.id)), [rows, selectedIds]);
+    const totalAmount = useMemo(() => selectedRows.reduce((sum, r) => sum + Number(r.amount), 0), [selectedRows]);
 
     useEffect(() => {
         setRows(initialRows);
         setPage(1);
         setHasMore(initialHasMore);
+        setSelectedIds(new Set());
     }, [installments, initialHasMore, initialRows]);
 
     const handleLoadMore = async () => {
@@ -151,27 +160,62 @@ export default function InstallmentsList({
                 rows.map((row) => {
                     const installmentStatus = getInstallmentStatus(row);
                     const badge = statusInfo(installmentStatus);
+                    const isSelected = selectedIds.has(row.id);
 
                     return (
                         <Card
                             key={row.id}
-                            className="relative overflow-hidden border-border/70"
+                            className={cn(
+                                "relative overflow-hidden border-border/70 transition-all duration-200",
+                                !row.paidAt && "cursor-pointer active:scale-[0.99]",
+                                isSelected && "ring-2 ring-primary border-transparent bg-primary/5"
+                            )}
+                            onClick={() => {
+                                if (row.paidAt) return;
+                                setSelectedIds((current) => {
+                                    const next = new Set(current);
+                                    if (next.has(row.id)) {
+                                        next.delete(row.id);
+                                    } else {
+                                        next.add(row.id);
+                                    }
+                                    return next;
+                                });
+                            }}
                         >
                             <CardContent className="space-y-2.5 py-3.5">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
-                                        <Link
-                                            href={`/accounts/${row.account.id}`}
-                                            className="truncate text-base font-semibold tracking-tight hover:text-primary"
-                                        >
-                                            {row.account.code}
-                                        </Link>
+                                        <div className="flex items-center gap-2">
+                                            {!row.paidAt && (
+                                                <span 
+                                                    className={cn(
+                                                        "h-4 w-4 rounded-full border border-muted-foreground/45 flex items-center justify-center transition-colors shrink-0",
+                                                        isSelected && "border-primary bg-primary"
+                                                    )}
+                                                >
+                                                    {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />}
+                                                </span>
+                                            )}
+                                            <Link
+                                                href={`/accounts/${row.account.id}`}
+                                                className="truncate text-base font-semibold tracking-tight hover:text-primary"
+                                                onClick={(e) => {
+                                                    // Prevent navigation if clicking card to select
+                                                    if (!row.paidAt) {
+                                                        e.stopPropagation();
+                                                    }
+                                                }}
+                                            >
+                                                {row.account.code}
+                                            </Link>
+                                        </div>
                                         {row.account.name ? (
-                                            <p className="truncate text-[11px] text-muted-foreground">
+                                            <p className={cn("truncate text-[11px] text-muted-foreground", !row.paidAt && "ms-6")}>
                                                 {row.account.name}
                                             </p>
                                         ) : null}
-                                        <p className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                        <p className={cn("mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground", !row.paidAt && "ms-6")}>
                                             <CalendarClock className="h-3.5 w-3.5 shrink-0" />
                                             {t("installments.due", { date: formatDate(row.dueDate) })}
                                         </p>
@@ -185,7 +229,7 @@ export default function InstallmentsList({
                                         {badge.label}
                                     </Badge>
                                 </div>
-                                <div className="border-t border-border/40 pt-2">
+                                <div className={cn("border-t border-border/40 pt-2", !row.paidAt && "ps-6")}>
                                     <Money value={row.amount} className="text-xl font-bold tracking-tight" />
                                 </div>
                             </CardContent>
@@ -204,6 +248,35 @@ export default function InstallmentsList({
             ) : null}
 
             <LoadMoreButton hasMore={hasMore} loading={loading} onClick={handleLoadMore} />
+
+            {selectedIds.size > 0 && (
+                <div className="fixed inset-x-0 bottom-[calc(4.75rem+max(0.75rem,env(safe-area-inset-bottom)))] z-40 px-5 animate-in slide-in-from-bottom duration-250">
+                    <div className="mx-auto max-w-lg rounded-2xl border border-primary/20 bg-card/95 p-4 shadow-sm backdrop-blur-md flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground">{t("receipt.total")}</p>
+                            <p className="text-lg font-bold text-primary tabular-nums">
+                                <Money value={String(totalAmount)} />
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            onClick={() => setIsDrawerOpen(true)}
+                            className="rounded-xl px-4 py-2 font-semibold bg-primary text-primary-foreground shrink-0 shadow-md active:scale-95 transition-transform"
+                        >
+                            {t("receipt.paySelected", { count: selectedIds.size })}
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            <PaymentSubmissionDrawer
+                open={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                selectedInstallments={Array.from(selectedIds)}
+                selectedPayments={[]}
+                totalAmount={totalAmount}
+                onSuccess={() => setSelectedIds(new Set())}
+            />
         </div>
     );
 }

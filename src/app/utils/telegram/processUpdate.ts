@@ -8,6 +8,8 @@ type TelegramUpdate = {
         chat: { id: number; type: string };
         from?: TelegramApiUser;
         text?: string;
+        message_thread_id?: number;
+        is_topic_message?: boolean;
     };
     chat_member?: {
         chat: { id: number };
