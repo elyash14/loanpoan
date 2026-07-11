@@ -126,6 +126,62 @@ export function getMiniAppUrl(): string {
     return `${base}/home`;
 }
 
+/**
+ * Direct Mini App link for group/channel inline buttons.
+ * @see https://core.telegram.org/bots/webapps#direct-link-mini-apps
+ * Create the app in BotFather (/newapp) and set NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME.
+ */
+export function getTelegramMiniAppDeepLink(): string | null {
+    const username = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME?.replace(/^@/, "").trim();
+    const shortName = process.env.NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME?.trim();
+    if (!username || !shortName) {
+        return null;
+    }
+    return `https://t.me/${username}/${shortName}`;
+}
+
+function isValidInlineButtonUrl(url: string): boolean {
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+            return false;
+        }
+        if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+            return false;
+        }
+        return url.length <= 256;
+    } catch {
+        return false;
+    }
+}
+
+/** Inline keyboard for groups — web_app buttons only work in private chats. */
+export function buildGroupAppMarkup(labels: { telegram: string; web: string }) {
+    const row: Array<{ text: string; url: string }> = [];
+
+    const telegramUrl = getTelegramMiniAppDeepLink();
+    if (telegramUrl && isValidInlineButtonUrl(telegramUrl)) {
+        row.push({
+            text: labels.telegram,
+            url: telegramUrl,
+        });
+    }
+
+    const webUrl = getMiniAppUrl();
+    if (isValidInlineButtonUrl(webUrl)) {
+        row.push({
+            text: labels.web,
+            url: webUrl,
+        });
+    }
+
+    if (row.length === 0) {
+        return undefined;
+    }
+
+    return { inline_keyboard: [row] };
+}
+
 export async function sendTelegramMessage(
     chatId: number | string,
     text: string,

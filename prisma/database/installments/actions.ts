@@ -8,9 +8,7 @@ import { revalidatePath } from "next/cache";
 import { getSession } from 'utils/auth/dataAccessLayer';
 import { DASHBOARD_URL } from "utils/configs";
 import { GlobalConfigType } from "utils/types/configs";
-
-// import { revalidatePath } from "next/cache";
-// import { DASHBOARD_URL } from "utils/configs";
+import { notifyInstallmentGeneration } from "utils/telegram/notifyInstallmentGeneration";
 
 export async function payAnInstallment(id: number) {
   try {
@@ -72,7 +70,8 @@ export async function payAnInstallment(id: number) {
 
 export async function generateAllUndueInstallments() {
   try {
-    await calculateUndueInstallments();
+    const result = await calculateUndueInstallments();
+    await notifyInstallmentGeneration(result.createdCount, result.dueDates);
     // revalidate the list of accounts page after updating an account.
     revalidatePath(`/${DASHBOARD_URL}/installments`);
     return {
@@ -88,11 +87,11 @@ export async function generateAllUndueInstallments() {
   }
 }
 
-const calculateUndueInstallments = async () => {
+const calculateUndueInstallments = async (): Promise<{ createdCount: number; dueDates: Date[] }> => {
   let results: any[] = [];
   const currentDate = new Date();
-  // const currentDate = new Date('2025-12-06');
-  // const currentDate = new Date('2025-01-22');
+  let createdCount = 0;
+  const dueDates: Date[] = [];
 
   // load configs
   const config = (await getGlobalConfigs()) as GlobalConfigType;
@@ -122,9 +121,10 @@ const calculateUndueInstallments = async () => {
     if (initialDate) {
       results = _generateInstallmentsDateForAccount(initialDate, currentDate, config);
       if (results.length > 0) {
+        const installmentAmount = Number(currentInstallment?.amount ?? 0) * account.installmentFactor;
         const installmentData = results.map(installment => ({
           accountId: account.id,
-          amount: Number(currentInstallment?.amount ?? 0) * account.installmentFactor,
+          amount: installmentAmount,
           dueDate: installment.dueDate,
           installmentAmountId: currentInstallment?.id,
           type: "NORMAL" as const,
@@ -135,24 +135,15 @@ const calculateUndueInstallments = async () => {
           data: installmentData,
         });
 
-        // Update account balance **************
-        // const totalAmount = installmentData.reduce((sum, installment) =>
-        //   Number(sum) + Number(installment.amount), 0);
-        // await prisma.account.update({
-        //   where: { id: account.id },
-        //   data: {
-        //     balance: {
-        //       increment: totalAmount
-        //     }
-        //   }
-        // });
+        createdCount += installmentData.length;
+        dueDates.push(...installmentData.map((item) => item.dueDate));
+
         const totalAmount = await prisma.installment.aggregate({
           _sum: {
             amount: true
           },
           where: {
             accountId: account.id,
-            // paidAt: { not: null }
           }
         })
         await prisma.account.update({
@@ -164,6 +155,8 @@ const calculateUndueInstallments = async () => {
       }
     }
   }
+
+  return { createdCount, dueDates };
 }
 
 const _generateInstallmentsDateForAccount = (initialDate: Date, currentDate: Date, config: GlobalConfigType) => {

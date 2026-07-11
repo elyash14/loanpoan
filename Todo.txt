@@ -31,10 +31,10 @@ User Application:
         - show the three bests for each month
         - show the count of rewards and rank them
     - show ranking of count of loan, or amount of loan (*)
-- auto payment:
-    - use telegram storage
+- auto payment: 
+    - use telegram storage(*)
     - use a free model to analyze
-    - send notice to one of the tab in the telegram group
+    - send notice to one of the tab in the telegram group(*)
 - cron:
     - generate new instalment per each mount (*)
-    - send notice to the group
+    - send notice to the group (*)
