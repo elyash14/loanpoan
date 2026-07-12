@@ -21,6 +21,7 @@ function getAllowedDevOrigins() {
 }
 
 const nextConfig = {
+    output: "standalone",
     allowedDevOrigins: getAllowedDevOrigins(),
     experimental: {
         optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
