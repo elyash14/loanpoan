@@ -1,14 +1,14 @@
 "use client";
 
 import { Table, Button, ActionIcon, Badge, Tooltip, Modal, NumberInput, TextInput, Group, Stack, Text, Card } from "@mantine/core";
-import { IconChevronUp, IconChevronDown, IconPlus, IconRefresh, IconAdjustments } from "@tabler/icons-react";
+import { IconChevronUp, IconChevronDown, IconPlus, IconRefresh, IconAdjustments, IconBrandTelegram } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { DASHBOARD_URL } from "utils/configs";
 import { formatDate } from "utils/date";
 import { useAtomValue } from "jotai";
 import { globalConfigAtom } from "utils/stores/configs";
-import { reorderQueueAction, resetQueueAction } from "@database/loan/queueActions";
+import { reorderQueueAction, resetQueueAction, sendQueueToTelegramAction } from "@database/loan/queueActions";
 import { successNotification, errorNotification } from "utils/Notification/notification";
 import type { LoanPriorityEntry } from "@database/loan/queue";
 
@@ -76,6 +76,17 @@ export default function LoanPriorityList({ queueJson }: Props) {
         });
     };
 
+    const handleSendToTelegram = () => {
+        startTransition(async () => {
+            const res = await sendQueueToTelegramAction();
+            if (res.status === "SUCCESS") {
+                successNotification({ title: "Success", message: res.message });
+            } else {
+                errorNotification({ title: "Error", message: res.message });
+            }
+        });
+    };
+
     return (
         <Card withBorder radius="md" p="md" bg="var(--mantine-color-body)">
             <Group justify="space-between" mb="md">
@@ -83,16 +94,28 @@ export default function LoanPriorityList({ queueJson }: Props) {
                     <Text size="lg" fw={700}>Waiting Priority Queue</Text>
                     <Text size="xs" c="muted">Ordered by completed loan count tiers, FIFO of joining time, then manual overrides.</Text>
                 </div>
-                <Button 
-                    size="xs" 
-                    variant="light" 
-                    color="red" 
-                    leftSection={<IconRefresh size={14} />}
-                    onClick={handleReset}
-                    loading={isPending}
-                >
-                    Reset to Automatic
-                </Button>
+                <Group gap="xs">
+                    <Button 
+                        size="xs" 
+                        variant="light" 
+                        color="blue" 
+                        leftSection={<IconBrandTelegram size={14} />}
+                        onClick={handleSendToTelegram}
+                        loading={isPending}
+                    >
+                        Send to Telegram
+                    </Button>
+                    <Button 
+                        size="xs" 
+                        variant="light" 
+                        color="red" 
+                        leftSection={<IconRefresh size={14} />}
+                        onClick={handleReset}
+                        loading={isPending}
+                    >
+                        Reset to Automatic
+                    </Button>
+                </Group>
             </Group>
 
             <Table.ScrollContainer minWidth={800}>

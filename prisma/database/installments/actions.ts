@@ -9,6 +9,7 @@ import { getSession } from 'utils/auth/dataAccessLayer';
 import { DASHBOARD_URL } from "utils/configs";
 import { GlobalConfigType } from "utils/types/configs";
 import { notifyInstallmentGeneration } from "utils/telegram/notifyInstallmentGeneration";
+import { notifyLoanPriorityQueue } from "utils/telegram/notifyLoanPriorityQueue";
 
 export async function payAnInstallment(id: number) {
   try {
@@ -72,6 +73,9 @@ export async function generateAllUndueInstallments() {
   try {
     const result = await calculateUndueInstallments();
     await notifyInstallmentGeneration(result.createdCount, result.dueDates);
+    if (result.createdCount > 0) {
+      await notifyLoanPriorityQueue();
+    }
     // revalidate the list of accounts page after updating an account.
     revalidatePath(`/${DASHBOARD_URL}/installments`);
     return {
