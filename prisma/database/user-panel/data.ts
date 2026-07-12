@@ -9,6 +9,19 @@ import { notFound } from "next/navigation";
 import { getPanelUserId } from "utils/auth/userSession";
 import { ITEMS_PER_PAGE } from "utils/configs";
 import { getUserLoanQueueSummary } from "@database/loan/queue";
+import { getGlobalConfigs } from "@database/config/data";
+import { setDate as setJalaliDate } from "date-fns-jalali";
+import type { GlobalConfigType } from "utils/types/configs";
+
+function getPaymentWindowStart(dueDate: Date, dueDay: number, dateType: "JALALI" | "GREGORIAN"): Date {
+    const start = new Date(dueDate);
+    if (dateType === 'JALALI') {
+        return setJalaliDate(start, dueDay);
+    } else {
+        start.setDate(dueDay);
+        return start;
+    }
+}
 
 function decimalToString(value: { toString(): string } | null | undefined): string {
     return value?.toString() ?? "0";
@@ -84,15 +97,11 @@ function buildUserLoanRankings(panelUsers: UserLoanStats[], userId: number) {
 export async function getUserHomeDashboard(userId: number) {
     const now = new Date();
     const accountWhere = { userId, deletedAt: null };
-    const overdueWhere = { paidAt: null, dueDate: { lt: now } };
-    const upcomingWhere = { paidAt: null, dueDate: { gte: now } };
 
     const [
         balanceSum,
-        overdueInstallments,
-        overduePayments,
-        upcomingInstallments,
-        upcomingPayments,
+        unpaidInstallments,
+        unpaidPayments,
         activeLoan,
         onTimeInstallments,
         onTimePayments,
@@ -112,19 +121,11 @@ export async function getUserHomeDashboard(userId: number) {
             where: accountWhere,
         }),
         prisma.installment.findMany({
-            where: { ...overdueWhere, account: accountWhere },
+            where: { paidAt: null, account: accountWhere },
             select: { amount: true, dueDate: true },
         }),
         prisma.payment.findMany({
-            where: { ...overdueWhere, loan: { account: accountWhere } },
-            select: { amount: true, dueDate: true },
-        }),
-        prisma.installment.findMany({
-            where: { ...upcomingWhere, account: accountWhere },
-            select: { amount: true, dueDate: true },
-        }),
-        prisma.payment.findMany({
-            where: { ...upcomingWhere, loan: { account: accountWhere } },
+            where: { paidAt: null, loan: { account: accountWhere } },
             select: { amount: true, dueDate: true },
         }),
         prisma.loan.findFirst({
@@ -211,6 +212,38 @@ export async function getUserHomeDashboard(userId: number) {
             select: { avatar: true, profileColor: true },
         }),
     ]);
+
+    const config = (await getGlobalConfigs()) as GlobalConfigType;
+    const dueDay = config.installment?.dueDay ?? 1;
+    const dateType = config.dateType ?? "JALALI";
+
+    const overdueInstallments: typeof unpaidInstallments = [];
+    const upcomingInstallments: typeof unpaidInstallments = [];
+
+    for (const inst of unpaidInstallments) {
+        if (inst.dueDate < now) {
+            overdueInstallments.push(inst);
+        } else {
+            const windowStart = getPaymentWindowStart(inst.dueDate, dueDay, dateType);
+            if (now >= windowStart) {
+                upcomingInstallments.push(inst);
+            }
+        }
+    }
+
+    const overduePayments: typeof unpaidPayments = [];
+    const upcomingPayments: typeof unpaidPayments = [];
+
+    for (const pay of unpaidPayments) {
+        if (pay.dueDate < now) {
+            overduePayments.push(pay);
+        } else {
+            const windowStart = getPaymentWindowStart(pay.dueDate, dueDay, dateType);
+            if (now >= windowStart) {
+                upcomingPayments.push(pay);
+            }
+        }
+    }
 
     const overdueItems = [...overdueInstallments, ...overduePayments];
     const upcomingItems = [...upcomingInstallments, ...upcomingPayments];

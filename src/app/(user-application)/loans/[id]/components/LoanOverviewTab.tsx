@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, CardContent } from "../../../components/ui/card";
+import { cn } from "utils/cn";
+import { formatJalaliDate, getJalaliYearMonth } from "utils/formatJalaliDate";
 import { useUserPreferences } from "../../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../../components/preferences/useLocaleFormat";
-import { formatJalaliDate, getJalaliYearMonth } from "utils/formatJalaliDate";
-import { cn } from "utils/cn";
+import { Card, CardContent } from "../../../components/ui/card";
 import type { LoanDetailData } from "./types";
 
 type Props = {
@@ -41,7 +41,7 @@ export default function LoanOverviewTab({ loan }: Props) {
             : dueDate < now
                 ? "overdue"
                 : "unpaid";
-        return { ...payment, season, year, dueDate, status, rawMonth };
+        return { ...payment, season, year, month, dueDate, status, rawMonth };
     });
 
     const seasonMap = new Map<string, { year: number; season: keyof typeof seasonLabels; items: typeof paymentsWithSeason }>();
@@ -68,9 +68,9 @@ export default function LoanOverviewTab({ loan }: Props) {
         .slice(0, 6);
 
     const itemClass = (status: PaymentStatus) => {
-        if (status === "paid") return "border-emerald-500 bg-card text-emerald-600";
-        if (status === "overdue") return "border-rose-500 bg-card text-rose-600";
-        return "border-sky-500 bg-card text-sky-600";
+        if (status === "paid") return "border-emerald-500 text-emerald-600 bg-muted shadow-lg shadow-emerald-500/20";
+        if (status === "overdue") return "border-rose-500 text-rose-600 bg-muted shadow-lg shadow-rose-500/20";
+        return "border-sky-500 text-sky-600 bg-muted shadow-lg shadow-sky-500/20";
     };
 
     return (
@@ -79,8 +79,29 @@ export default function LoanOverviewTab({ loan }: Props) {
                 <div className="flex flex-col">
                     {grouped.length ? grouped.map((group, index) => {
                         const isEvenRow = index % 2 === 0;
-                        const directionItems = isEvenRow ? group.items : [...group.items].reverse();
-                        const singleItemAlign = isEvenRow ? "justify-start" : "justify-end";
+
+                        // Create slots for the 3 months of the season
+                        const slots = [null, null, null] as (typeof group.items[number] | null)[];
+                        for (const item of group.items) {
+                            const offset = (item.month - 1) % 3;
+                            slots[offset] = item;
+                        }
+
+                        // Order slots depending on even/odd row direction and LTR/RTL layout
+                        const isRtl = locale === "fa";
+                        let directionItems;
+
+                        if (isRtl) {
+                            // In RTL, DOM order [A, B, C] renders physically as Right: A, Center: B, Left: C
+                            directionItems = isEvenRow
+                                ? [slots[0], slots[1], slots[2]]
+                                : [slots[2], slots[1], slots[0]];
+                        } else {
+                            // In LTR, DOM order [A, B, C] renders physically as Left: A, Center: B, Right: C
+                            directionItems = isEvenRow
+                                ? [slots[2], slots[1], slots[0]]
+                                : [slots[0], slots[1], slots[2]];
+                        }
 
                         return (
                             <div key={`${group.year}-${group.season}`} className="relative h-24">
@@ -124,24 +145,33 @@ export default function LoanOverviewTab({ loan }: Props) {
                                 {/* Nodes container */}
                                 <div
                                     className={cn(
-                                        "absolute inset-x-10 top-1/2 flex -translate-y-1/2 items-center",
-                                        directionItems.length > 1 ? "justify-between" : singleItemAlign,
+                                        "absolute inset-x-10 top-1/2 flex -translate-y-1/2 items-center justify-between",
                                     )}
                                 >
-                                    {directionItems.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className={cn(
-                                                "flex h-[52px] w-[52px] items-center justify-center rounded-full border-[3px]",
-                                                itemClass(item.status),
-                                            )}
-                                            title={item.rawMonth}
-                                        >
-                                            <span className="text-[11px] font-bold tracking-tight">
-                                                {item.rawMonth}
-                                            </span>
-                                        </div>
-                                    ))}
+                                    {directionItems.map((item, itemIdx) => {
+                                        if (!item) {
+                                            return (
+                                                <div
+                                                    key={`empty-${itemIdx}`}
+                                                    className="w-[52px] h-[52px] invisible"
+                                                />
+                                            );
+                                        }
+                                        return (
+                                            <div
+                                                key={item.id}
+                                                className={cn(
+                                                    "flex h-[52px] w-[52px] items-center justify-center rounded-full border-[3px]",
+                                                    itemClass(item.status),
+                                                )}
+                                                title={item.rawMonth}
+                                            >
+                                                <span className="text-[11px] font-bold tracking-tight">
+                                                    {item.rawMonth}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         );
