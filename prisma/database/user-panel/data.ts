@@ -8,6 +8,7 @@ import { RichTableSortDir } from "@dashboard/components/table/interface";
 import { notFound } from "next/navigation";
 import { getPanelUserId } from "utils/auth/userSession";
 import { ITEMS_PER_PAGE } from "utils/configs";
+import { getUserLoanQueueSummary } from "@database/loan/queue";
 
 function decimalToString(value: { toString(): string } | null | undefined): string {
     return value?.toString() ?? "0";
@@ -93,8 +94,6 @@ export async function getUserHomeDashboard(userId: number) {
         upcomingInstallments,
         upcomingPayments,
         activeLoan,
-        userEligibleAccounts,
-        allEligibleAccounts,
         onTimeInstallments,
         onTimePayments,
         latePaidInstallments,
@@ -142,25 +141,6 @@ export async function getUserHomeDashboard(userId: number) {
                 payments: {
                     select: { amount: true, paidAt: true },
                 },
-            },
-        }),
-        prisma.account.findMany({
-            where: {
-                ...accountWhere,
-                loans: { none: { status: "IN_PROGRESS" } },
-            },
-            select: { id: true },
-        }),
-        prisma.account.findMany({
-            where: {
-                deletedAt: null,
-                loans: { none: { status: "IN_PROGRESS" } },
-            },
-            select: {
-                id: true,
-                userId: true,
-                openedAt: true,
-                _count: { select: { loans: true } },
             },
         }),
         prisma.installment.count({
@@ -276,24 +256,11 @@ export async function getUserHomeDashboard(userId: number) {
         };
     }
 
-    const rankedEligible = [...allEligibleAccounts].sort((a, b) => {
-        if (a._count.loans !== b._count.loans) {
-            return a._count.loans - b._count.loans;
-        }
-        const aOpened = a.openedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
-        const bOpened = b.openedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
-        return aOpened - bOpened;
-    });
-
-    const userEligibleIds = new Set(userEligibleAccounts.map((row) => row.id));
-    const positions = rankedEligible
-        .map((row, index) => ({ accountId: row.id, position: index + 1 }))
-        .filter((row) => userEligibleIds.has(row.accountId));
-
-    const queue = positions.length
+    const queueSummary = await getUserLoanQueueSummary(userId);
+    const queue = queueSummary
         ? {
-            position: positions[0].position,
-            totalEligible: rankedEligible.length,
+            position: queueSummary.position,
+            totalEligible: queueSummary.totalEligible,
         }
         : null;
 

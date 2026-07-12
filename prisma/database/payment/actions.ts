@@ -11,6 +11,7 @@ import {
 } from "utils/telegram/paymentRequestMessages";
 import { getGlobalConfigs } from "@database/config/data";
 import type { GlobalConfigType } from "utils/types/configs";
+import { enqueueAccount } from "@database/loan/queue";
 
 export async function payAPayment(id: number) {
   try {
@@ -38,10 +39,13 @@ export async function payAPayment(id: number) {
     });
 
     if (count === 0) {
-      await prisma.loan.update({
+      const finishedLoan = await prisma.loan.update({
         where: { id: payment.loanId! },
         data: { status: "FINISHED" }
       });
+      if (finishedLoan.accountId) {
+        await enqueueAccount(finishedLoan.accountId);
+      }
       revalidatePath(`/${DASHBOARD_URL}/loans`);
     }
 
@@ -131,10 +135,13 @@ export async function reviewPaymentRequest(requestId: number, status: "APPROVED"
           });
 
           if (count === 0) {
-            await prisma.loan.update({
+            const finishedLoan = await prisma.loan.update({
               where: { id: pay.loanId },
               data: { status: "FINISHED" },
             });
+            if (finishedLoan.accountId) {
+              await enqueueAccount(finishedLoan.accountId);
+            }
           }
         }
       }

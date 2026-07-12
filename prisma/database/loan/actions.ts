@@ -7,6 +7,7 @@ import { DASHBOARD_URL } from "utils/configs";
 import { CreateLoanResponseType, createLoanValidationSchemaOnTheServer } from "utils/form-validations/loan/createLoanValidation";
 import { calculateLoanPayments } from "utils/loan/calculatePayment";
 import { GlobalConfigType } from "utils/types/configs";
+import { dequeueAccount } from "@database/loan/queue";
 
 export async function createLoan(formData: FormData): Promise<CreateLoanResponseType> {
   // validate the form data on the server
@@ -44,6 +45,21 @@ export async function createLoan(formData: FormData): Promise<CreateLoanResponse
     }
   }
 
+  // Check if account already has an active loan
+  const activeLoanCount = await prisma.loan.count({
+    where: {
+      accountId: validatedFields.data.accountId,
+      status: "IN_PROGRESS"
+    }
+  });
+
+  if (activeLoanCount > 0) {
+    return {
+      status: "ERROR",
+      message: "This account already has an active loan in progress"
+    }
+  }
+
   // save data to the database
   try {
     await prisma.loan.create({
@@ -69,6 +85,10 @@ export async function createLoan(formData: FormData): Promise<CreateLoanResponse
         }
       },
     });
+
+    // Dequeue account on successful loan creation
+    await dequeueAccount(validatedFields.data.accountId);
+
     // revalidate the list of accounts page after updating an account.
     revalidatePath(`/${DASHBOARD_URL}/loans`);
     return {

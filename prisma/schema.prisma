@@ -51,6 +51,7 @@ model User {
     Installment   Installment[]
     paymentRequests         PaymentRequest[] @relation("UserPaymentRequests")
     reviewedPaymentRequests PaymentRequest[] @relation("ReviewedPaymentRequests")
+    loanQueueAdjustments    LoanQueueEntry[] @relation("LoanQueueAdjustments")
 }
 
 model TelegramGroupMember {
@@ -81,6 +82,7 @@ model Account {
     userId            Int
     loans             Loan[]
     installments      Installment[]
+    loanQueueEntry    LoanQueueEntry?
 }
 
 model InstallmentAmount {
@@ -164,4 +166,22 @@ model PaymentRequest {
     
     installments  Installment[]
     payments      Payment[]
+}
+
+model LoanQueueEntry {
+    id                 Int      @id @default(autoincrement())
+    accountId          Int      @unique
+    account            Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    position           Int
+    completedLoanCount Int
+    joinedAt           DateTime @default(now())
+    isManualPosition   Boolean  @default(false)
+    manualNote         String?  @db.Text
+    adjustedById       Int?
+    adjustedBy         User?    @relation("LoanQueueAdjustments", fields: [adjustedById], references: [id])
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
+
+    @@unique([position])
+    @@index([position])
 }

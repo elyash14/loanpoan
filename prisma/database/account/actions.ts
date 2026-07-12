@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { DASHBOARD_URL } from "utils/configs";
 import { CreateAccountResponseType, createAccountValidationSchemaOnTheServer } from "utils/form-validations/account/createAccountValidation";
 import { editAccountValidationSchema } from "utils/form-validations/account/editAccountValidation";
+import { enqueueAccount } from "@database/loan/queue";
 
 export async function createAccount(formData: FormData): Promise<CreateAccountResponseType> {
     // validate the form data on the server
@@ -25,7 +26,7 @@ export async function createAccount(formData: FormData): Promise<CreateAccountRe
     }
     // save data to the database
     try {
-        await prisma.account.create({
+        const createdAccount = await prisma.account.create({
             data: {
                 code: validatedFields.data.code,
                 name: validatedFields.data.name,
@@ -41,6 +42,7 @@ export async function createAccount(formData: FormData): Promise<CreateAccountRe
                 }
             },
         });
+        await enqueueAccount(createdAccount.id);
         // revalidate the list of accounts page after updating an account.
         revalidatePath(`/${DASHBOARD_URL}/accounts`);
         return {

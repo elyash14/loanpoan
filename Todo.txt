@@ -38,3 +38,5 @@ User Application:
 - cron:
     - generate new instalment per each mount (*)
     - send notice to the group (*)
+
+- loan priority list
