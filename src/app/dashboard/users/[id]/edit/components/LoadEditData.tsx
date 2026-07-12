@@ -1,7 +1,7 @@
 import { getUser } from "@database/user/data";
 import { listTelegramMembersForSelect } from "@database/telegram/data";
 import { notFound } from "next/navigation";
-import EditUserForm from "./EditUserForm";
+import EditUserTabs from "./EditUserTabs";
 import { serializeClient } from "utils/serialize";
 
 type props = {
@@ -17,7 +17,7 @@ const LoadUserData = async ({ id }: props) => {
     notFound();
   }
   return (
-    <EditUserForm
+    <EditUserTabs
       data={serializeClient(user)}
       telegramMembers={JSON.stringify(telegramMembers)}
     />
