@@ -29,6 +29,21 @@ enum InstallmentType {
     CUSTOM
 }
 
+enum AchievementType {
+    FASTEST_PAYER
+    GOOD_KARMA
+}
+
+model UserAchievement {
+    id        Int             @id @default(autoincrement())
+    userId    Int
+    user      User            @relation("UserAchievements", fields: [userId], references: [id])
+    type      AchievementType
+    title     String?
+    metadata  Json?
+    createdAt DateTime        @default(now())
+}
+
 model User {
     id            Int           @id @default(autoincrement())
     email         String        @unique()
@@ -52,6 +67,7 @@ model User {
     paymentRequests         PaymentRequest[] @relation("UserPaymentRequests")
     reviewedPaymentRequests PaymentRequest[] @relation("ReviewedPaymentRequests")
     loanQueueAdjustments    LoanQueueEntry[] @relation("LoanQueueAdjustments")
+    achievements            UserAchievement[] @relation("UserAchievements")
 }
 
 model TelegramGroupMember {

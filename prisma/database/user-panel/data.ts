@@ -12,6 +12,7 @@ import { getUserLoanQueueSummary } from "@database/loan/queue";
 import { getGlobalConfigs } from "@database/config/data";
 import { setDate as setJalaliDate } from "date-fns-jalali";
 import type { GlobalConfigType } from "utils/types/configs";
+import { getCalendarPeriod } from "utils/calendarPeriod";
 
 function getPaymentWindowStart(dueDate: Date, dueDay: number, dateType: "JALALI" | "GREGORIAN"): Date {
     const start = new Date(dueDate);
@@ -115,6 +116,7 @@ export async function getUserHomeDashboard(userId: number) {
         activeLoanAmount,
         activeLoanMemberCount,
         currentUser,
+        userAchievements,
     ] = await Promise.all([
         prisma.account.aggregate({
             _sum: { balance: true },
@@ -211,11 +213,54 @@ export async function getUserHomeDashboard(userId: number) {
             where: { id: userId },
             select: { avatar: true, profileColor: true },
         }),
+        prisma.userAchievement.findMany({
+            where: { userId }
+        }),
     ]);
 
     const config = (await getGlobalConfigs()) as GlobalConfigType;
     const dueDay = config.installment?.dueDay ?? 1;
     const dateType = config.dateType ?? "JALALI";
+    
+    // Gamification properties
+    const goodKarma = userAchievements.filter(a => a.type === "GOOD_KARMA").length;
+    const fastestPayerRewards = userAchievements.filter(a => a.type === "FASTEST_PAYER").length;
+    
+    // Fetch current period podium
+    const currentPeriod = getCalendarPeriod(now, dateType);
+    const podiumAchievements = await prisma.userAchievement.findMany({
+        where: {
+            type: "FASTEST_PAYER",
+            metadata: {
+                path: ["year"],
+                equals: currentPeriod.year
+            }
+        },
+        include: {
+            user: { select: { firstName: true, lastName: true, avatar: true } }
+        }
+    });
+    
+    // Manual filtering for month since JSON path filtering is tricky with dynamic queries in Prisma without raw queries
+    const currentPodiumUsers = podiumAchievements
+        .filter(a => {
+            const meta = a.metadata as any;
+            return meta?.month === currentPeriod.month;
+        })
+        .map(a => ({
+            rank: (a.metadata as any).rank as number,
+            userId: a.userId,
+            firstName: a.user.firstName,
+            lastName: a.user.lastName,
+            avatar: a.user.avatar,
+        }))
+        .sort((a, b) => a.rank - b.rank);
+        
+    const monthlyPodium = currentPodiumUsers.length > 0 ? {
+        year: currentPeriod.year,
+        month: currentPeriod.month,
+        topUsers: currentPodiumUsers
+    } : null;
 
     const overdueInstallments: typeof unpaidInstallments = [];
     const upcomingInstallments: typeof unpaidInstallments = [];
@@ -294,6 +339,7 @@ export async function getUserHomeDashboard(userId: number) {
         ? {
             position: queueSummary.position,
             totalEligible: queueSummary.totalEligible,
+            nearbyMembers: queueSummary.nearbyMembers,
         }
         : null;
 
@@ -330,8 +376,11 @@ export async function getUserHomeDashboard(userId: number) {
         activeLoan: activeLoanSnapshot,
         queue,
         punctualityScore,
+        goodKarma,
+        fastestPayerRewards,
         loanRanking,
         globalStats,
+        monthlyPodium,
     };
 }
 

@@ -22,8 +22,19 @@ export type HomeDashboardData = {
     queue: {
         position: number;
         totalEligible: number;
+        nearbyMembers: Array<{
+            position: number;
+            userId: number;
+            firstName: string;
+            lastName: string;
+            avatar: string | null;
+            profileColor: string | null;
+            isMe: boolean;
+        }>;
     } | null;
     punctualityScore: number;
+    goodKarma: number;
+    fastestPayerRewards: number;
     loanRanking: {
         byCount: {
             position: number;
@@ -45,6 +56,17 @@ export type HomeDashboardData = {
         memberCount: number;
         activeLoanMemberCount: number;
     };
+    monthlyPodium: {
+        year: number;
+        month: number;
+        topUsers: Array<{
+            rank: number;
+            userId: number;
+            firstName: string;
+            lastName: string;
+            avatar: string | null;
+        }>;
+    } | null;
 };
 
 export type HomeTabId = "status" | "personal" | "global";

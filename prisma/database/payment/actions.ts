@@ -12,6 +12,8 @@ import {
 import { getGlobalConfigs } from "@database/config/data";
 import type { GlobalConfigType } from "utils/types/configs";
 import { enqueueAccount } from "@database/loan/queue";
+import { recalculateMonthlyFastPayers } from "@database/gamification/fastPayer";
+import { getCalendarPeriod, DateType } from "utils/calendarPeriod";
 
 export async function payAPayment(id: number) {
   try {
@@ -144,6 +146,27 @@ export async function reviewPaymentRequest(requestId: number, status: "APPROVED"
             }
           }
         }
+      }
+      
+      // GAMIFICATION: Recalculate fastest payer for the periods touched by these installments
+      try {
+        const globalConfig = (await getGlobalConfigs()) as GlobalConfigType;
+        const dateType: DateType = globalConfig.dateType ?? "JALALI";
+        
+        const touchedPeriods = new Set<string>();
+        for (const inst of request.installments) {
+          if (inst.type === "NORMAL") {
+            const period = getCalendarPeriod(inst.dueDate, dateType);
+            touchedPeriods.add(`${period.year}-${period.month}`);
+          }
+        }
+        
+        for (const periodStr of touchedPeriods) {
+          const [y, m] = periodStr.split("-").map(Number);
+          await recalculateMonthlyFastPayers(y, m, dateType);
+        }
+      } catch (err) {
+        console.error("Failed to recalculate fastest payers:", err);
       }
     }
 

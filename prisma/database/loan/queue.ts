@@ -179,11 +179,17 @@ export async function reorderLoanQueueEntry(
   accountId: number,
   newPosition: number,
   adminUserId?: number,
-  note?: string
+  note?: string,
+  grantKarma?: boolean
 ) {
   await prisma.$transaction(async (tx) => {
     const entry = await tx.loanQueueEntry.findUnique({
-      where: { accountId }
+      where: { accountId },
+      include: {
+        account: {
+          select: { userId: true }
+        }
+      }
     });
     if (!entry) throw new Error("Queue entry not found");
 
@@ -221,6 +227,23 @@ export async function reorderLoanQueueEntry(
         },
         data: { position: { decrement: 1 } }
       });
+      
+      // If the user is moving down (giving up their spot) and karma is requested
+      if (grantKarma && adminUserId) {
+         await tx.userAchievement.create({
+           data: {
+             userId: entry.account.userId,
+             type: "GOOD_KARMA",
+             title: "Good Karma / Maram",
+             metadata: {
+               grantedByAdminId: adminUserId,
+               movedFrom: oldPosition,
+               movedTo: targetPos,
+               note: note ?? null
+             }
+           }
+         });
+      }
     }
 
     // Now set the target position on the moved entry and mark as manual
@@ -378,10 +401,48 @@ export async function getUserLoanQueueSummary(userId: number) {
 
     // Best position is the minimum position
     const bestEntry = userEntries[0];
+    const bestPos = bestEntry.position;
+
+    const nearbyEntries = await prisma.loanQueueEntry.findMany({
+      where: {
+        position: {
+          gte: Math.max(1, bestPos - 2),
+          lte: bestPos + 2
+        },
+        account: {
+          deletedAt: null
+        }
+      },
+      include: {
+        account: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                profileColor: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { position: 'asc' }
+    });
 
     return {
-      position: bestEntry.position,
+      position: bestPos,
       totalEligible,
+      nearbyMembers: nearbyEntries.map(e => ({
+        position: e.position,
+        userId: e.account.user.id,
+        firstName: e.account.user.firstName,
+        lastName: e.account.user.lastName,
+        avatar: e.account.user.avatar,
+        profileColor: e.account.user.profileColor,
+        isMe: e.account.userId === userId
+      })),
       eligibleAccounts: userEntries.map(e => ({
         accountId: e.accountId,
         position: e.position,
