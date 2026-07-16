@@ -1,14 +1,30 @@
 'use client';
 
 import PagePaper from "@dashboard/components/paper/PagePaper";
-import { login } from "@database/user/actions";
+import { loginAsAdmin } from "@database/user/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, TextInput, Title, rem } from "@mantine/core";
+import { Button, TextInput, Title, rem, Text } from "@mantine/core";
 import { IconLogin } from "@tabler/icons-react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { LoginFormFormSchemaInputType, loginValidatorSchema } from "utils/form-validations/auth/loginValidator";
+import {
+    LoginFormFormSchemaInputType,
+    loginValidatorSchema,
+} from "utils/form-validations/auth/loginValidator";
 
-export default function LoginForm() {
+const ADMIN_ERROR_MESSAGES: Record<string, string> = {
+    EMAIL_NOT_FOUND: "Email not found",
+    ACCOUNT_DEACTIVATED: "Account is deactivated",
+    INVALID_CREDENTIALS: "Invalid credentials",
+    USE_ADMIN_LOGIN: "Please use the admin login page",
+    USE_MEMBER_LOGIN: "This page is for admins only. Use the member login.",
+    UNKNOWN: "Something went wrong!",
+};
+
+function translateAdminError(code: string) {
+    return ADMIN_ERROR_MESSAGES[code] ?? ADMIN_ERROR_MESSAGES.UNKNOWN;
+}
+
+export default function AdminLoginForm() {
     const {
         register,
         setError,
@@ -18,39 +34,34 @@ export default function LoginForm() {
         resolver: zodResolver(loginValidatorSchema, {}, { raw: true }),
     });
 
-    const onSubmit: SubmitHandler<LoginFormFormSchemaInputType> = async (
-        data,
-    ) => {
-        // create a form data
+    const onSubmit: SubmitHandler<LoginFormFormSchemaInputType> = async (data) => {
         const formData = new FormData();
         for (const field of Object.keys(data) as Array<keyof typeof data>) {
             formData.append(`${field}`, `${data[field]}`);
         }
 
-        // send it to the server with server actions
-        const result = await login(formData);
+        const result = await loginAsAdmin(formData);
         if (result && result.status === "ERROR") {
             for (const e in result.error!) {
-                setError(e as any, {
-                    message: String(
-                        result.error?.[
-                        e as "email" | "password"
-                        ],
-                    ),
+                const raw = result.error?.[e as "email" | "password"];
+                const code = Array.isArray(raw) ? String(raw[0]) : String(raw ?? "UNKNOWN");
+                setError(e as "email" | "password", {
+                    message: translateAdminError(code),
                 });
             }
         }
     };
 
-    //TODO add captcha code
-
-    //TODO use csrf 
-
     return (
         <PagePaper>
-            <Title ta="center" mb={rem(50)} order={2}>Please log in to continue</Title>
+            <Title ta="center" mb={rem(8)} order={2}>
+                Admin login
+            </Title>
+            <Text ta="center" c="dimmed" size="sm" mb={rem(40)}>
+                Sign in to the management dashboard
+            </Text>
 
-            <form onSubmit={handleSubmit(onSubmit)} >
+            <form onSubmit={handleSubmit(onSubmit)}>
                 <TextInput
                     label="Email"
                     autoComplete="email"
@@ -64,6 +75,7 @@ export default function LoginForm() {
                     placeholder="Enter your password"
                     type="password"
                     autoComplete="current-password"
+                    mt="md"
                     {...register("password")}
                     error={errors.password?.message}
                 />
@@ -75,7 +87,8 @@ export default function LoginForm() {
                     size="lg"
                     rightSection={<IconLogin />}
                     loading={isSubmitting}
-                    type="submit">
+                    type="submit"
+                >
                     Log In
                 </Button>
             </form>

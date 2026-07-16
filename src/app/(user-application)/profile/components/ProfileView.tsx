@@ -198,9 +198,10 @@ export default function ProfileView({ profile, authProvider }: Props) {
                         onClick={() => setPasswordDrawerOpen(true)}
                     />
                     {isEmailAuth ? (
-                        <div className="pt-2">
-                            <UserLogout label={t("profile.logout")} />
-                        </div>
+                        <UserLogout
+                            label={t("profile.logout")}
+                            description={t("profile.logoutDesc")}
+                        />
                     ) : null}
                 </CardContent>
             </Card>

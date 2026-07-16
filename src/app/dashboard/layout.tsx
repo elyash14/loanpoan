@@ -18,8 +18,18 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const config = (await getGlobalConfigs() as GlobalConfigType);
     const session = await getSession();
+
+    // Bare layout for /dashboard/login (no navbar / menu)
+    if (!session?.userId) {
+        return (
+            <Container size="xs" mt="xl" mb="xl">
+                {children}
+            </Container>
+        );
+    }
+
+    const config = (await getGlobalConfigs() as GlobalConfigType);
 
     return (
         <>

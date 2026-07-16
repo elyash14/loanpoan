@@ -16,13 +16,14 @@ description: User-facing panel for Next Financial (web + Telegram Mini App). Use
 | `/payments` | User's loan payments |
 | `/profile` | Own profile + change password |
 | `/link-required` | Telegram user not linked by admin |
-| `/login` | Email/password (web) |
+| `/login` | Member email/password login (web) |
 
-Admin panel stays at `/dashboard/*` (Mantine). User panel uses Tailwind + shadcn under `#user-app`.
+Admin panel stays at `/dashboard/*` (Mantine). Admin login: `/dashboard/login`. User panel uses Tailwind + shadcn under `#user-app`.
 
 ## Auth
 
-- **Web:** email/password → JWT session cookie (existing `createSession`)
+- **Web member:** `/login` → `loginAsMember` → JWT session → `/home`
+- **Web admin:** `/dashboard/login` → `loginAsAdmin` → JWT session → `/dashboard`
 - **Telegram:** `POST /api/auth/telegram` with `Authorization: tma <initData>`
   - Validate HMAC with `TELEGRAM_BOT_TOKEN`
   - Lookup `User` by `telegramId` (admin must link in dashboard)

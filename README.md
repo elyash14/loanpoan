@@ -107,7 +107,8 @@ Member-facing UI lives under `src/app/(user-application)/` with Tailwind + shadc
 **Routes:** `/home`, `/accounts`, `/loans`, `/installments`, `/payments`, `/profile`, `/more`
 
 **Auth:**
-- Web: email/password at `/login` (users redirect to `/home`)
+- Members: email/password at `/login` → `/home`
+- Admins: email/password at `/dashboard/login` → `/dashboard`
 - Telegram Mini App: `POST /api/auth/telegram` with `Authorization: tma <initData>`
 
 **Telegram setup:**

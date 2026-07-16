@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { decrypt } from './session'
+import { DASHBOARD_URL } from 'utils/configs'
 
 export const verifySession = cache(async () => {
     const cookieStore = await cookies()
@@ -11,7 +12,7 @@ export const verifySession = cache(async () => {
     const session = await decrypt(cookie)
 
     if (!session?.userId) {
-        redirect('/login')
+        redirect(`/${DASHBOARD_URL}/login`)
     }
 
     return { isAuth: true, userId: session.userId }

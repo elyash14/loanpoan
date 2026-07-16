@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSession, deleteSession } from "utils/auth/session";
+import { getSession } from "utils/auth/dataAccessLayer";
 import { DASHBOARD_URL } from "utils/configs";
 import { LoginFormResponseType, loginValidatorSchema } from "utils/form-validations/auth/loginValidator";
 import { ChangePasswordResponseType, changePasswordValidationSchema } from "utils/form-validations/user/changePasswordValidation";
@@ -145,77 +146,112 @@ export async function updatePassword(formData: FormData): Promise<ChangePassword
     }
 }
 
+export async function loginAsMember(
+    formData: FormData,
+): Promise<LoginFormResponseType> {
+    return loginWithAudience(formData, "USER");
+}
+
+export async function loginAsAdmin(
+    formData: FormData,
+): Promise<LoginFormResponseType> {
+    return loginWithAudience(formData, "ADMIN");
+}
+
+/** @deprecated Use loginAsMember or loginAsAdmin */
 export async function login(
     formData: FormData,
 ): Promise<LoginFormResponseType> {
-    // validate the form data on the server
+    return loginAsMember(formData);
+}
+
+async function loginWithAudience(
+    formData: FormData,
+    audience: "USER" | "ADMIN",
+): Promise<LoginFormResponseType> {
     const validatedFields = await loginValidatorSchema.safeParseAsync({
-        email: formData.get('email'),
-        password: formData.get('password'),
+        email: formData.get("email"),
+        password: formData.get("password"),
     });
 
-    // Return early if the form data is invalid
     if (!validatedFields.success) {
         return {
             status: "ERROR",
             error: validatedFields.error.flatten().fieldErrors,
-        }
+        };
     }
 
-    let redirectRoute = '/';
+    let redirectRoute = "/";
     try {
-        // fetch user and compare it with credential
         const user = await getUserByEmail(validatedFields.data.email);
         if (!user) {
             return {
                 status: "ERROR",
                 error: {
-                    email: ['Email not found'],
+                    email: ["EMAIL_NOT_FOUND"],
                 },
-            }
-        };
+            };
+        }
         if (user.deletedAt) {
             return {
                 status: "ERROR",
                 error: {
-                    email: ['Account is deactivated'],
+                    email: ["ACCOUNT_DEACTIVATED"],
                 },
-            }
-        };
-        const passwordsMatch = await bcrypt.compare(validatedFields.data.password, user.password);
+            };
+        }
+
+        if (audience === "ADMIN" && user.role !== "ADMIN") {
+            return {
+                status: "ERROR",
+                error: {
+                    email: ["USE_MEMBER_LOGIN"],
+                },
+            };
+        }
+        if (audience === "USER" && user.role === "ADMIN") {
+            return {
+                status: "ERROR",
+                error: {
+                    email: ["USE_ADMIN_LOGIN"],
+                },
+            };
+        }
+
+        const passwordsMatch = await bcrypt.compare(
+            validatedFields.data.password,
+            user.password,
+        );
         if (!passwordsMatch) {
             return {
                 status: "ERROR",
                 error: {
-                    password: ['Invalid credentials'],
+                    password: ["INVALID_CREDENTIALS"],
                 },
-            }
-        };
-
-        // create user session
-        await recordUserLastLogin(user.id);
-        await createSession(user)
-
-        if (user.role === 'ADMIN') {
-            redirectRoute = `/${DASHBOARD_URL}`;
-        } else {
-            redirectRoute = '/home';
+            };
         }
-    } catch (error) {
+
+        await recordUserLastLogin(user.id);
+        await createSession(user);
+
+        redirectRoute =
+            user.role === "ADMIN" ? `/${DASHBOARD_URL}` : "/home";
+    } catch {
         return {
             status: "ERROR",
             error: {
-                email: ['Something went wrong!'],
+                email: ["UNKNOWN"],
             },
         };
     }
 
-    // redirect user
     redirect(redirectRoute);
 }
 
 export async function logout() {
+    const session = await getSession();
+    const isAdmin = session?.role === "ADMIN";
     await deleteSession();
-    redirect('/login');
+    redirect(isAdmin ? `/${DASHBOARD_URL}/login` : "/login");
 }
 
