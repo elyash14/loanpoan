@@ -21,7 +21,11 @@ RUN npx prisma generate
 # Build Next.js application
 RUN yarn build
 
-# Stage 3: runner
+# Stage 3: full Prisma CLI (migrate deploy needs transitive deps like `effect`)
+FROM node:22-alpine AS prisma-cli
+RUN npm install -g prisma@7.8.0
+
+# Stage 4: runner
 FROM node:22-alpine AS runner
 WORKDIR /app
 
@@ -41,11 +45,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
-# Copy Prisma CLI and engines from builder to allow running migrations
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
+# Full Prisma CLI with all dependencies (for entrypoint migrate deploy)
+COPY --from=prisma-cli /usr/local/lib/node_modules /usr/local/lib/node_modules
+COPY --from=prisma-cli /usr/local/bin/prisma /usr/local/bin/prisma
 
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs entrypoint.sh ./entrypoint.sh

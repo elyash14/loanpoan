@@ -8,7 +8,7 @@ echo "Starting deployment checks and initialization..."
 # Run database migrations
 if [ -d "./prisma" ]; then
   echo "Applying database migrations..."
-  npx prisma migrate deploy
+  prisma migrate deploy
   echo "Database migrations applied successfully."
 else
   echo "No prisma directory found, skipping migrations."
