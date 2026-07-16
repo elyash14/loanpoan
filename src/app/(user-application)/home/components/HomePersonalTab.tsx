@@ -1,13 +1,13 @@
 'use client';
 
-import { Award, Hash, Trophy, Heart, Zap } from "lucide-react";
+import { Award, Hash, Heart, Trophy, Zap } from "lucide-react";
 import { cn } from "utils/cn";
 import Money from "../../components/preferences/Money";
 import { useUserPreferences } from "../../components/preferences/UserPreferencesProvider";
 import { useLocaleFormat } from "../../components/preferences/useLocaleFormat";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import type { HomeDashboardData } from "./types";
 
 type Props = {
@@ -32,18 +32,23 @@ export default function HomePersonalTab({ data }: Props) {
         <div className="space-y-4">
             {/* Gamified Queue Visual */}
             {data.queue ? (() => {
-                const isTop5 = data.queue.position <= 5;
+                const isNearTop = data.queue.position <= 3;
                 const members = data.queue.nearbyMembers || [];
-                
+                const hasGap = Boolean(data.queue.hasGapBeforeMe);
+
                 return (
-                    <Card className="relative overflow-hidden transition-all bg-card border-border">
-                        {isTop5 && (
-                            <div className="absolute top-0 right-0 h-32 w-32 -mr-16 -mt-16 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+                    <Card className="relative overflow-visible bg-card border-border">
+                        {isNearTop && (
+                            <div className="pointer-events-none absolute -end-8 -top-8 h-28 w-28 rounded-full bg-amber-500/10 blur-3xl" />
                         )}
                         <CardHeader className="pb-4">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 🚂 {t("home.queueWait")}
-                                {isTop5 && <span className="text-xs font-bold text-amber-500 ml-auto animate-pulse">{t("home.queueAlmostThere")}</span>}
+                                {isNearTop && (
+                                    <span className="ms-auto text-xs font-bold text-amber-500 animate-pulse">
+                                        {t("home.queueAlmostThere")}
+                                    </span>
+                                )}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -51,56 +56,116 @@ export default function HomePersonalTab({ data }: Props) {
                                 <div className="flex flex-col gap-1 text-center">
                                     <span className={cn(
                                         "text-4xl font-black tracking-tighter drop-shadow-sm",
-                                        isTop5 ? "text-amber-500 dark:text-amber-400" : "text-primary"
+                                        isNearTop ? "text-amber-500 dark:text-amber-400" : "text-primary",
                                     )}>
                                         #{formatNumber(data.queue.position)}
                                     </span>
                                     <span className="text-sm font-medium text-muted-foreground">
-                                        {t("home.queueProgress", { position: formatNumber(data.queue.position), total: formatNumber(data.queue.totalEligible) })}
+                                        {t("home.queueProgress", {
+                                            position: formatNumber(data.queue.position),
+                                            total: formatNumber(data.queue.totalEligible),
+                                        })}
                                     </span>
                                 </div>
-                                
+
                                 {/* Vertical Journey Path */}
-                                <div className="relative py-2 mx-auto max-w-[300px]">
-                                    {/* The dashed path line */}
-                                    <div className="absolute top-6 bottom-6 start-5 w-0 border-s-2 border-dashed border-border" />
-                                    
+                                <div className="relative mx-auto max-w-[300px] py-3">
+                                    {/* Dashed line — centered in the fixed avatar column */}
+                                    <div className="pointer-events-none absolute bottom-8 top-8 start-0 flex w-16 justify-center">
+                                        <div className="h-full w-0 border-s-2 border-dashed border-border" />
+                                    </div>
+
                                     <div className="flex flex-col gap-6">
-                                        {members.map((member) => {
+                                        {members.map((member, index) => {
                                             const isMe = member.isMe;
+                                            const showGapBefore =
+                                                hasGap && index === members.length - 1 && isMe;
+
                                             return (
-                                                <div key={member.userId} className={cn("relative flex items-center gap-4 transition-all", isMe ? "scale-[1.02] z-10" : "opacity-80")}>
-                                                    {/* Avatar & Rank */}
-                                                    <div className="relative shrink-0 flex justify-center w-10">
-                                                        {isMe && <div className="absolute -inset-1.5 rounded-full bg-amber-500/20 animate-pulse" />}
-                                                        <Avatar className={cn(
-                                                            "border-2 transition-all shadow-sm z-10", 
-                                                            isMe ? "h-14 w-14 ring-4 ring-background" : "h-10 w-10 bg-background"
-                                                        )} style={{ borderColor: member.profileColor || undefined }}>
-                                                            <AvatarImage src={member.avatar ?? ""} />
-                                                            <AvatarFallback className={isMe ? "text-sm" : "text-xs"}>{getInitials(member.firstName, member.lastName)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div className={cn(
-                                                            "absolute -bottom-1 -end-1 flex items-center justify-center rounded-full font-black shadow-sm text-background z-20",
-                                                            isMe ? "h-6 w-6 bg-amber-500 text-xs ring-2 ring-background" : "h-5 w-5 bg-muted-foreground text-[10px] ring-1 ring-background"
-                                                        )}>
-                                                            {formatNumber(member.position)}
+                                                <div key={`${member.userId}-${member.position}`} className="contents">
+                                                    {showGapBefore ? (
+                                                        <div className="relative z-10 flex items-center gap-3 py-0.5">
+                                                            <div className="flex h-8 w-16 shrink-0 items-center justify-center">
+                                                                <span className="rounded-full bg-muted/80 px-2 py-0.5 text-xs font-bold tracking-[0.2em] text-muted-foreground">
+                                                                    {t("home.queueGap")}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-[11px] text-muted-foreground/80">
+                                                                {/* spacer for layout */}
+                                                            </span>
                                                         </div>
-                                                    </div>
-                                                    
-                                                    {/* Name & Bubble */}
-                                                    <div className={cn(
-                                                        "flex-1 rounded-xl px-4 py-2.5 shadow-sm border text-start min-w-0",
-                                                        isMe 
-                                                            ? "bg-linear-to-r from-amber-500 to-amber-600 border-amber-600 text-white dark:from-amber-500/20 dark:to-amber-600/10 dark:border-amber-500/30 dark:text-amber-100" 
-                                                            : "bg-background border-border text-foreground"
-                                                    )}>
-                                                        <span className={cn(
-                                                            "text-sm block truncate", 
-                                                            isMe ? "font-bold" : "font-medium"
-                                                        )}>
-                                                            {member.firstName} {isMe && <span className="opacity-80 text-xs">{t("home.you")}</span>}
-                                                        </span>
+                                                    ) : null}
+
+                                                    <div
+                                                        className={cn(
+                                                            "relative flex items-center gap-3 transition-all",
+                                                            isMe ? "z-10" : "opacity-80",
+                                                        )}
+                                                    >
+                                                        {/* Fixed-width column so all avatars share one vertical line */}
+                                                        <div className="relative z-10 flex h-16 w-16 shrink-0 items-center justify-center">
+                                                            {isMe ? (
+                                                                <div
+                                                                    aria-hidden
+                                                                    className="pointer-events-none absolute inset-1 rounded-full bg-amber-400/25 blur-md animate-pulse"
+                                                                />
+                                                            ) : null}
+                                                            <Avatar
+                                                                className={cn(
+                                                                    "relative z-10 border-2 transition-all",
+                                                                    isMe
+                                                                        ? "h-14 w-14 shadow-[0_0_0_3px_var(--color-card),0_0_20px_4px_rgba(245,158,11,0.5)]"
+                                                                        : "h-10 w-10 bg-background shadow-sm",
+                                                                )}
+                                                                style={{ borderColor: member.profileColor || undefined }}
+                                                            >
+                                                                <AvatarImage src={member.avatar ?? ""} />
+                                                                <AvatarFallback className={isMe ? "text-sm" : "text-xs"}>
+                                                                    {getInitials(member.firstName, member.lastName)}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <div
+                                                                className={cn(
+                                                                    "absolute bottom-0.5 end-0.5 z-20 flex items-center justify-center rounded-full font-black text-background shadow-sm",
+                                                                    isMe
+                                                                        ? "h-6 w-6 bg-amber-500 text-xs ring-2 ring-background"
+                                                                        : "h-5 w-5 bg-muted-foreground text-[10px] ring-1 ring-background",
+                                                                )}
+                                                            >
+                                                                {formatNumber(member.position)}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Name — no box, stacked first / family */}
+                                                        <div className="min-w-0 flex-1 text-start leading-tight">
+                                                            <p
+                                                                className={cn(
+                                                                    "truncate",
+                                                                    isMe
+                                                                        ? "text-base font-bold text-amber-600 dark:text-amber-400"
+                                                                        : "text-sm font-semibold text-foreground",
+                                                                )}
+                                                            >
+                                                                {member.firstName}
+                                                                {isMe ? (
+                                                                    <span className="ms-1.5 text-[11px] font-medium opacity-70">
+                                                                        {t("home.you")}
+                                                                    </span>
+                                                                ) : null}
+                                                            </p>
+                                                            {member.lastName ? (
+                                                                <p
+                                                                    className={cn(
+                                                                        "truncate text-[11px] tracking-wide",
+                                                                        isMe
+                                                                            ? "font-medium text-amber-600/70 dark:text-amber-400/70"
+                                                                            : "text-muted-foreground",
+                                                                    )}
+                                                                >
+                                                                    {member.lastName}
+                                                                </p>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             );
@@ -137,7 +202,7 @@ export default function HomePersonalTab({ data }: Props) {
                                     </div>
                                 </div>
                             )}
-                            
+
                             {/* Rank 1 */}
                             {data.monthlyPodium.topUsers[0] && (
                                 <div className="flex flex-col items-center gap-1 z-10">

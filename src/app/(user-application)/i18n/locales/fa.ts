@@ -205,6 +205,7 @@ export const fa: Messages = {
         queueWait: "نفرات بعدی صف وام!",
         queueProgress: "نفر {position} از بین {total} عضو واجد شرایط",
         queueAlmostThere: "خیلی نزدیکه! 🔥",
+        queueGap: "···",
         you: "(شما)",
         global: {
             totalBankBalance: "موجودی کل بانک",

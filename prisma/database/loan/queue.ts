@@ -403,15 +403,11 @@ export async function getUserLoanQueueSummary(userId: number) {
     const bestEntry = userEntries[0];
     const bestPos = bestEntry.position;
 
-    const nearbyEntries = await prisma.loanQueueEntry.findMany({
+    // Always show top 3; if the user is outside that, also include their spot
+    const topEntries = await prisma.loanQueueEntry.findMany({
       where: {
-        position: {
-          gte: Math.max(1, bestPos - 2),
-          lte: bestPos + 2
-        },
-        account: {
-          deletedAt: null
-        }
+        position: { lte: 3 },
+        account: { deletedAt: null },
       },
       include: {
         account: {
@@ -422,32 +418,65 @@ export async function getUserLoanQueueSummary(userId: number) {
                 firstName: true,
                 lastName: true,
                 avatar: true,
-                profileColor: true
-              }
-            }
-          }
-        }
+                profileColor: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: { position: 'asc' }
+      orderBy: { position: "asc" },
     });
+
+    let meEntry = null;
+    if (bestPos > 3) {
+      meEntry = await prisma.loanQueueEntry.findFirst({
+        where: {
+          id: bestEntry.id,
+          account: { deletedAt: null },
+        },
+        include: {
+          account: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  profileColor: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    const mapEntry = (e: NonNullable<typeof meEntry> | (typeof topEntries)[number]) => ({
+      position: e.position,
+      userId: e.account.user.id,
+      firstName: e.account.user.firstName,
+      lastName: e.account.user.lastName,
+      avatar: e.account.user.avatar,
+      profileColor: e.account.user.profileColor,
+      isMe: e.account.userId === userId,
+    });
+
+    const nearbyMembers = [
+      ...topEntries.map(mapEntry),
+      ...(meEntry ? [mapEntry(meEntry)] : []),
+    ];
 
     return {
       position: bestPos,
       totalEligible,
-      nearbyMembers: nearbyEntries.map(e => ({
-        position: e.position,
-        userId: e.account.user.id,
-        firstName: e.account.user.firstName,
-        lastName: e.account.user.lastName,
-        avatar: e.account.user.avatar,
-        profileColor: e.account.user.profileColor,
-        isMe: e.account.userId === userId
-      })),
-      eligibleAccounts: userEntries.map(e => ({
+      hasGapBeforeMe: bestPos > 4,
+      nearbyMembers,
+      eligibleAccounts: userEntries.map((e) => ({
         accountId: e.accountId,
         position: e.position,
-        joinedAt: e.joinedAt
-      }))
+        joinedAt: e.joinedAt,
+      })),
     };
   } catch (error) {
     console.error("Error getting user loan queue summary:", error);

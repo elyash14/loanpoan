@@ -203,6 +203,7 @@ export const en = {
         queueWait: "Next in Line!",
         queueProgress: "Position {position} out of {total} eligible members",
         queueAlmostThere: "Almost there! 🔥",
+        queueGap: "···",
         you: "(You)",
         global: {
             totalBankBalance: "Total bank balance",

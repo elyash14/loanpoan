@@ -339,6 +339,7 @@ export async function getUserHomeDashboard(userId: number) {
         ? {
             position: queueSummary.position,
             totalEligible: queueSummary.totalEligible,
+            hasGapBeforeMe: queueSummary.hasGapBeforeMe,
             nearbyMembers: queueSummary.nearbyMembers,
         }
         : null;

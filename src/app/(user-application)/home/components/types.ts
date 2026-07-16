@@ -22,6 +22,7 @@ export type HomeDashboardData = {
     queue: {
         position: number;
         totalEligible: number;
+        hasGapBeforeMe?: boolean;
         nearbyMembers: Array<{
             position: number;
             userId: number;
