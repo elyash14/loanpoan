@@ -13,6 +13,10 @@ import { getGlobalConfigs } from "@database/config/data";
 import { setDate as setJalaliDate } from "date-fns-jalali";
 import type { GlobalConfigType } from "utils/types/configs";
 import { getCalendarPeriod } from "utils/calendarPeriod";
+import {
+    getPunctualityScoreFromAchievements,
+    recalculateUserPunctuality,
+} from "@database/gamification/punctuality";
 
 function getPaymentWindowStart(dueDate: Date, dueDay: number, dateType: "JALALI" | "GREGORIAN"): Date {
     const start = new Date(dueDate);
@@ -104,10 +108,6 @@ export async function getUserHomeDashboard(userId: number) {
         unpaidInstallments,
         unpaidPayments,
         activeLoan,
-        onTimeInstallments,
-        onTimePayments,
-        latePaidInstallments,
-        latePaidPayments,
         panelUsers,
         globalBankBalance,
         totalLoanCount,
@@ -144,32 +144,6 @@ export async function getUserHomeDashboard(userId: number) {
                 payments: {
                     select: { amount: true, paidAt: true },
                 },
-            },
-        }),
-        prisma.installment.count({
-            where: {
-                account: accountWhere,
-                paidAt: { not: null },
-                dueDate: { gte: prisma.installment.fields.paidAt },
-            },
-        }),
-        prisma.payment.count({
-            where: {
-                loan: { account: accountWhere },
-                paidAt: { not: null },
-                dueDate: { gte: prisma.payment.fields.paidAt },
-            },
-        }),
-        prisma.installment.count({
-            where: {
-                account: accountWhere,
-                paidAt: { not: null, gt: prisma.installment.fields.dueDate },
-            },
-        }),
-        prisma.payment.count({
-            where: {
-                loan: { account: accountWhere },
-                paidAt: { not: null, gt: prisma.payment.fields.paidAt },
             },
         }),
         prisma.user.findMany({
@@ -214,7 +188,7 @@ export async function getUserHomeDashboard(userId: number) {
             select: { avatar: true, profileColor: true },
         }),
         prisma.userAchievement.findMany({
-            where: { userId }
+            where: { userId },
         }),
     ]);
 
@@ -222,9 +196,14 @@ export async function getUserHomeDashboard(userId: number) {
     const dueDay = config.installment?.dueDay ?? 1;
     const dateType = config.dateType ?? "JALALI";
     
-    // Gamification properties
-    const goodKarma = userAchievements.filter(a => a.type === "GOOD_KARMA").length;
-    const fastestPayerRewards = userAchievements.filter(a => a.type === "FASTEST_PAYER").length;
+    // Gamification properties (from UserAchievement)
+    const goodKarma = userAchievements.filter((a) => a.type === "GOOD_KARMA").length;
+    const fastestPayerRewards = userAchievements.filter((a) => a.type === "FASTEST_PAYER").length;
+
+    let punctualityScore = getPunctualityScoreFromAchievements(userAchievements);
+    if (!userAchievements.some((a) => a.type === "PUNCTUALITY")) {
+        punctualityScore = await recalculateUserPunctuality(userId);
+    }
     
     // Fetch current period podium
     const currentPeriod = getCalendarPeriod(now, dateType);
@@ -343,10 +322,6 @@ export async function getUserHomeDashboard(userId: number) {
             nearbyMembers: queueSummary.nearbyMembers,
         }
         : null;
-
-    const overdueUnpaidCount = overdueItems.length;
-    const punctualityScore =
-        onTimeInstallments + onTimePayments - (latePaidInstallments + latePaidPayments + overdueUnpaidCount);
 
     const userLoanStats: UserLoanStats[] = panelUsers.map((user) => {
         const loans = user.accounts.flatMap((account) => account.loans);

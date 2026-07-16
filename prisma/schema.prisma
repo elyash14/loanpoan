@@ -32,6 +32,7 @@ enum InstallmentType {
 enum AchievementType {
     FASTEST_PAYER
     GOOD_KARMA
+    PUNCTUALITY
 }
 
 model UserAchievement {

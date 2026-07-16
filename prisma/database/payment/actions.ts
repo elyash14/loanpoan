@@ -13,12 +13,20 @@ import { getGlobalConfigs } from "@database/config/data";
 import type { GlobalConfigType } from "utils/types/configs";
 import { enqueueAccount } from "@database/loan/queue";
 import { recalculateMonthlyFastPayers } from "@database/gamification/fastPayer";
+import { recalculateUserPunctuality } from "@database/gamification/punctuality";
 import { getCalendarPeriod, DateType } from "utils/calendarPeriod";
 
 export async function payAPayment(id: number) {
   try {
     const payment = await prisma.payment.findFirst({
       where: { id },
+      include: {
+        loan: {
+          select: {
+            account: { select: { userId: true } },
+          },
+        },
+      },
     });
 
     if (!payment || payment.paidAt) {
@@ -51,7 +59,17 @@ export async function payAPayment(id: number) {
       revalidatePath(`/${DASHBOARD_URL}/loans`);
     }
 
+    const ownerUserId = payment.loan?.account?.userId;
+    if (ownerUserId) {
+      try {
+        await recalculateUserPunctuality(ownerUserId);
+      } catch (err) {
+        console.error("Failed to recalculate punctuality:", err);
+      }
+    }
+
     revalidatePath(`/${DASHBOARD_URL}/payments`);
+    revalidatePath("/home");
     return {
       status: "SUCCESS",
       message: "Payment paid successfully",
@@ -165,8 +183,10 @@ export async function reviewPaymentRequest(requestId: number, status: "APPROVED"
           const [y, m] = periodStr.split("-").map(Number);
           await recalculateMonthlyFastPayers(y, m, dateType);
         }
+
+        await recalculateUserPunctuality(request.userId);
       } catch (err) {
-        console.error("Failed to recalculate fastest payers:", err);
+        console.error("Failed to recalculate gamification rewards:", err);
       }
     }
 

@@ -174,7 +174,7 @@ export const en = {
         queuePosition: "Queue position #{position} of {total}",
         queueEligibleNote: "Your best position among eligible accounts for the next loan",
         punctualityScore: "Punctuality score",
-        punctualityHint: "On-time payments minus late or overdue items",
+        punctualityHint: "Based on your saved payment achievements",
         loanRanking: "Loan ranking",
         loanRankingDesc: "Your position among members by total loans",
         rankingByCount: "By loan count",

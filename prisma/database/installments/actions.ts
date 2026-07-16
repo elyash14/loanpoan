@@ -10,11 +10,15 @@ import { DASHBOARD_URL } from "utils/configs";
 import { GlobalConfigType } from "utils/types/configs";
 import { notifyInstallmentGeneration } from "utils/telegram/notifyInstallmentGeneration";
 import { notifyLoanPriorityQueue } from "utils/telegram/notifyLoanPriorityQueue";
+import { recalculateUserPunctuality } from "@database/gamification/punctuality";
 
 export async function payAnInstallment(id: number) {
   try {
     const installment = await prisma.installment.findFirst({
       where: { id },
+      include: {
+        account: { select: { userId: true } },
+      },
     });
 
     // check this installment has been paid or not
@@ -54,8 +58,17 @@ export async function payAnInstallment(id: number) {
       }
     });
 
+    if (installment.account?.userId) {
+      try {
+        await recalculateUserPunctuality(installment.account.userId);
+      } catch (err) {
+        console.error("Failed to recalculate punctuality:", err);
+      }
+    }
+
     // revalidate the list of installments page after updating an installment.
     revalidatePath(`/${DASHBOARD_URL}/installments`);
+    revalidatePath("/home");
     return {
       status: "SUCCESS",
       message: "Installment paid successfully",
