@@ -14,6 +14,11 @@ import { revalidatePath } from "next/cache";
 import { ChangePasswordResponseType } from "utils/form-validations/user/changePasswordValidation";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
+import {
+    changeEmailValidationSchema,
+    type ChangeEmailResponse,
+} from "utils/form-validations/user/changeEmailValidation";
+import { createSession } from "utils/auth/session";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ALLOWED_AVATAR_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -75,6 +80,64 @@ export async function updateUserPanelPassword(
         return { status: "SUCCESS", message: "Password updated successfully" };
     } catch {
         return { status: "ERROR", message: "Failed to update password" };
+    }
+}
+
+export async function updateUserPanelEmail(
+    formData: FormData,
+): Promise<ChangeEmailResponse> {
+    const session = await getSession();
+    if (!session?.userId) {
+        return { status: "ERROR", message: "UNAUTHORIZED" };
+    }
+
+    const validatedFields = changeEmailValidationSchema.safeParse({
+        email: formData.get("email"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            status: "ERROR",
+            error: validatedFields.error.flatten().fieldErrors,
+        };
+    }
+
+    const userId = Number(session.userId);
+    const email = validatedFields.data.email;
+
+    try {
+        const emailOwner = await prisma.user.findFirst({
+            where: {
+                email: { equals: email, mode: "insensitive" },
+                id: { not: userId },
+            },
+            select: { id: true },
+        });
+
+        if (emailOwner) {
+            return {
+                status: "ERROR",
+                error: { email: ["EMAIL_TAKEN"] },
+            };
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { email },
+        });
+
+        const authProvider =
+            session.authProvider === "telegram" ? "telegram" : "email";
+        await createSession(updatedUser, authProvider);
+        revalidatePath("/profile");
+
+        return {
+            status: "SUCCESS",
+            message: "EMAIL_UPDATED",
+            email: updatedUser.email,
+        };
+    } catch {
+        return { status: "ERROR", message: "EMAIL_UPDATE_FAILED" };
     }
 }
 

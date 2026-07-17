@@ -1,7 +1,7 @@
 'use client';
 
 import { clearUserPanelAvatar, updateUserPanelProfile } from "@database/user-panel/actions";
-import { Camera, ChevronRight, KeyRound, type LucideIcon } from "lucide-react";
+import { Camera, ChevronRight, KeyRound, Mail, type LucideIcon } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { cn } from "utils/cn";
 import UserLogout from "../../components/UserLogout";
@@ -15,6 +15,7 @@ import {
 } from "../../components/profile/profileColors";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import ProfileAvatarDrawer from "./ProfileAvatarDrawer";
+import ProfileEmailDrawer from "./ProfileEmailDrawer";
 import ProfilePasswordDrawer from "./ProfilePasswordDrawer";
 
 type Profile = {
@@ -84,12 +85,14 @@ export default function ProfileView({ profile, authProvider }: Props) {
     const { t } = useUserPreferences();
     const { formatDate, formatDigits } = useLocaleFormat();
     const isEmailAuth = authProvider !== "telegram";
+    const [email, setEmail] = useState(user.email);
     const [avatar, setAvatar] = useState(user.avatar);
     const [profileColor, setProfileColor] = useState(
         normalizeProfileColor(user.profileColor),
     );
     const [colorMessage, setColorMessage] = useState<string | null>(null);
     const [avatarDrawerOpen, setAvatarDrawerOpen] = useState(false);
+    const [emailDrawerOpen, setEmailDrawerOpen] = useState(false);
     const [passwordDrawerOpen, setPasswordDrawerOpen] = useState(false);
     const [isSavingColor, startColorTransition] = useTransition();
     const [isClearingAvatar, startClearAvatarTransition] = useTransition();
@@ -259,8 +262,14 @@ export default function ProfileView({ profile, authProvider }: Props) {
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base">{t("profile.accountInfo")}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <InfoRow label={t("profile.email")} value={user.email} />
+                <CardContent className="space-y-1">
+                    <InfoRow label={t("profile.email")} value={email} />
+                    <ProfileActionRow
+                        icon={Mail}
+                        label={t("profile.changeEmail")}
+                        description={t("profile.changeEmailDesc")}
+                        onClick={() => setEmailDrawerOpen(true)}
+                    />
                     {user.cardNumber ? (
                         <InfoRow label={t("profile.cardNumber")} value={formatDigits(user.cardNumber)} />
                     ) : null}
@@ -286,6 +295,13 @@ export default function ProfileView({ profile, authProvider }: Props) {
                 open={passwordDrawerOpen}
                 onClose={() => setPasswordDrawerOpen(false)}
                 userId={user.id}
+            />
+
+            <ProfileEmailDrawer
+                open={emailDrawerOpen}
+                onClose={() => setEmailDrawerOpen(false)}
+                email={email}
+                onEmailUpdated={setEmail}
             />
         </div>
     );
