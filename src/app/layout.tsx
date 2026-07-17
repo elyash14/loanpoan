@@ -9,7 +9,7 @@ import theme from 'utils/theme';
 
 
 export const metadata: Metadata = {
-    title: "Next Financial",
+    title: "PayLoop",
     description: "Financial management application for accounts, loans, and installments",
 };
 

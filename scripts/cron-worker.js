@@ -8,7 +8,7 @@ const CRON_SECRET = process.env.CRON_SECRET;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 console.log('--------------------------------------------------');
-console.log(`[${new Date().toISOString()}] Next Financial Cron Worker Starting...`);
+console.log(`[${new Date().toISOString()}] PayLoop Cron Worker Starting...`);
 console.log(`Target URL: ${APP_URL}`);
 
 if (!CRON_SECRET) {

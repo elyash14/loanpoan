@@ -1,4 +1,4 @@
-# Next Financial
+# PayLoop
 
 Financial management application for accounts, loans, installments, and payments. Built with Next.js App Router, Prisma, PostgreSQL, and Mantine UI.
 

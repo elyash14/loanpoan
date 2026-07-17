@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(222 47% 6%);
-  --color-foreground: hsl(210 40% 98%);
-  --color-card: hsl(222 44% 9%);
-  --color-card-foreground: hsl(210 40% 98%);
-  --color-primary: hsl(217 91% 60%);
-  --color-primary-foreground: hsl(222 47% 11%);
-  --color-accent: hsl(160 84% 39%);
+  --color-background: #17212b;
+  --color-foreground: #f5f5f5;
+  --color-card: #202b36;
+  --color-card-foreground: #f5f5f5;
+  --color-primary: #3390ec;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #3390ec;
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-muted: hsl(217 33% 14%);
-  --color-muted-foreground: hsl(215 20% 65%);
-  --color-border: hsl(217 28% 18%);
+  --color-muted: #253342;
+  --color-muted-foreground: #8b9bad;
+  --color-border: #2b3a49;
   --color-destructive: hsl(0 72% 51%);
-  --color-ring: hsl(217 91% 60%);
-  --color-nav: hsl(222 44% 10% / 0.82);
+  --color-ring: #3390ec;
+  --color-nav: rgb(32 43 54 / 0.96);
   --radius-lg: 1rem;
   --radius-md: 0.625rem;
   --radius-sm: 0.375rem;
   --radius-xl: 1.25rem;
-  --shadow-soft: 0 8px 32px hsl(222 47% 4% / 0.45);
-  --shadow-nav: 0 12px 40px hsl(222 47% 2% / 0.55);
+  --shadow-soft: 0 6px 20px rgb(8 15 22 / 0.22);
+  --shadow-nav: 0 10px 30px rgb(8 15 22 / 0.35);
 }
 
 #user-app {
@@ -45,53 +45,59 @@
 }
 
 #user-app.light {
-  --color-background: hsl(220 33% 97%);
-  --color-foreground: hsl(222 47% 11%);
+  --color-background: #ffffff;
+  --color-foreground: #000000;
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222 47% 11%);
-  --color-primary: hsl(221 83% 53%);
-  --color-primary-foreground: hsl(210 40% 98%);
-  --color-accent: hsl(160 84% 32%);
+  --color-card-foreground: #000000;
+  --color-primary: #3390ec;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #3390ec;
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-muted: hsl(220 27% 94%);
-  --color-muted-foreground: hsl(215 16% 47%);
-  --color-border: hsl(220 20% 88%);
+  --color-muted: #f1f3f5;
+  --color-muted-foreground: #707579;
+  --color-border: #dfe3e8;
   --color-destructive: hsl(0 72% 51%);
-  --color-ring: hsl(221 83% 53%);
-  --color-nav: hsl(0 0% 100% / 0.88);
-  --shadow-soft: 0 8px 32px hsl(221 83% 53% / 0.08);
-  --shadow-nav: 0 12px 40px hsl(222 47% 11% / 0.12);
+  --color-ring: #3390ec;
+  --color-nav: rgb(255 255 255 / 0.96);
+  --shadow-soft: 0 4px 16px rgb(30 55 75 / 0.08);
+  --shadow-nav: 0 8px 24px rgb(30 55 75 / 0.12);
 }
 
 #user-app.dark {
-  --color-background: hsl(222 47% 6%);
-  --color-foreground: hsl(210 40% 98%);
-  --color-card: hsl(222 44% 9%);
-  --color-card-foreground: hsl(210 40% 98%);
-  --color-primary: hsl(217 91% 60%);
-  --color-primary-foreground: hsl(222 47% 11%);
-  --color-accent: hsl(160 84% 39%);
+  --color-background: #17212b;
+  --color-foreground: #f5f5f5;
+  --color-card: #202b36;
+  --color-card-foreground: #f5f5f5;
+  --color-primary: #3390ec;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #3390ec;
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-muted: hsl(217 33% 14%);
-  --color-muted-foreground: hsl(215 20% 65%);
-  --color-border: hsl(217 28% 18%);
+  --color-muted: #253342;
+  --color-muted-foreground: #8b9bad;
+  --color-border: #2b3a49;
   --color-destructive: hsl(0 72% 51%);
-  --color-ring: hsl(217 91% 60%);
-  --color-nav: hsl(222 44% 10% / 0.82);
+  --color-ring: #3390ec;
+  --color-nav: rgb(32 43 54 / 0.96);
 }
 
 #user-app .user-shell-bg {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.14), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 0%, hsl(160 84% 39% / 0.08), transparent 50%),
-    var(--color-background);
+  background: var(--color-background);
 }
 
 #user-app.light .user-shell-bg {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.08), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 0%, hsl(160 84% 32% / 0.06), transparent 50%),
-    var(--color-background);
+  background: var(--color-background);
+}
+
+/* Telegram owns these colors inside the Mini App. Keep surfaces flat so the
+   web view visually continues the Telegram window around it. */
+#user-app[data-telegram-theme="true"] {
+  background: var(--color-background);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.12);
+  --shadow-nav: 0 -1px 0 var(--color-border);
+}
+
+#user-app[data-telegram-theme="true"] .user-shell-bg {
+  background: var(--color-background);
 }
 
 #user-app .tabular-nums {

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-A brief guide to deploy **Next Financial** using Docker (ideal for Coolify or custom Docker setups).
+A brief guide to deploy **PayLoop** using Docker (ideal for Coolify or custom Docker setups).
 
 ## Requirements
 

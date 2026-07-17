@@ -1,13 +1,13 @@
 'use client';
 
-import BottomNav from "./BottomNav";
-import TelegramBackButton from "../telegram/TelegramBackButton";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { ReactNode } from "react";
 import { cn } from "utils/cn";
 import type { MessageKey } from "../../i18n";
 import { useUserPreferences } from "../preferences/UserPreferencesProvider";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { ReactNode } from "react";
+import TelegramBackButton from "../telegram/TelegramBackButton";
+import BottomNav from "./BottomNav";
 
 type Props = {
     children: ReactNode;
@@ -71,13 +71,10 @@ export default function UserShell({
                             aria-hidden
                             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary)] text-xs font-bold tracking-tight text-[var(--color-primary-foreground)] shadow-[inset_0_1px_0_hsl(0_0%_100%_/0.2)]"
                         >
-                            NF
+                            PL
                         </div>
                     )}
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-muted-foreground)]">
-                            {t("app.name")}
-                        </p>
                         <h1 className="truncate text-base font-semibold leading-tight tracking-tight">
                             {pageTitle}
                         </h1>

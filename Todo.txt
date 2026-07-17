@@ -28,8 +28,8 @@ General:
 User Application:
 - gamification:
     - save if user is the user is one of the fastest payments
-        - show the three bests for each month
-        - show the count of rewards and rank them
+        - show the three bests for each month(*)
+        - show the count of rewards and rank them(*)
     - show ranking of count of loan, or amount of loan (*)
 - auto payment: 
     - use telegram storage(*)
@@ -39,4 +39,4 @@ User Application:
     - generate new instalment per each mount (*)
     - send notice to the group (*)
 
-- loan priority list
+- loan priority list(*)

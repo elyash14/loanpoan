@@ -9,7 +9,7 @@ import { GlobalConfigType } from 'utils/types/configs';
 import HydrateData from './components/store/HydrateData';
 
 export const metadata: Metadata = {
-    title: "Dashboard | Next Financial",
+    title: "Dashboard | PayLoop",
     description: "Admin dashboard for managing accounts, loans, and installments",
 };
 

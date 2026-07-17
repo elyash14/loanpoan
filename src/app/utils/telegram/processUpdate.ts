@@ -37,7 +37,7 @@ export async function processTelegramUpdate(update: TelegramUpdate) {
             const miniAppUrl = getMiniAppUrl();
             await sendTelegramMessage(
                 message.chat.id,
-                "Welcome to Next Financial. Tap the button below to open your account.",
+                "Welcome to PayLoop. Tap the button below to open your account.",
                 {
                     inline_keyboard: [[
                         {

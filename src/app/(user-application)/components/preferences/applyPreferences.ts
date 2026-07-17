@@ -14,8 +14,8 @@ const THEME_VARS = [
     "--color-ring",
 ] as const;
 
-const LIGHT_CHROME = "#f5f7fb";
-const DARK_CHROME = "#0f1420";
+const LIGHT_CHROME = "#ffffff";
+const DARK_CHROME = "#17212b";
 
 const paletteTokens: Record<
     Palette,
@@ -47,18 +47,77 @@ const paletteTokens: Record<
 };
 
 export function applyPreferences(root: HTMLElement, prefs: UserPreferences) {
+    const telegram = window.Telegram?.WebApp;
+    const resolvedTheme = telegram?.initData && telegram.colorScheme
+        ? telegram.colorScheme
+        : prefs.theme;
+
     root.classList.remove("light", "dark");
-    root.classList.add(prefs.theme);
+    root.classList.add(resolvedTheme);
     root.lang = prefs.locale;
     root.dir = prefs.locale === "fa" ? "rtl" : "ltr";
     root.dataset.locale = prefs.locale;
-    root.dataset.theme = prefs.theme;
+    root.dataset.theme = resolvedTheme;
     root.dataset.palette = prefs.palette;
 
     THEME_VARS.forEach((name) => root.style.removeProperty(name));
-    applyPalette(root, prefs.palette, prefs.theme);
 
-    syncTelegramChrome(prefs.theme);
+    if (telegram?.initData) {
+        root.dataset.telegramTheme = "true";
+        applyTelegramTheme(root, telegram);
+    } else {
+        delete root.dataset.telegramTheme;
+        applyPalette(root, prefs.palette, prefs.theme);
+        syncTelegramChrome(prefs.theme);
+    }
+}
+
+export function applyCurrentTelegramTheme(root: HTMLElement) {
+    const telegram = window.Telegram?.WebApp;
+    if (!telegram?.initData) return;
+
+    root.classList.remove("light", "dark");
+    root.classList.add(telegram.colorScheme ?? "dark");
+    root.dataset.theme = telegram.colorScheme ?? "dark";
+    root.dataset.telegramTheme = "true";
+    THEME_VARS.forEach((name) => root.style.removeProperty(name));
+    applyTelegramTheme(root, telegram);
+}
+
+function applyTelegramTheme(
+    root: HTMLElement,
+    telegram: NonNullable<Window["Telegram"]>["WebApp"],
+) {
+    const params = telegram.themeParams;
+    const background = params.bg_color;
+    const secondary = params.secondary_bg_color ?? background;
+    const foreground = params.text_color;
+    const hint = params.hint_color;
+    const primary = params.button_color ?? params.link_color;
+    const primaryForeground = params.button_text_color;
+
+    if (background) root.style.setProperty("--color-background", background);
+    if (secondary) {
+        root.style.setProperty("--color-card", secondary);
+        root.style.setProperty("--color-nav", secondary);
+        root.style.setProperty("--color-muted", `color-mix(in srgb, ${secondary} 82%, ${foreground ?? "#ffffff"})`);
+    }
+    if (foreground) {
+        root.style.setProperty("--color-foreground", foreground);
+        root.style.setProperty("--color-card-foreground", foreground);
+        root.style.setProperty("--color-border", `color-mix(in srgb, ${foreground} 13%, transparent)`);
+    }
+    if (hint) root.style.setProperty("--color-muted-foreground", hint);
+    if (primary) {
+        root.style.setProperty("--color-primary", primary);
+        root.style.setProperty("--color-ring", primary);
+    }
+    if (primaryForeground) {
+        root.style.setProperty("--color-primary-foreground", primaryForeground);
+    }
+
+    telegram.setHeaderColor(background ?? (telegram.colorScheme === "light" ? LIGHT_CHROME : DARK_CHROME));
+    telegram.setBackgroundColor(background ?? (telegram.colorScheme === "light" ? LIGHT_CHROME : DARK_CHROME));
 }
 
 function applyPalette(root: HTMLElement, palette: Palette, theme: Theme) {

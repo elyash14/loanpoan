@@ -2,7 +2,7 @@ import type { Messages } from "./en";
 
 export const fa: Messages = {
     app: {
-        name: "نکست فایننشال",
+        name: "PayLoop",
     },
     nav: {
         home: "خانه",
@@ -61,7 +61,7 @@ export const fa: Messages = {
         showingCount: "نمایش {shown} از {total}",
     },
     login: {
-        brand: "نکست فایننشال",
+        brand: "PayLoop",
         title: "خوش اومدی",
         subtitle: "وارد شو تا حساب‌ها، وام‌ها و پرداخت‌هات رو ببینی.",
         email: "ایمیل",

@@ -1,6 +1,6 @@
 export const en = {
     app: {
-        name: "Next Financial",
+        name: "PayLoop",
     },
     nav: {
         home: "Home",
@@ -59,7 +59,7 @@ export const en = {
         showingCount: "Showing {shown} of {total}",
     },
     login: {
-        brand: "Next Financial",
+        brand: "PayLoop",
         title: "Welcome back",
         subtitle: "Sign in to see your accounts, loans, and payments.",
         email: "Email",

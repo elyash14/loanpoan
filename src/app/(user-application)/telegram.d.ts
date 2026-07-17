@@ -14,6 +14,8 @@ interface TelegramWebApp {
     colorScheme?: "light" | "dark";
     setHeaderColor: (color: string) => void;
     setBackgroundColor: (color: string) => void;
+    onEvent?: (eventType: "themeChanged", callback: () => void) => void;
+    offEvent?: (eventType: "themeChanged", callback: () => void) => void;
     BackButton: {
         show: () => void;
         hide: () => void;
