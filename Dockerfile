@@ -21,9 +21,13 @@ RUN npx prisma generate
 # Build Next.js application
 RUN yarn build
 
-# Stage 3: full Prisma CLI (migrate deploy needs transitive deps like `effect`)
+# Stage 3: Prisma CLI with a complete local node_modules tree
+# (global npm install breaks module resolution for @prisma/engines when copied)
 FROM node:22-alpine AS prisma-cli
-RUN npm install -g prisma@7.8.0
+WORKDIR /opt/prisma
+RUN npm init -y \
+  && npm install prisma@7.8.0 --omit=dev \
+  && ./node_modules/.bin/prisma --version
 
 # Stage 4: runner
 FROM node:22-alpine AS runner
@@ -34,8 +38,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN apk add --no-cache libc6-compat openssl \
+  && addgroup --system --gid 1001 nodejs \
+  && adduser --system --uid 1001 nextjs
 
 # Copy essential public assets
 COPY --from=builder /app/public ./public
@@ -47,9 +52,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
-# Full Prisma CLI with all dependencies (for entrypoint migrate deploy)
-COPY --from=prisma-cli /usr/local/lib/node_modules /usr/local/lib/node_modules
-COPY --from=prisma-cli /usr/local/bin/prisma /usr/local/bin/prisma
+# Full Prisma CLI (kept separate so Next standalone node_modules is not polluted)
+COPY --from=prisma-cli --chown=nextjs:nodejs /opt/prisma /opt/prisma
 
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs entrypoint.sh ./entrypoint.sh
