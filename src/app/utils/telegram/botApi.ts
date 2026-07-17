@@ -63,6 +63,13 @@ export async function getChatAdministrators(chatId: bigint): Promise<ChatMember[
     });
 }
 
+export async function getChatMember(chatId: bigint, userId: bigint): Promise<ChatMember> {
+    return callTelegramApi<ChatMember>("getChatMember", {
+        chat_id: chatId.toString(),
+        user_id: userId.toString(),
+    });
+}
+
 export async function getChatMemberCount(chatId: bigint): Promise<number> {
     return callTelegramApi<number>("getChatMemberCount", {
         chat_id: chatId.toString(),

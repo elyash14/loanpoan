@@ -123,6 +123,16 @@ export async function getTelegramMembersCount() {
     return prisma.telegramGroupMember.count({ where: { isBot: false } });
 }
 
+export async function listStoredTelegramMemberIds(chatId?: bigint) {
+    return prisma.telegramGroupMember.findMany({
+        where: {
+            isBot: false,
+            ...(chatId != null ? { chatId } : {}),
+        },
+        select: { telegramId: true },
+    });
+}
+
 export async function listTelegramMembersForSelect(currentUserId?: number) {
     const [members, linkedUsers] = await Promise.all([
         prisma.telegramGroupMember.findMany({

@@ -3,6 +3,7 @@
 import {
     discoverTelegramChats,
     getChatAdministrators,
+    getChatMember,
     getChatMemberCount,
     getMiniAppUrl,
     getTelegramGroupChatId,
@@ -11,7 +12,7 @@ import {
     setTelegramWebhook,
 } from "utils/telegram/botApi";
 import { sanitizeWebhookSecret } from "utils/telegram/config";
-import { upsertTelegramGroupMember } from "./data";
+import { listStoredTelegramMemberIds, upsertTelegramGroupMember } from "./data";
 import { getSession } from "utils/auth/dataAccessLayer";
 import { revalidatePath } from "next/cache";
 import { DASHBOARD_URL } from "utils/configs";
@@ -32,21 +33,56 @@ export async function syncTelegramGroupMembers(): Promise<{
     try {
         await assertAdmin();
         const chatId = getTelegramGroupChatId();
-        const administrators = await getChatAdministrators(chatId);
-
+        const seen = new Set<string>();
         let synced = 0;
+        let refreshed = 0;
+        let leftOrRemoved = 0;
+
+        const administrators = await getChatAdministrators(chatId);
         for (const member of administrators) {
+            if (member.user.is_bot) continue;
             await upsertTelegramGroupMember(chatId, member.user, member.status);
-            if (!member.user.is_bot) synced += 1;
+            seen.add(String(member.user.id));
+            synced += 1;
+        }
+
+        // Refresh every stored user against the configured group.
+        // Telegram bots cannot download a full member directory in one API call.
+        const storedMembers = await listStoredTelegramMemberIds();
+        for (const stored of storedMembers) {
+            const telegramId = stored.telegramId.toString();
+            if (seen.has(telegramId)) continue;
+
+            try {
+                const member = await getChatMember(chatId, stored.telegramId);
+                if (member.user.is_bot) continue;
+
+                if (member.status === "left" || member.status === "kicked") {
+                    leftOrRemoved += 1;
+                    continue;
+                }
+
+                await upsertTelegramGroupMember(chatId, member.user, member.status);
+                seen.add(telegramId);
+                refreshed += 1;
+            } catch {
+                // User may no longer be reachable / not in the chat
+                leftOrRemoved += 1;
+            }
         }
 
         revalidatePath(`/${DASHBOARD_URL}/telegram-members`);
         revalidatePath(`/${DASHBOARD_URL}/users`);
 
+        const total = seen.size;
         return {
             status: "SUCCESS",
-            message: `Synced ${synced} administrator(s). Members also appear when they post or join the group.`,
-            synced,
+            message:
+                `Synced ${total} Telegram user(s) from the group` +
+                ` (${synced} admin${synced === 1 ? "" : "s"}, ${refreshed} member${refreshed === 1 ? "" : "s"} refreshed)` +
+                (leftOrRemoved > 0 ? `. ${leftOrRemoved} previously stored user(s) are no longer in the group.` : ".") +
+                " New members also appear when they post or join.",
+            synced: total,
         };
     } catch (error) {
         return {

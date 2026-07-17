@@ -78,8 +78,9 @@ export default function TelegramMembersToolbar({ stats }: { stats: string }) {
     return (
         <Box mb="md">
             <Alert mb="md" title="How member sync works">
-                Telegram does not expose a full group member list to bots. This page stores members when they
-                post in the group, join, or are synced as administrators. Set{" "}
+                Telegram bots cannot download a complete group directory in one request.{" "}
+                <strong>Sync telegram users</strong> finds administrators and refreshes every stored member
+                still in the group. New people are also saved when they post or join. Set{" "}
                 <Code>TELEGRAM_GROUP_CHAT_ID</Code> to your <strong>group</strong> chat id (usually negative,
                 e.g. <Code>-1001234567890</Code>), not a user id.
             </Alert>
@@ -100,7 +101,7 @@ export default function TelegramMembersToolbar({ stats }: { stats: string }) {
                     loading={pending}
                     onClick={runSync}
                 >
-                    Sync administrators
+                    Sync telegram users
                 </Button>
                 <Button
                     variant="light"
