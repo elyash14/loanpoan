@@ -40,7 +40,7 @@ ENV HOSTNAME="0.0.0.0"
 # Runtime uploads (avatars). Mount a Docker/Coolify volume here so files survive redeploys.
 ENV UPLOADS_DIR=/app/uploads
 
-RUN apk add --no-cache libc6-compat openssl \
+RUN apk add --no-cache libc6-compat openssl su-exec \
   && addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
@@ -59,11 +59,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.
 # Full Prisma CLI (kept separate so Next standalone node_modules is not polluted)
 COPY --from=prisma-cli --chown=nextjs:nodejs /opt/prisma /opt/prisma
 
-# Copy entrypoint script
-COPY --chown=nextjs:nodejs entrypoint.sh ./entrypoint.sh
+# Copy entrypoint script (starts as root to fix volume permissions, then drops to nextjs)
+COPY entrypoint.sh ./entrypoint.sh
 RUN chmod +x entrypoint.sh
-
-USER nextjs
 
 EXPOSE 3000
 

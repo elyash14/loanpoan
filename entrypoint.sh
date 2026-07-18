@@ -3,11 +3,19 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-echo "Starting deployment checks and initialization..."
-
 UPLOADS_ROOT="${UPLOADS_DIR:-./uploads}"
+
+# Coolify/Docker volumes are often mounted as root. Fix ownership, then drop to nextjs.
+if [ "$(id -u)" = "0" ]; then
+  echo "Preparing uploads directory as root..."
+  mkdir -p "${UPLOADS_ROOT}/avatars" ./public/uploads/avatars
+  chown -R nextjs:nodejs "${UPLOADS_ROOT}" ./public/uploads
+  echo "Uploads directory ready: ${UPLOADS_ROOT}"
+  exec su-exec nextjs "$0" "$@"
+fi
+
+echo "Starting deployment checks and initialization..."
 mkdir -p "${UPLOADS_ROOT}/avatars" ./public/uploads/avatars
-echo "Uploads directory ready: ${UPLOADS_ROOT}"
 
 # Run database migrations
 if [ -d "./prisma" ]; then
