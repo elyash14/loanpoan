@@ -42,8 +42,9 @@ RUN apk add --no-cache libc6-compat openssl \
   && addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
-# Copy essential public assets
 COPY --from=builder /app/public ./public
+RUN mkdir -p ./public/uploads/avatars \
+  && chown -R nextjs:nodejs ./public
 
 # Set up the standalone server and static assets
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

@@ -40,3 +40,5 @@ User Application:
     - send notice to the group (*)
 
 - loan priority list(*)
+
+- show request for all belongs items in th mini-app

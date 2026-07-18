@@ -6,9 +6,17 @@ import { DASHBOARD_URL } from 'utils/configs';
 const publicRoutes = ['/login', '/link-required', `/${DASHBOARD_URL}/login`];
 
 const userAppRoute = /^\/(home|accounts|loans|installments|payments|profile|more|settings)(\/|$)/;
+const publicAssetRoute = /^\/uploads(\/|$)/;
 
 export default async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
+
+    // Avatar and other uploaded files must load without a session cookie.
+    // Mini App often requests them before Telegram auth finishes.
+    if (publicAssetRoute.test(path)) {
+        return NextResponse.next();
+    }
+
     const isPublicRoute = publicRoutes.includes(path);
     const isUserAppRoute = userAppRoute.test(path);
     const isDashboardLogin = path === `/${DASHBOARD_URL}/login`;
@@ -51,5 +59,8 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+    // Skip Next internals, API, and common static image files.
+    matcher: [
+        '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    ],
 };

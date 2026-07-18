@@ -5,6 +5,8 @@ set -e
 
 echo "Starting deployment checks and initialization..."
 
+mkdir -p ./public/uploads/avatars
+
 # Run database migrations
 if [ -d "./prisma" ]; then
   echo "Applying database migrations..."
