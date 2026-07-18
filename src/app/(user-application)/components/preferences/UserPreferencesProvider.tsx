@@ -37,8 +37,21 @@ type UserPreferencesContextValue = {
 
 const UserPreferencesContext = createContext<UserPreferencesContextValue | null>(null);
 
+const PALETTES: Palette[] = ["ocean", "violet", "sunset", "emerald", "rose"];
+
 function persist(prefs: UserPreferences) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+}
+
+function normalizePreferences(raw: unknown): UserPreferences | null {
+    if (!raw || typeof raw !== "object") return null;
+    const value = raw as Partial<UserPreferences>;
+    if (value.locale !== "en" && value.locale !== "fa") return null;
+    if (value.theme !== "light" && value.theme !== "dark") return null;
+    const palette = PALETTES.includes(value.palette as Palette)
+        ? (value.palette as Palette)
+        : "ocean";
+    return { locale: value.locale, theme: value.theme, palette };
 }
 
 export default function UserPreferencesProvider({
@@ -58,14 +71,17 @@ export default function UserPreferencesProvider({
     }, []);
 
     useEffect(() => {
-        let initial = DEFAULT_PREFERENCES;
-        if (dbPreferences) {
-            initial = dbPreferences;
-            persist(dbPreferences);
-        } else {
-            const stored = readStoredPreferences();
-            initial = stored ?? DEFAULT_PREFERENCES;
+        const stored = readStoredPreferences();
+        const fromDb = normalizePreferences(dbPreferences);
+
+        // localStorage is the latest client choice. Never overwrite it with a
+        // stale DB payload after router.refresh() / soft navigation.
+        const initial = stored ?? fromDb ?? DEFAULT_PREFERENCES;
+
+        if (!stored && fromDb) {
+            persist(fromDb);
         }
+
         setPrefs(initial);
         apply(initial);
         setReady(true);
@@ -73,48 +89,39 @@ export default function UserPreferencesProvider({
 
     const setLocale = useCallback(
         (locale: Locale) => {
-            let next: UserPreferences | null = null;
             setPrefs((current) => {
-                next = { ...current, locale };
+                const next = { ...current, locale };
                 persist(next);
                 apply(next);
+                void updateUserPreferences(next).catch(console.error);
                 return next;
             });
-            if (next) {
-                updateUserPreferences(next).catch(console.error);
-            }
         },
         [apply],
     );
 
     const setTheme = useCallback(
         (theme: Theme) => {
-            let next: UserPreferences | null = null;
             setPrefs((current) => {
-                next = { ...current, theme };
+                const next = { ...current, theme };
                 persist(next);
                 apply(next);
+                void updateUserPreferences(next).catch(console.error);
                 return next;
             });
-            if (next) {
-                updateUserPreferences(next).catch(console.error);
-            }
         },
         [apply],
     );
 
     const setPalette = useCallback(
         (palette: Palette) => {
-            let next: UserPreferences | null = null;
             setPrefs((current) => {
-                next = { ...current, palette };
+                const next = { ...current, palette };
                 persist(next);
                 apply(next);
+                void updateUserPreferences(next).catch(console.error);
                 return next;
             });
-            if (next) {
-                updateUserPreferences(next).catch(console.error);
-            }
         },
         [apply],
     );

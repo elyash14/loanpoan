@@ -169,6 +169,8 @@ export const fa: Messages = {
         remainingAmount: "مانده",
         noticeOverdue: "{count} مورد معوق · {amount}",
         noticeUpcoming: "{count} پرداخت پیش‌رو · {amount}",
+        noticePendingReview: "{count} درخواست پرداخت در انتظار بررسی مدیر",
+        noticePendingReviewHint: "رسید شما ارسال شده است. بعد از تأیید مدیر، این موارد پاک می‌شوند.",
         nextDue: "سررسید بعدی: {date} · {amount}",
         noticeHint: "لطفاً پرداخت‌های ماهانه و پرداخت‌های معوق یا پیش‌رو را بررسی و تسویه کنید.",
         payNow: "پرداخت",

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { useUserPreferences } from "../preferences/UserPreferencesProvider";
 import { applyCurrentTelegramTheme } from "../preferences/applyPreferences";
 
@@ -13,6 +13,7 @@ export default function TelegramProvider({ children }: { children: ReactNode }) 
     const router = useRouter();
     const pathname = usePathname();
     const [ready, setReady] = useState(false);
+    const authStarted = useRef(false);
     const { t } = useUserPreferences();
 
     useEffect(() => {
@@ -25,17 +26,33 @@ export default function TelegramProvider({ children }: { children: ReactNode }) 
         if (tg) {
             tg.ready();
             tg.expand();
-            handleThemeChange();
+            if (tg.initData && root) {
+                applyCurrentTelegramTheme(root);
+            }
             tg.onEvent?.("themeChanged", handleThemeChange);
         }
 
+        return () => tg?.offEvent?.("themeChanged", handleThemeChange);
+    }, []);
+
+    useEffect(() => {
         if (pathname === "/link-required") {
-            return () => tg?.offEvent?.("themeChanged", handleThemeChange);
+            setReady(true);
+            return;
         }
 
+        const tg = window.Telegram?.WebApp;
         if (!tg?.initData) {
-            return () => tg?.offEvent?.("themeChanged", handleThemeChange);
+            setReady(true);
+            return;
         }
+
+        // Auth once per Mini App session — not on every route change.
+        if (authStarted.current) {
+            setReady(true);
+            return;
+        }
+        authStarted.current = true;
 
         fetch("/api/auth/telegram", {
             method: "POST",
@@ -50,8 +67,6 @@ export default function TelegramProvider({ children }: { children: ReactNode }) 
                 }
             })
             .finally(() => setReady(true));
-
-        return () => tg.offEvent?.("themeChanged", handleThemeChange);
     }, [router, pathname]);
 
     if (isTelegramWebApp() && pathname !== "/link-required" && !ready) {

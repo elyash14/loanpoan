@@ -8,8 +8,9 @@ import { Card, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import PayDuesDrawer from "../../components/payments/PayDuesDrawer";
 import type { HomeDashboardData } from "./types";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock3 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Props = {
@@ -18,13 +19,15 @@ type Props = {
 
 export default function HomeStatusTab({ data }: Props) {
     const { t } = useUserPreferences();
+    const router = useRouter();
     const { formatMoney, formatNumber, formatPercent, formatDate } = useLocaleFormat();
-    const hasNotice = data.notice.overdueCount > 0 || data.notice.upcomingCount > 0;
+    const hasActionableNotice = data.notice.overdueCount > 0 || data.notice.upcomingCount > 0;
+    const hasPendingReview = data.notice.pendingReviewCount > 0;
     const [payDrawerOpen, setPayDrawerOpen] = useState(false);
 
     return (
         <div className="space-y-3">
-            {hasNotice ? (
+            {hasActionableNotice ? (
                 <Card className="group relative overflow-hidden border-destructive/20 shadow-sm">
                     <div className="absolute inset-y-0 start-0 w-1.5 bg-destructive/60" />
                     <CardContent className="space-y-2 py-4 ps-5">
@@ -71,6 +74,23 @@ export default function HomeStatusTab({ data }: Props) {
                         </div>
                     </CardContent>
                 </Card>
+            ) : hasPendingReview ? (
+                <Card className="group relative overflow-hidden border-amber-500/25 bg-amber-500/5 shadow-sm">
+                    <div className="absolute inset-y-0 start-0 w-1.5 bg-amber-500/70" />
+                    <CardContent className="flex items-start gap-3 py-4 ps-5">
+                        <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium">
+                                {t("home.noticePendingReview", {
+                                    count: formatNumber(data.notice.pendingReviewCount),
+                                })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {t("home.noticePendingReviewHint")}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
             ) : (
                 <Card className="border-emerald-500/20 bg-emerald-500/5">
                     <CardContent className="flex items-start gap-3 py-4">
@@ -79,7 +99,11 @@ export default function HomeStatusTab({ data }: Props) {
                     </CardContent>
                 </Card>
             )}
-            <PayDuesDrawer open={payDrawerOpen} onClose={() => setPayDrawerOpen(false)} />
+            <PayDuesDrawer
+                open={payDrawerOpen}
+                onClose={() => setPayDrawerOpen(false)}
+                onSuccess={() => router.refresh()}
+            />
 
             {data.activeLoan ? (
                 <Card>

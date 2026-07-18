@@ -8,6 +8,7 @@ export type HomeDashboardData = {
         upcomingCount: number;
         upcomingAmount: string;
         nextDue: { dueDate: string; amount: string } | null;
+        pendingReviewCount: number;
     };
     activeLoan: {
         id: number;

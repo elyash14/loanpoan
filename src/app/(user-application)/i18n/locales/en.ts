@@ -167,6 +167,8 @@ export const en = {
         remainingAmount: "Remaining",
         noticeOverdue: "{count} overdue items · {amount}",
         noticeUpcoming: "{count} upcoming payments · {amount}",
+        noticePendingReview: "{count} payment request(s) waiting for admin review",
+        noticePendingReviewHint: "Your receipt was submitted. These items will clear after an admin approves them.",
         nextDue: "Next due: {date} · {amount}",
         noticeHint: "Review and settle overdue or upcoming monthly payments and loan payments.",
         payNow: "Pay now",

@@ -107,6 +107,7 @@ export async function getUserHomeDashboard(userId: number) {
         balanceSum,
         unpaidInstallments,
         unpaidPayments,
+        pendingPaymentRequestCount,
         activeLoan,
         panelUsers,
         globalBankBalance,
@@ -123,12 +124,24 @@ export async function getUserHomeDashboard(userId: number) {
             where: accountWhere,
         }),
         prisma.installment.findMany({
-            where: { paidAt: null, account: accountWhere },
+            where: {
+                paidAt: null,
+                account: accountWhere,
+                // Match pay drawer: items with a pending receipt are not actionable dues.
+                NOT: { paymentRequest: { status: "PENDING" } },
+            },
             select: { amount: true, dueDate: true },
         }),
         prisma.payment.findMany({
-            where: { paidAt: null, loan: { account: accountWhere } },
+            where: {
+                paidAt: null,
+                loan: { account: accountWhere },
+                NOT: { paymentRequest: { status: "PENDING" } },
+            },
             select: { amount: true, dueDate: true },
+        }),
+        prisma.paymentRequest.count({
+            where: { userId, status: "PENDING" },
         }),
         prisma.loan.findFirst({
             where: {
@@ -278,6 +291,7 @@ export async function getUserHomeDashboard(userId: number) {
         upcomingCount: upcomingItems.length,
         upcomingAmount: sumAmount(upcomingItems),
         nextDue: findSoonestDue(upcomingItems),
+        pendingReviewCount: pendingPaymentRequestCount,
     };
 
     let activeLoanSnapshot: {

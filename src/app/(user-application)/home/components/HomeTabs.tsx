@@ -15,7 +15,10 @@ type Props = {
 export default function HomeTabs({ data }: Props) {
     const { t } = useUserPreferences();
     const [activeTab, setActiveTab] = useState<HomeTabId>("status");
-    const hasNotice = data.notice.overdueCount > 0 || data.notice.upcomingCount > 0;
+    const hasNotice =
+        data.notice.overdueCount > 0 ||
+        data.notice.upcomingCount > 0 ||
+        data.notice.pendingReviewCount > 0;
 
     const tabs = [
         { id: "status" as const, label: t("home.tabs.status"), badge: hasNotice },
