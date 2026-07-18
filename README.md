@@ -134,6 +134,8 @@ Telegram bots **cannot list every group member** via API. This app stores member
 
 Unlinked Telegram users see `/link-required`.
 
+**Avatar uploads:** files live under `UPLOADS_DIR` (default `/app/uploads`) and are served at `/api/avatars/...`. On Docker/Coolify you **must** mount a persistent volume at `/app/uploads` or photos disappear on redeploy. See [DEPLOYMENT.md](./DEPLOYMENT.md#persistent-avatar-uploads-required).
+
 ## Tech stack
 
 - Next.js 16, React 19

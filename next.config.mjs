@@ -43,6 +43,15 @@ const nextConfig = {
             },
         ]
     },
+    async rewrites() {
+        // Keep old avatar URLs working after moving to /api/avatars
+        return [
+            {
+                source: "/uploads/avatars/:filename",
+                destination: "/api/avatars/:filename",
+            },
+        ];
+    },
 };
 
 export default nextConfig;

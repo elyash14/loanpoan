@@ -5,7 +5,9 @@ set -e
 
 echo "Starting deployment checks and initialization..."
 
-mkdir -p ./public/uploads/avatars
+UPLOADS_ROOT="${UPLOADS_DIR:-./uploads}"
+mkdir -p "${UPLOADS_ROOT}/avatars" ./public/uploads/avatars
+echo "Uploads directory ready: ${UPLOADS_ROOT}"
 
 # Run database migrations
 if [ -d "./prisma" ]; then

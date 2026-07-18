@@ -1,0 +1,39 @@
+# Example production-style app container with a persistent uploads volume.
+# Use this as a reference for Coolify / Docker Compose hosting.
+#
+#   docker compose -f devops/compose.app.example.yml up -d
+#
+# For Coolify: add a Persistent Storage mount:
+#   Container path: /app/uploads
+#   (name it e.g. payloop-uploads)
+
+name: payloop-app
+
+services:
+  payloop:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: payloop-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      CRON_SECRET: ${CRON_SECRET}
+      UPLOADS_DIR: /app/uploads
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      NEXT_PUBLIC_TELEGRAM_BOT_USERNAME: ${NEXT_PUBLIC_TELEGRAM_BOT_USERNAME:-}
+      NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME: ${NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME:-}
+      TELEGRAM_GROUP_CHAT_ID: ${TELEGRAM_GROUP_CHAT_ID:-}
+      TELEGRAM_PAYMENTS_TOPIC_ID: ${TELEGRAM_PAYMENTS_TOPIC_ID:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
+    volumes:
+      # Survives image rebuilds / Coolify redeploys
+      - payloop_uploads:/app/uploads
+
+volumes:
+  payloop_uploads:
+    driver: local

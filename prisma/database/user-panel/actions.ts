@@ -12,13 +12,16 @@ import prisma from "@database/prisma";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { ChangePasswordResponseType } from "utils/form-validations/user/changePasswordValidation";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
 import {
     changeEmailValidationSchema,
     type ChangeEmailResponse,
 } from "utils/form-validations/user/changeEmailValidation";
 import { createSession } from "utils/auth/session";
+import {
+    avatarPublicUrl,
+    removeAvatarFile,
+    saveAvatarFile,
+} from "utils/uploads/avatars";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ALLOWED_AVATAR_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -33,16 +36,6 @@ function extensionForMime(type: string) {
     if (type === "image/png") return "png";
     if (type === "image/webp") return "webp";
     return "jpg";
-}
-
-async function removeStoredAvatar(avatarUrl: string | null | undefined) {
-    if (!avatarUrl?.startsWith("/uploads/avatars/")) return;
-    const filePath = path.join(process.cwd(), "public", avatarUrl);
-    try {
-        await unlink(filePath);
-    } catch {
-        // ignore missing files
-    }
 }
 
 export async function updateUserPanelPassword(
@@ -197,9 +190,7 @@ export async function updateUserPanelAvatar(formData: FormData): Promise<AvatarR
     const userId = Number(session.userId);
     const extension = extensionForMime(file.type);
     const fileName = `${userId}-${Date.now()}.${extension}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
-    const filePath = path.join(uploadDir, fileName);
-    const avatarUrl = `/uploads/avatars/${fileName}`;
+    const avatarUrl = avatarPublicUrl(fileName);
 
     try {
         const existing = await prisma.user.findUnique({
@@ -207,16 +198,15 @@ export async function updateUserPanelAvatar(formData: FormData): Promise<AvatarR
             select: { avatar: true },
         });
 
-        await mkdir(uploadDir, { recursive: true });
         const buffer = Buffer.from(await file.arrayBuffer());
-        await writeFile(filePath, buffer);
+        await saveAvatarFile(fileName, buffer);
 
         await prisma.user.update({
             where: { id: userId },
             data: { avatar: avatarUrl },
         });
 
-        await removeStoredAvatar(existing?.avatar);
+        await removeAvatarFile(existing?.avatar);
 
         revalidatePath("/profile");
         revalidatePath("/home");
@@ -249,7 +239,7 @@ export async function clearUserPanelAvatar(): Promise<AvatarResponseType> {
             data: { avatar: null },
         });
 
-        await removeStoredAvatar(existing.avatar);
+        await removeAvatarFile(existing.avatar);
 
         revalidatePath("/profile");
         revalidatePath("/home");

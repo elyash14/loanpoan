@@ -31,6 +31,38 @@ When deploying on **Coolify**:
   - `TELEGRAM_GROUP_CHAT_ID`
   - `TELEGRAM_PAYMENTS_TOPIC_ID`
   - `TELEGRAM_WEBHOOK_SECRET`
+- `UPLOADS_DIR` (optional): Absolute path for runtime uploads. Default in the image is `/app/uploads`.
+
+---
+
+## Persistent avatar uploads (required)
+
+Avatars are stored on disk under `UPLOADS_DIR` (default `/app/uploads`) and served by `/api/avatars/...`.
+
+**Without a volume, every redeploy wipes uploaded photos** (the database still has the URL, but the file is gone).
+
+### Coolify
+
+1. Open your PayLoop application → **Persistent Storage** (or **Storages**).
+2. Add a volume:
+   - **Name:** `payloop-uploads` (any name)
+   - **Destination path (container):** `/app/uploads`
+3. Save and **redeploy**.
+4. In the Mini App, **upload the avatar again** once (old files from before this volume will not exist).
+
+Optional env (usually not needed; already set in the Docker image):
+
+```env
+UPLOADS_DIR=/app/uploads
+```
+
+### Docker Compose
+
+See `devops/compose.app.example.yml` — it mounts `payloop_uploads:/app/uploads`.
+
+```bash
+docker compose -f devops/compose.app.example.yml up -d --build
+```
 
 ---
 
