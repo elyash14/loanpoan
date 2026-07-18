@@ -138,9 +138,24 @@ export function getMiniAppUrl(): string {
  * @see https://core.telegram.org/bots/webapps#direct-link-mini-apps
  * Create the app in BotFather (/newapp) and set NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME.
  */
+export function getTelegramMiniAppShortName(): string | null {
+    const raw = process.env.NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME?.trim();
+    if (!raw) return null;
+
+    // Allow accidental full links like t.me/bot/financial or https://t.me/bot/financial
+    const fromUrl = raw.match(/(?:t\.me\/[^/\s]+\/)([A-Za-z0-9_]+)/i)?.[1];
+    if (fromUrl) return fromUrl;
+
+    // Strip leading slashes / @ and path leftovers
+    const cleaned = raw.replace(/^https?:\/\//i, "").replace(/^t\.me\//i, "");
+    const parts = cleaned.split("/").filter(Boolean);
+    const shortName = parts[parts.length - 1]?.replace(/^@/, "").trim();
+    return shortName || null;
+}
+
 export function getTelegramMiniAppDeepLink(): string | null {
     const username = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME?.replace(/^@/, "").trim();
-    const shortName = process.env.NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME?.trim();
+    const shortName = getTelegramMiniAppShortName();
     if (!username || !shortName) {
         return null;
     }
@@ -275,6 +290,15 @@ export async function setChatMenuButton(miniAppUrl?: string) {
             text: "Open App",
             web_app: { url },
         },
+    });
+}
+
+export async function setTelegramBotCommands() {
+    return callTelegramApi<boolean>("setMyCommands", {
+        commands: [
+            { command: "app", description: "Open PayLoop" },
+            { command: "start", description: "Start PayLoop" },
+        ],
     });
 }
 

@@ -40,15 +40,16 @@ Detail pages: `getUserAccountIfOwned`, `getUserLoanIfOwned` — `notFound()` if 
 
 ## Telegram linking (admin workflow)
 
-1. User opens Mini App once → their Telegram ID/username are saved automatically
+1. User opens Mini App once (or types `/app` in the group) → their Telegram ID/username are saved automatically
 2. Admin links that Telegram member to a `User` in the dashboard
 3. User reopens Mini App → auto login
-
 
 ## Env
 
 - `TELEGRAM_BOT_TOKEN` — BotFather token (server only)
 - `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` — bot username for widget/docs
+- `NEXT_PUBLIC_TELEGRAM_MINI_APP_SHORT_NAME` — Mini App short name from BotFather (e.g. `financial`)
+- Group open link: `https://t.me/<bot_username>/<short_name>`
 
 ## UI stack
 

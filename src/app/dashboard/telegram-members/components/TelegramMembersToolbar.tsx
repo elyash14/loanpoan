@@ -2,12 +2,21 @@
 
 import {
     fetchDiscoveredTelegramChats,
+    postOpenAppToTelegramGroup,
+    registerTelegramBotCommands,
     registerTelegramWebhook,
     setupTelegramMenuButton,
     syncTelegramGroupMembers,
 } from "@database/telegram/actions";
 import { Alert, Box, Button, Code, Group, List, Text } from "@mantine/core";
-import { IconAppWindow, IconRefresh, IconSearch, IconWebhook } from "@tabler/icons-react";
+import {
+    IconAppWindow,
+    IconListDetails,
+    IconRefresh,
+    IconSearch,
+    IconSend,
+    IconWebhook,
+} from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { successNotification } from "utils/Notification/notification";
@@ -64,6 +73,26 @@ export default function TelegramMembersToolbar({ stats }: { stats: string }) {
         });
     };
 
+    const runRegisterCommands = () => {
+        startTransition(async () => {
+            const result = await registerTelegramBotCommands();
+            setMessage(result.message ?? null);
+            if (result.status === "SUCCESS") {
+                successNotification({ title: "Commands", message: result.message! });
+            }
+        });
+    };
+
+    const runPostOpenApp = () => {
+        startTransition(async () => {
+            const result = await postOpenAppToTelegramGroup();
+            setMessage(result.message ?? null);
+            if (result.status === "SUCCESS") {
+                successNotification({ title: "Posted", message: result.message! });
+            }
+        });
+    };
+
     const runDiscover = () => {
         startTransition(async () => {
             const result = await fetchDiscoveredTelegramChats();
@@ -81,8 +110,10 @@ export default function TelegramMembersToolbar({ stats }: { stats: string }) {
                 Telegram bots cannot download a complete group directory in one request.{" "}
                 <strong>Sync telegram users</strong> finds administrators and refreshes every stored member
                 still in the group. People also appear when they <strong>open the Mini App</strong>, post in
-                the group, or join. Set <Code>TELEGRAM_GROUP_CHAT_ID</Code> to your <strong>group</strong>{" "}
-                chat id (usually negative, e.g. <Code>-1001234567890</Code>), not a user id.
+                the group, or join. In the group, members can type <Code>/app</Code> (or use the{" "}
+                <Code>/</Code> menu) to get an Open PayLoop button. Set <Code>TELEGRAM_GROUP_CHAT_ID</Code>{" "}
+                to your <strong>group</strong> chat id (usually negative, e.g.{" "}
+                <Code>-1001234567890</Code>), not a user id.
             </Alert>
 
             {parsed.status === "SUCCESS" ? (
@@ -120,6 +151,22 @@ export default function TelegramMembersToolbar({ stats }: { stats: string }) {
                     Set Open App button
                 </Button>
                 <Button
+                    variant="light"
+                    leftSection={<IconListDetails size={16} />}
+                    loading={pending}
+                    onClick={runRegisterCommands}
+                >
+                    Register /app commands
+                </Button>
+                <Button
+                    variant="light"
+                    leftSection={<IconSend size={16} />}
+                    loading={pending}
+                    onClick={runPostOpenApp}
+                >
+                    Post Open App to group
+                </Button>
+                <Button
                     variant="default"
                     leftSection={<IconSearch size={16} />}
                     loading={pending}
@@ -142,7 +189,7 @@ export default function TelegramMembersToolbar({ stats }: { stats: string }) {
             ) : null}
 
             {message ? (
-                <Text c={message.includes("Failed") || message.includes("looks like") ? "red" : "dimmed"} size="sm" mb="md">
+                <Text c={message.includes("Failed") || message.includes("looks like") || message.includes("not configured") ? "red" : "dimmed"} size="sm" mb="md">
                     {message}
                 </Text>
             ) : null}

@@ -1,7 +1,13 @@
 import "server-only";
 
 import { upsertTelegramGroupMember } from "@database/telegram/data";
-import { getMiniAppUrl, sendTelegramMessage, TelegramApiUser } from "utils/telegram/botApi";
+import {
+    buildGroupAppMarkup,
+    getMiniAppUrl,
+    getTelegramMiniAppDeepLink,
+    sendTelegramMessage,
+    TelegramApiUser,
+} from "utils/telegram/botApi";
 
 type TelegramUpdate = {
     message?: {
@@ -29,24 +35,51 @@ type TelegramUpdate = {
 
 const GROUP_TYPES = new Set(["group", "supergroup"]);
 
+function extractBotCommand(text: string | undefined): string | null {
+    if (!text?.startsWith("/")) return null;
+    // /app@next_financial_bot or /app
+    const match = text.trim().split(/\s+/)[0]?.match(/^\/([A-Za-z0-9_]+)(?:@[\w]+)?$/);
+    return match?.[1]?.toLowerCase() ?? null;
+}
+
+async function sendOpenAppInvite(chatId: number, isPrivate: boolean) {
+    if (isPrivate) {
+        const miniAppUrl = getMiniAppUrl();
+        await sendTelegramMessage(
+            chatId,
+            "Welcome to PayLoop. Tap the button below to open your account.",
+            {
+                inline_keyboard: [[
+                    {
+                        text: "Open App",
+                        web_app: { url: miniAppUrl },
+                    },
+                ]],
+            },
+        );
+        return;
+    }
+
+    // Groups cannot use web_app buttons — use direct Mini App / web URL buttons.
+    const markup = buildGroupAppMarkup({
+        telegram: "Open PayLoop",
+        web: "Open in browser",
+    });
+    const deepLink = getTelegramMiniAppDeepLink();
+    const body = deepLink
+        ? `Open PayLoop:\n${deepLink}`
+        : "Open PayLoop from the button below.";
+
+    await sendTelegramMessage(chatId, body, markup);
+}
+
 export async function processTelegramUpdate(update: TelegramUpdate) {
     const message = update.message;
+    const command = extractBotCommand(message?.text);
 
-    if (message?.chat.type === "private" && message.from) {
-        if (message.text?.startsWith("/start")) {
-            const miniAppUrl = getMiniAppUrl();
-            await sendTelegramMessage(
-                message.chat.id,
-                "Welcome to PayLoop. Tap the button below to open your account.",
-                {
-                    inline_keyboard: [[
-                        {
-                            text: "Open App",
-                            web_app: { url: miniAppUrl },
-                        },
-                    ]],
-                },
-            );
+    if (message?.from && message.chat.type === "private") {
+        if (command === "start" || command === "app" || command === "open") {
+            await sendOpenAppInvite(message.chat.id, true);
         }
         return;
     }
@@ -57,6 +90,10 @@ export async function processTelegramUpdate(update: TelegramUpdate) {
             message.from,
             "member",
         );
+
+        if (command === "start" || command === "app" || command === "open") {
+            await sendOpenAppInvite(message.chat.id, false);
+        }
     }
 
     if (update.chat_member?.new_chat_member?.user) {
