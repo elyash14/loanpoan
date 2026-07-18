@@ -34,6 +34,44 @@ When deploying on **Coolify**:
 
 ---
 
+## Cron: Daily Installment Generation
+
+The production image only runs the Next.js server. It does **not** start `scripts/cron-worker.js`. Use **Coolify Scheduled Tasks** to call the cron API once a day.
+
+### Coolify Scheduled Task
+
+1. Open Coolify → your **payloop** application → **Scheduled Tasks**.
+2. Add a new task:
+   - **Name:** `generate-installments`
+   - **Frequency:** `0 1 * * *` (every day at 1:00 AM server time)
+   - **Command:**
+
+```bash
+wget -qO- --method=POST --header="Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/generate-installments
+```
+
+If `wget` is not available in the container, use:
+
+```bash
+curl -sS -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/generate-installments
+```
+
+3. Make sure `CRON_SECRET` is set in the app Environment variables (same value used by the API route).
+4. Save and enable the task.
+
+### How to verify
+
+- In Coolify → **Scheduled Tasks**, check the last run status after the next scheduled time (or run the task manually if Coolify allows it).
+- Or call the endpoint once from the container terminal:
+
+```bash
+wget -qO- --method=POST --header="Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/generate-installments
+```
+
+A successful run returns HTTP 200 and generates installments for due loans.
+
+---
+
 ## Startup and Migrations
 
 The container's `entrypoint.sh` automatically runs the database migrations (`prisma migrate deploy`) on startup before launching the Next.js production server.
