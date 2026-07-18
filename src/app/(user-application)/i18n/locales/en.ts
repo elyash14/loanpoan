@@ -275,7 +275,7 @@ export const en = {
     },
     linkRequired: {
         title: "Account not linked",
-        body: "Your Telegram account is not linked to a member profile yet. Please contact an administrator to link your Telegram ID, then reopen this app.",
+        body: "We saved your Telegram ID from this visit. Ask an administrator to link it to your member profile, then reopen this app.",
         bot: "Bot: @{username}",
     },
     status: {

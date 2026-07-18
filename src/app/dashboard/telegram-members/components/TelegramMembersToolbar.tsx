@@ -80,9 +80,9 @@ export default function TelegramMembersToolbar({ stats }: { stats: string }) {
             <Alert mb="md" title="How member sync works">
                 Telegram bots cannot download a complete group directory in one request.{" "}
                 <strong>Sync telegram users</strong> finds administrators and refreshes every stored member
-                still in the group. New people are also saved when they post or join. Set{" "}
-                <Code>TELEGRAM_GROUP_CHAT_ID</Code> to your <strong>group</strong> chat id (usually negative,
-                e.g. <Code>-1001234567890</Code>), not a user id.
+                still in the group. People also appear when they <strong>open the Mini App</strong>, post in
+                the group, or join. Set <Code>TELEGRAM_GROUP_CHAT_ID</Code> to your <strong>group</strong>{" "}
+                chat id (usually negative, e.g. <Code>-1001234567890</Code>), not a user id.
             </Alert>
 
             {parsed.status === "SUCCESS" ? (

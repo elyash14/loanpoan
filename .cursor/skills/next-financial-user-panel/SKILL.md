@@ -26,8 +26,9 @@ Admin panel stays at `/dashboard/*` (Mantine). Admin login: `/dashboard/login`. 
 - **Web admin:** `/dashboard/login` → `loginAsAdmin` → JWT session → `/dashboard`
 - **Telegram:** `POST /api/auth/telegram` with `Authorization: tma <initData>`
   - Validate HMAC with `TELEGRAM_BOT_TOKEN`
+  - Always upsert `TelegramGroupMember` from initData (id, username, name) — no group message needed
   - Lookup `User` by `telegramId` (admin must link in dashboard)
-  - `403 NOT_LINKED` if no match
+  - `403 NOT_LINKED` if no match (visitor is still stored for admin linking)
 
 ## Data access rule
 
@@ -39,10 +40,10 @@ Detail pages: `getUserAccountIfOwned`, `getUserLoanIfOwned` — `notFound()` if 
 
 ## Telegram linking (admin workflow)
 
-1. Add bot to group
-2. User opens Mini App once (or admin gets their Telegram numeric ID)
-3. Admin sets `telegramId` + optional `telegramUsername` on user edit form
-4. User reopens Mini App → auto login
+1. User opens Mini App once → their Telegram ID/username are saved automatically
+2. Admin links that Telegram member to a `User` in the dashboard
+3. User reopens Mini App → auto login
+
 
 ## Env
 

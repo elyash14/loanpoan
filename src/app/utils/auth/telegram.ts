@@ -1,7 +1,13 @@
 import { validate, parse } from "@telegram-apps/init-data-node";
 
 export type TelegramAuthResult =
-    | { ok: true; telegramId: bigint; username?: string }
+    | {
+          ok: true;
+          telegramId: bigint;
+          username?: string;
+          firstName?: string;
+          lastName?: string;
+      }
     | { ok: false; code: "INVALID" | "EXPIRED" | "MISSING_TOKEN" };
 
 export function validateTelegramInitData(initData: string): TelegramAuthResult {
@@ -13,13 +19,27 @@ export function validateTelegramInitData(initData: string): TelegramAuthResult {
     try {
         validate(initData, token, { expiresIn: 3600 });
         const parsed = parse(initData);
-        if (!parsed.user?.id) {
+        const user = parsed.user as
+            | {
+                  id: number;
+                  username?: string;
+                  firstName?: string;
+                  lastName?: string;
+                  first_name?: string;
+                  last_name?: string;
+              }
+            | undefined;
+
+        if (!user?.id) {
             return { ok: false, code: "INVALID" };
         }
+
         return {
             ok: true,
-            telegramId: BigInt(parsed.user.id),
-            username: parsed.user.username,
+            telegramId: BigInt(user.id),
+            username: user.username,
+            firstName: user.firstName ?? user.first_name,
+            lastName: user.lastName ?? user.last_name,
         };
     } catch {
         return { ok: false, code: "EXPIRED" };

@@ -20,10 +20,13 @@ export async function upsertTelegramGroupMember(
     chatId: bigint,
     user: TelegramApiUser,
     status?: string,
+    options?: { preserveExistingStatus?: boolean },
 ) {
     if (user.is_bot) {
         return null;
     }
+
+    const preserveStatus = options?.preserveExistingStatus === true;
 
     return prisma.telegramGroupMember.upsert({
         where: { telegramId: BigInt(user.id) },
@@ -42,7 +45,7 @@ export async function upsertTelegramGroupMember(
             username: user.username ?? null,
             firstName: user.first_name ?? null,
             lastName: user.last_name ?? null,
-            status: status ?? undefined,
+            ...(preserveStatus || status == null ? {} : { status }),
             lastSeenAt: new Date(),
         },
     });
