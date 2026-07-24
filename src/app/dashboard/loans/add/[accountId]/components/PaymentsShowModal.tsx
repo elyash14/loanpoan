@@ -11,17 +11,18 @@ type Props = {
     paymentCount: number,
     startedAt: Date,
     dateType: GlobalConfigType['dateType'],
+    payDay?: number,
     currency: GlobalConfigType['currency'],
     handleClose: (paymentAmount: number, paymentCount: number) => void,
 }
 const PaymentsShowModal = (props: Props) => {
-    const { totalAmount, paymentCount, startedAt, dateType, currency, handleClose } = props;
+    const { totalAmount, paymentCount, startedAt, dateType, payDay = 5, currency, handleClose } = props;
     const [customAmount, setCustomAmount] = useState<number>(0);
     const [customAmountValue] = useDebounce(customAmount, 1000);
 
     const { payments, error } = useMemo(
-        () => calculateLoanPayments(totalAmount, paymentCount, customAmountValue, startedAt, dateType),
-        [totalAmount, paymentCount, startedAt, dateType, customAmountValue]
+        () => calculateLoanPayments(totalAmount, paymentCount, customAmountValue, startedAt, dateType, payDay),
+        [totalAmount, paymentCount, startedAt, dateType, payDay, customAmountValue]
     );
 
     return <Modal

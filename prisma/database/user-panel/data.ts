@@ -10,23 +10,13 @@ import { getPanelUserId } from "utils/auth/userSession";
 import { ITEMS_PER_PAGE } from "utils/configs";
 import { getUserLoanQueueSummary } from "@database/loan/queue";
 import { getGlobalConfigs } from "@database/config/data";
-import { setDate as setJalaliDate } from "date-fns-jalali";
 import type { GlobalConfigType } from "utils/types/configs";
 import { getCalendarPeriod } from "utils/calendarPeriod";
 import {
     getPunctualityScoreFromAchievements,
     recalculateUserPunctuality,
 } from "@database/gamification/punctuality";
-
-function getPaymentWindowStart(dueDate: Date, dueDay: number, dateType: "JALALI" | "GREGORIAN"): Date {
-    const start = new Date(dueDate);
-    if (dateType === 'JALALI') {
-        return setJalaliDate(start, dueDay);
-    } else {
-        start.setDate(dueDay);
-        return start;
-    }
-}
+import { classifyDueStatus } from "utils/installmentTiming";
 
 function decimalToString(value: { toString(): string } | null | undefined): string {
     return value?.toString() ?? "0";
@@ -258,13 +248,11 @@ export async function getUserHomeDashboard(userId: number) {
     const upcomingInstallments: typeof unpaidInstallments = [];
 
     for (const inst of unpaidInstallments) {
-        if (inst.dueDate < now) {
+        const status = classifyDueStatus(now, inst.dueDate, dueDay, dateType);
+        if (status === "overdue") {
             overdueInstallments.push(inst);
-        } else {
-            const windowStart = getPaymentWindowStart(inst.dueDate, dueDay, dateType);
-            if (now >= windowStart) {
-                upcomingInstallments.push(inst);
-            }
+        } else if (status === "payable") {
+            upcomingInstallments.push(inst);
         }
     }
 
@@ -272,13 +260,11 @@ export async function getUserHomeDashboard(userId: number) {
     const upcomingPayments: typeof unpaidPayments = [];
 
     for (const pay of unpaidPayments) {
-        if (pay.dueDate < now) {
+        const status = classifyDueStatus(now, pay.dueDate, dueDay, dateType);
+        if (status === "overdue") {
             overduePayments.push(pay);
-        } else {
-            const windowStart = getPaymentWindowStart(pay.dueDate, dueDay, dateType);
-            if (now >= windowStart) {
-                upcomingPayments.push(pay);
-            }
+        } else if (status === "payable") {
+            upcomingPayments.push(pay);
         }
     }
 
@@ -930,6 +916,9 @@ export async function getUserPayableDues(): Promise<PayableDueItem[]> {
     if (!userId) return [];
 
     const now = new Date();
+    const config = (await getGlobalConfigs()) as GlobalConfigType;
+    const dueDay = config.installment?.dueDay ?? 1;
+    const dateType = config.dateType ?? "JALALI";
 
     const [installments, payments] = await Promise.all([
         prisma.installment.findMany({
@@ -966,27 +955,37 @@ export async function getUserPayableDues(): Promise<PayableDueItem[]> {
 
     const installmentItems: PayableDueItem[] = installments
         .filter((row) => row.account)
-        .map((row) => ({
-            kind: "installment" as const,
-            id: row.id,
-            amount: decimalToString(row.amount),
-            dueDate: row.dueDate.toISOString(),
-            status: row.dueDate < now ? ("overdue" as const) : ("upcoming" as const),
-            accountCode: row.account!.code,
-            accountName: row.account!.name,
-        }));
+        .map((row) => {
+            const status = classifyDueStatus(now, row.dueDate, dueDay, dateType);
+            if (status === "closed") return null;
+            return {
+                kind: "installment" as const,
+                id: row.id,
+                amount: decimalToString(row.amount),
+                dueDate: row.dueDate.toISOString(),
+                status: status === "overdue" ? ("overdue" as const) : ("upcoming" as const),
+                accountCode: row.account!.code,
+                accountName: row.account!.name,
+            };
+        })
+        .filter((item): item is NonNullable<typeof item> => item != null);
 
     const paymentItems: PayableDueItem[] = payments
         .filter((row) => row.loan?.account)
-        .map((row) => ({
-            kind: "payment" as const,
-            id: row.id,
-            amount: decimalToString(row.amount),
-            dueDate: row.dueDate.toISOString(),
-            status: row.dueDate < now ? ("overdue" as const) : ("upcoming" as const),
-            loanId: row.loan!.id,
-            accountCode: row.loan!.account!.code,
-        }));
+        .map((row) => {
+            const status = classifyDueStatus(now, row.dueDate, dueDay, dateType);
+            if (status === "closed") return null;
+            return {
+                kind: "payment" as const,
+                id: row.id,
+                amount: decimalToString(row.amount),
+                dueDate: row.dueDate.toISOString(),
+                status: status === "overdue" ? ("overdue" as const) : ("upcoming" as const),
+                loanId: row.loan!.id,
+                accountCode: row.loan!.account!.code,
+            };
+        })
+        .filter((item): item is NonNullable<typeof item> => item != null);
 
     return [...installmentItems, ...paymentItems].sort(
         (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),

@@ -1,7 +1,9 @@
-import { addMonths } from "date-fns-jalali/addMonths";
-import dayjs from "dayjs";
 import Decimal from "decimal.js";
 import { GlobalConfigType } from "utils/types/configs";
+import {
+    addCalendarMonths,
+    setDayOfMonth,
+} from "utils/installmentTiming";
 
 export type PaymentOnCalendar = { date: Date, amount: number };
 
@@ -10,7 +12,8 @@ export const calculateLoanPayments = (
     paymentCount: number,
     customAmount: number,
     start: Date,
-    dateType: GlobalConfigType['dateType']
+    dateType: GlobalConfigType['dateType'],
+    payDay = 5,
 ) => {
     if (customAmount > total) {
         return {
@@ -33,12 +36,16 @@ export const calculateLoanPayments = (
         }
     }
 
+    const calendar = dateType ?? "JALALI";
+    const deadlineDay = payDay;
+
     const payments: PaymentOnCalendar[] = [];
 
-    // create amount based on count
+    // create amount based on count — snap each date to payment deadline day
     for (let i = 1; i <= count; i++) {
-        const date = dateType === "JALALI" ? addMonths(start, i) : dayjs(start).add(1, 'M').toDate();
-        payments.push({ date: date, amount: Number(amount.toDecimalPlaces(2)) });
+        const monthAnchor = addCalendarMonths(start, i, calendar);
+        const date = setDayOfMonth(monthAnchor, deadlineDay, calendar);
+        payments.push({ date, amount: Number(amount.toDecimalPlaces(2)) });
     }
     // if the remain is greater than 0, then add the remain to the last payment
     if (Decimal.sub(total, Decimal.mul(amount, count)).toNumber() > 0) {
@@ -49,12 +56,12 @@ export const calculateLoanPayments = (
     // push the remain 
     if (count < paymentCount) {
         const remain = Decimal.sub(total, Decimal.mul(amount, count));
-        const date = dateType === "JALALI" ? addMonths(start, count + 1) : dayjs(start).add(1, 'M').toDate();
-        payments.push({ date: date, amount: Number(remain) });
+        const monthAnchor = addCalendarMonths(start, count + 1, calendar);
+        const date = setDayOfMonth(monthAnchor, deadlineDay, calendar);
+        payments.push({ date, amount: Number(remain) });
     }
 
     return {
         payments
     }
 }
-

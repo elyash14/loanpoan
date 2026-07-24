@@ -42,4 +42,19 @@ describe('calculateLoanPayments', () => {
         expect(result.payments).toHaveLength(3);
         expect(result.payments![0].date).toBeInstanceOf(Date);
     });
+
+    it('snaps gregorian payment dates to payDay across months', () => {
+        const result = calculateLoanPayments(900, 3, 0, start, 'GREGORIAN', 5);
+
+        expect(result.error).toBeUndefined();
+        expect(result.payments).toHaveLength(3);
+        expect(result.payments!.map((p) => p.date.getDate())).toEqual([5, 5, 5]);
+        expect(result.payments!.map((p) => p.date.getMonth())).toEqual([1, 2, 3]); // Feb, Mar, Apr
+    });
+
+    it('uses custom payDay for gregorian schedule', () => {
+        const result = calculateLoanPayments(600, 2, 0, start, 'GREGORIAN', 10);
+
+        expect(result.payments!.map((p) => p.date.getDate())).toEqual([10, 10]);
+    });
 });

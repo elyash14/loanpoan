@@ -3,7 +3,6 @@
 import { getGlobalConfigs } from "@database/config/data";
 import { getCurrentInstallmentAmount } from "@database/installment-amount/data";
 import prisma from "@database/prisma";
-import { addMonths, setDate } from 'date-fns-jalali';
 import { revalidatePath } from "next/cache";
 import { getSession } from 'utils/auth/dataAccessLayer';
 import { DASHBOARD_URL } from "utils/configs";
@@ -11,6 +10,11 @@ import { GlobalConfigType } from "utils/types/configs";
 import { notifyInstallmentGeneration } from "utils/telegram/notifyInstallmentGeneration";
 import { notifyLoanPriorityQueue } from "utils/telegram/notifyLoanPriorityQueue";
 import { recalculateUserPunctuality } from "@database/gamification/punctuality";
+import {
+  addCalendarMonths,
+  buildPeriodDates,
+  healDeadlineIfNeeded,
+} from "utils/installmentTiming";
 
 export async function payAnInstallment(id: number) {
   try {
@@ -105,13 +109,19 @@ export async function generateAllUndueInstallments() {
 }
 
 const calculateUndueInstallments = async (): Promise<{ createdCount: number; dueDates: Date[] }> => {
-  let results: any[] = [];
+  let results: { dueDate: Date }[] = [];
   const currentDate = new Date();
   let createdCount = 0;
   const dueDates: Date[] = [];
 
   // load configs
   const config = (await getGlobalConfigs()) as GlobalConfigType;
+  const dueDay = config.installment?.dueDay ?? 1;
+  const payDay = config.installment?.payDay ?? 5;
+  const dateType = config.dateType ?? "JALALI";
+
+  // Heal unpaid rows that still store generation-day as dueDate
+  await healUnpaidInstallmentDeadlines(dueDay, payDay, dateType);
 
   // load current 
   const currentInstallment = await getCurrentInstallmentAmount();
@@ -176,40 +186,79 @@ const calculateUndueInstallments = async (): Promise<{ createdCount: number; due
   return { createdCount, dueDates };
 }
 
-const _generateInstallmentsDateForAccount = (initialDate: Date, currentDate: Date, config: GlobalConfigType) => {
+/**
+ * Shift unpaid installment dueDates from generation day (dueDay) to deadline (payDay)
+ * in the same calendar month — heals data from the old meaning of dueDate.
+ */
+async function healUnpaidInstallmentDeadlines(
+  dueDay: number,
+  payDay: number,
+  dateType: "JALALI" | "GREGORIAN",
+) {
+  const unpaid = await prisma.installment.findMany({
+    where: { paidAt: null },
+    select: { id: true, dueDate: true },
+  });
+
+  for (const row of unpaid) {
+    const healed = healDeadlineIfNeeded(row.dueDate, dueDay, payDay, dateType);
+    if (!healed) continue;
+    await prisma.installment.update({
+      where: { id: row.id },
+      data: { dueDate: healed },
+    });
+  }
+
+  const unpaidPayments = await prisma.payment.findMany({
+    where: { paidAt: null },
+    select: { id: true, dueDate: true },
+  });
+
+  for (const row of unpaidPayments) {
+    const healed = healDeadlineIfNeeded(row.dueDate, dueDay, payDay, dateType);
+    if (!healed) continue;
+    await prisma.payment.update({
+      where: { id: row.id },
+      data: { dueDate: healed },
+    });
+  }
+}
+
+/**
+ * From the last stored deadline (or account open date), walk forward month by month.
+ * Create an installment once the generation day (dueDay) has been reached.
+ * Persist dueDate as the payment deadline (payDay).
+ */
+const _generateInstallmentsDateForAccount = (
+  initialDate: Date,
+  currentDate: Date,
+  config: GlobalConfigType,
+) => {
   const dueDay = config.installment?.dueDay ?? 1;
   const payDay = config.installment?.payDay ?? 5;
-  const dateType = config.dateType ?? 'GREGORIAN'
+  const dateType = config.dateType ?? "JALALI";
 
-  const results = [];
-  // Calculate installments between last installment due date and current date
-  let startDate = new Date(initialDate);
-  while (startDate <= currentDate) {
-    let nextMonth;
-    let nextPay;
+  const results: { dueDate: Date }[] = [];
+  let cursor = new Date(initialDate);
 
-    if (dateType === 'JALALI') {
-      nextMonth = setDate(addMonths(startDate, 1), dueDay);
-      nextPay = setDate(addMonths(startDate, 1), payDay);
-    } else {
-      nextMonth = new Date(startDate);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      nextMonth.setDate(dueDay);
+  // Safety: avoid infinite loops if clock/config is odd
+  for (let i = 0; i < 120; i++) {
+    const nextMonthAnchor = addCalendarMonths(cursor, 1, dateType);
+    const { openAt, deadlineAt } = buildPeriodDates(
+      nextMonthAnchor,
+      dueDay,
+      payDay,
+      dateType,
+    );
 
-      nextPay = new Date(startDate);
-      nextPay.setMonth(nextPay.getMonth() + 1);
-      nextPay.setDate(payDay);
+    // Not yet time to generate this period
+    if (currentDate < openAt) {
+      break;
     }
 
-    // Create the installment in the database or collect for further processing
-    const newInstallment = {
-      dueDate: nextMonth,
-      payDate: nextPay,
-    };
-
-    results.push(newInstallment); // Collecting for further processing or DB insertion
-
-    startDate = nextMonth!; // Move the startDate to the next month
+    results.push({ dueDate: deadlineAt });
+    cursor = deadlineAt;
   }
+
   return results;
 }

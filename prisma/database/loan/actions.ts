@@ -35,7 +35,8 @@ export async function createLoan(formData: FormData): Promise<CreateLoanResponse
   const { payments, error } = calculateLoanPayments(
     validatedFields.data.amount, validatedFields.data.paymentCount,
     validatedFields.data.paymentAmount, validatedFields.data.startedAt,
-    config.dateType
+    config.dateType,
+    config.installment?.payDay ?? 5,
   );
   if (error) {
     return {

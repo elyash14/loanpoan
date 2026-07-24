@@ -20,8 +20,9 @@ type Props = {
     dateType: GlobalConfigType["dateType"]
     currency: GlobalConfigType["currency"]
     loanConfig: GlobalConfigType["loan"]
+    payDay?: number
 }
-function AddLoanForm({ data, dateType, currency, loanConfig }: Props) {
+function AddLoanForm({ data, dateType, currency, loanConfig, payDay = 5 }: Props) {
     const account: Account = useMemo(() => JSON.parse(data), [data]);
     const router = useRouter();
     const [openModal, setOpenModal] = useState(false);
@@ -171,6 +172,7 @@ function AddLoanForm({ data, dateType, currency, loanConfig }: Props) {
                 paymentCount={Number(paymentCount)}
                 startedAt={startedAt as Date}
                 dateType={dateType}
+                payDay={payDay}
                 currency={currency}
                 handleClose={(paymentAmount, paymentCount) => {
                     setValue('paymentAmount', paymentAmount);

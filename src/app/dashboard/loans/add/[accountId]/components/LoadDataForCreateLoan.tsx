@@ -20,6 +20,7 @@ const LoadDataForCreateLoan = async ({ id }: props) => {
             dateType={config.dateType}
             currency={config.currency}
             loanConfig={config.loan}
+            payDay={config.installment?.payDay ?? 5}
         />
     );
 }

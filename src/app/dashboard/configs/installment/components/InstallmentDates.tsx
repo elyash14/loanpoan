@@ -66,7 +66,7 @@ const InstallmentDates = ({ installment }: Props) => {
             render={({ field: { onChange, onBlur, value } }) => (
                 <NumberInput
                     withAsterisk
-                    label="Installment Due Day"
+                    label="Generation Day"
                     onChange={onChange}
                     onBlur={onBlur}
                     value={value}
@@ -75,7 +75,8 @@ const InstallmentDates = ({ installment }: Props) => {
                     min={1}
                     max={29}
                     description={<>
-                        The day of each month that all installments will be generate
+                        Day of each month when installments are generated and become payable.
+                        Uses the calendar from General settings (Jalali or Gregorian).
                     </>}
                 />
             )}
@@ -87,7 +88,7 @@ const InstallmentDates = ({ installment }: Props) => {
             render={({ field: { onChange, onBlur, value } }) => (
                 <NumberInput
                     withAsterisk
-                    label="Installment Pay Day"
+                    label="Payment Deadline Day"
                     onChange={onChange}
                     onBlur={onBlur}
                     value={value}
@@ -96,7 +97,8 @@ const InstallmentDates = ({ installment }: Props) => {
                     min={2}
                     max={29}
                     description={<>
-                        The day of each month that all installments will be payed
+                        Last day of the same month users can pay before the installment is overdue.
+                        Uses the calendar from General settings (Jalali or Gregorian).
                     </>}
                 />
             )}
