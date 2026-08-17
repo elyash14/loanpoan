@@ -24,6 +24,7 @@ export async function createLoan(formData: FormData): Promise<CreateLoanResponse
   if (!validatedFields.success) {
     return {
       status: "ERROR",
+      message: "Please check the form fields and try again",
       error: validatedFields.error.flatten().fieldErrors,
     }
   }

@@ -22,7 +22,7 @@ export async function checkMinAndMaxLoanAmount(amount: number, accountId?: numbe
         }
         const minimum = Decimal.mul(account?.balance!, config.loan.minimumFactor);
         if (new Decimal(amount) < minimum) {
-            result.maximumError = true;
+            result.minimumError = true;
             result.minimum = minimum.toNumber();
         }
     }

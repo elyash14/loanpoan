@@ -28,7 +28,7 @@ const PaymentsShowModal = (props: Props) => {
     return <Modal
         opened={true}
         size="lg"
-        onClose={() => handleClose(payments[0].amount ?? 0, payments.length ?? paymentCount)} title="All Payments"
+        onClose={() => handleClose(payments[0]?.amount ?? 0, payments.length || paymentCount)} title="All Payments"
         display="flex"
     >
         <ScrollArea mih={100} h={350} >
@@ -56,7 +56,7 @@ const PaymentsShowModal = (props: Props) => {
             ml={rem(5)}
             mt={rem(20)}
             rightSection={<IconCheck size={14} />}
-            onClick={() => handleClose(payments[0].amount ?? 0, payments.length ?? paymentCount)}>
+            onClick={() => handleClose(payments[0]?.amount ?? 0, payments.length || paymentCount)}>
             OK
         </Button>
     </Modal>

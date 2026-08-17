@@ -9,9 +9,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { useDebouncedCallback } from "use-debounce";
-import { successNotification } from "utils/Notification/notification";
+import { errorNotification, successNotification } from "utils/Notification/notification";
 import { DASHBOARD_URL } from "utils/configs";
-import { CreateLoanFormSchemaInputType, createLoanValidationSchema } from "utils/form-validations/loan/createLoanValidation";
+import { CreateLoanFormSchemaInputType, getCreateLoanValidationSchema } from "utils/form-validations/loan/createLoanValidation";
 import { GlobalConfigType } from "utils/types/configs";
 import PaymentsShowModal from "./PaymentsShowModal";
 
@@ -22,6 +22,15 @@ type Props = {
     loanConfig: GlobalConfigType["loan"]
     payDay?: number
 }
+
+function toDate(value: CreateLoanFormSchemaInputType["startedAt"] | undefined): Date | null {
+    if (!value) {
+        return null;
+    }
+    const date = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function AddLoanForm({ data, dateType, currency, loanConfig, payDay = 5 }: Props) {
     const account: Account = useMemo(() => JSON.parse(data), [data]);
     const router = useRouter();
@@ -30,58 +39,87 @@ function AddLoanForm({ data, dateType, currency, loanConfig, payDay = 5 }: Props
 
     const minimumAmount = loanConfig?.minimumFactor! * Number(account.balance);
     const maximumValue = loanConfig?.maximumFactor! * Number(account.balance);
+    const validationSchema = useMemo(
+        () => getCreateLoanValidationSchema({
+            restrict: Boolean(loanConfig?.restrict),
+            minimum: minimumAmount,
+            maximum: maximumValue,
+        }),
+        [loanConfig?.restrict, minimumAmount, maximumValue],
+    );
 
     const {
         watch, setError, control, register, setValue,
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<CreateLoanFormSchemaInputType>({
-        resolver: zodResolver(createLoanValidationSchema, {}, { raw: true }),
+        resolver: zodResolver(validationSchema, {}, { raw: true }),
         defaultValues: {
             paymentCount: 12,
             amount: maximumValue,
             accountId: account.id,
+            paymentAmount: 0,
+            description: "",
         }
     });
 
-    const onSubmit: SubmitHandler<CreateLoanFormSchemaInputType> = async (data) => {
-        // create a form data
+    const onSubmit: SubmitHandler<CreateLoanFormSchemaInputType> = async (formValues) => {
         const formData = new FormData();
-        for (const field of Object.keys(data) as Array<keyof typeof data>) {
-            formData.append(`${field}`, `${data[field]}`);
+        for (const field of Object.keys(formValues) as Array<keyof typeof formValues>) {
+            const value = formValues[field];
+            if (field === "startedAt") {
+                const startedAtDate = toDate(value as CreateLoanFormSchemaInputType["startedAt"]);
+                formData.append("startedAt", startedAtDate ? startedAtDate.toISOString() : "");
+                continue;
+            }
+            formData.append(`${field}`, `${value ?? ""}`);
         }
 
-        // send it to the server with server actions
         const result = await createLoan(formData);
-        if (result.status === 'ERROR') {
-            for (const e in result.error!) {
-                setError(e as any, { message: String(result.error?.[e as ("amount" | "accountId" | "description" | "paymentCount" | "startedAt")]) });
+        if (result.status === "ERROR") {
+            if (result.error) {
+                for (const field of Object.keys(result.error) as Array<keyof NonNullable<typeof result.error>>) {
+                    const messages = result.error[field];
+                    setError(field as keyof CreateLoanFormSchemaInputType, {
+                        message: Array.isArray(messages) ? messages[0] : String(messages ?? ""),
+                    });
+                }
             }
-        }
-        else if (result.status === 'SUCCESS') {
-            successNotification({
-                title: 'Success',
-                message: result.message!,
+            errorNotification({
+                title: "Error",
+                message: result.message || "Failed to create loan",
             });
-            router.push(`/${DASHBOARD_URL}/loans`);
+            return;
         }
+
+        successNotification({
+            title: "Success",
+            message: result.message!,
+        });
+        router.push(`/${DASHBOARD_URL}/loans`);
     };
     const amount = watch("amount");
     const paymentCount = watch("paymentCount");
     const startedAt = watch("startedAt");
+    const startedAtDate = toDate(startedAt);
 
     const handleOpenModal = useDebouncedCallback(() => { setOpenModal(true) }, 1000);
 
     useEffect(() => {
-        if (mustCalculate.current === true && amount && paymentCount && startedAt) {
+        if (mustCalculate.current === true && amount && paymentCount && startedAtDate) {
             handleOpenModal();
         }
         mustCalculate.current = true;
-    }, [amount, paymentCount, startedAt, handleOpenModal]);
+    }, [amount, paymentCount, startedAtDate, handleOpenModal]);
 
     return (
         <Container size="sm" >
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onSubmit, () => {
+                errorNotification({
+                    title: "Error",
+                    message: "Please check the form fields and try again",
+                });
+            })}>
                 <Controller
                     control={control}
                     name="paymentAmount"
@@ -146,9 +184,10 @@ function AddLoanForm({ data, dateType, currency, loanConfig, payDay = 5 }: Props
                             withAsterisk
                             label="Start Date"
                             placeholder="Pick a date"
-                            value={value}
+                            value={typeof value === "string" ? value : null}
                             onChange={onChange}
                             onBlur={onBlur}
+                            error={errors.startedAt?.message}
                         />
                     )} />
                 <Textarea
@@ -167,10 +206,10 @@ function AddLoanForm({ data, dateType, currency, loanConfig, payDay = 5 }: Props
                     </Button>
                 </Group>
             </form>
-            {openModal && <PaymentsShowModal
+            {openModal && startedAtDate && <PaymentsShowModal
                 totalAmount={Number(amount)}
                 paymentCount={Number(paymentCount)}
-                startedAt={startedAt as Date}
+                startedAt={startedAtDate}
                 dateType={dateType}
                 payDay={payDay}
                 currency={currency}
