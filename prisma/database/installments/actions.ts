@@ -95,15 +95,21 @@ export async function generateAllUndueInstallments() {
     }
     // revalidate the list of accounts page after updating an account.
     revalidatePath(`/${DASHBOARD_URL}/installments`);
+    const message =
+      result.createdCount > 0
+        ? `Created ${result.createdCount} installment(s) successfully`
+        : "No new installments to create. Generation only runs after the Generation Day for the next month.";
     return {
       status: "SUCCESS",
-      message: "Installments generated successfully",
+      message,
+      createdCount: result.createdCount,
     }
   } catch (error) {
     console.error(error);
     return {
       status: "ERROR",
       message: "Failed to generate installments",
+      createdCount: 0,
     }
   }
 }
