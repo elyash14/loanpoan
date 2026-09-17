@@ -5,6 +5,10 @@ import { Grid, Paper, SimpleGrid, Skeleton } from "@mantine/core";
 const DashboardSkeleton = () => {
     return (
         <>
+            <Paper withBorder p="md" mb="md">
+                <Skeleton height={16} width={240} mb="sm" />
+                <Skeleton height={32} width={180} />
+            </Paper>
             <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} mb="xl">
                 {Array.from({ length: 6 }).map((_, index) => (
                     <Paper key={index} withBorder p="md">
@@ -33,6 +37,12 @@ const DashboardSkeleton = () => {
                     </Paper>
                 </Grid.Col>
             </Grid>
+            <Paper withBorder p="md" mt="xl">
+                <Skeleton height={24} width={220} mb="lg" />
+                <Skeleton height={40} mb="sm" />
+                <Skeleton height={40} mb="sm" />
+                <Skeleton height={40} />
+            </Paper>
         </>
     );
 };

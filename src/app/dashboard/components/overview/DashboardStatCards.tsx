@@ -4,6 +4,7 @@ import type { DashboardStats } from "@database/dashboard/data";
 import { Group, NumberFormatter, Paper, SimpleGrid, Text, ThemeIcon } from "@mantine/core";
 import {
     IconAlertTriangle,
+    IconBuildingBank,
     IconCash,
     IconMoneybag,
     IconReceipt,
@@ -84,45 +85,81 @@ const StatCard = ({ label, value, icon, variant = "default", href }: StatCardPro
 };
 
 const DashboardStatCards = ({ stats }: Props) => {
+    const { currency } = useAtomValue(globalConfigAtom);
+
     return (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} mb="xl">
-            <StatCard
-                label="Total Loans"
-                value={stats.totals.loans}
-                icon={<IconMoneybag size={18} />}
-            />
-            <StatCard
-                label="Total Payments"
-                value={stats.totals.payments}
-                icon={<IconCash size={18} />}
-            />
-            <StatCard
-                label="Total Installments"
-                value={stats.totals.installments}
-                icon={<IconReceipt size={18} />}
-            />
-            <StatCard
-                label="Overdue Loans"
-                value={stats.overdue.loans}
-                icon={<IconAlertTriangle size={18} />}
-                variant="overdue"
-                href={`/${DASHBOARD_URL}/loans?status=Overdue`}
-            />
-            <StatCard
-                label="Overdue Payments"
-                value={stats.overdue.payments}
-                icon={<IconAlertTriangle size={18} />}
-                variant="overdue"
-                href={`/${DASHBOARD_URL}/payments?status=Overdue`}
-            />
-            <StatCard
-                label="Overdue Installments"
-                value={stats.overdue.installments}
-                icon={<IconAlertTriangle size={18} />}
-                variant="overdue"
-                href={`/${DASHBOARD_URL}/installments?status=Overdue`}
-            />
-        </SimpleGrid>
+        <>
+            <Paper
+                withBorder
+                p="md"
+                mb="md"
+                style={{
+                    borderLeft: "4px solid var(--mantine-color-teal-6)",
+                }}
+            >
+                <Group justify="space-between" align="center">
+                    <div>
+                        <Text size="sm" c="dimmed" fw={500}>
+                            Current Fund Balance (Available Cash)
+                        </Text>
+                        <Text fz="1.75rem" fw={800} c="teal.6">
+                            <NumberFormatter
+                                value={stats.fundBalance}
+                                thousandSeparator
+                                prefix={`${currency?.symbol ?? ""} `}
+                            />
+                        </Text>
+                    </div>
+                    <ThemeIcon
+                        variant="light"
+                        color="teal"
+                        size={48}
+                        radius="md"
+                    >
+                        <IconBuildingBank size={28} />
+                    </ThemeIcon>
+                </Group>
+            </Paper>
+
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} mb="xl">
+                <StatCard
+                    label="Total Loans"
+                    value={stats.totals.loans}
+                    icon={<IconMoneybag size={18} />}
+                />
+                <StatCard
+                    label="Total Payments"
+                    value={stats.totals.payments}
+                    icon={<IconCash size={18} />}
+                />
+                <StatCard
+                    label="Total Installments"
+                    value={stats.totals.installments}
+                    icon={<IconReceipt size={18} />}
+                />
+                <StatCard
+                    label="Overdue Loans"
+                    value={stats.overdue.loans}
+                    icon={<IconAlertTriangle size={18} />}
+                    variant="overdue"
+                    href={`/${DASHBOARD_URL}/loans?status=Overdue`}
+                />
+                <StatCard
+                    label="Overdue Payments"
+                    value={stats.overdue.payments}
+                    icon={<IconAlertTriangle size={18} />}
+                    variant="overdue"
+                    href={`/${DASHBOARD_URL}/payments?status=Overdue`}
+                />
+                <StatCard
+                    label="Overdue Installments"
+                    value={stats.overdue.installments}
+                    icon={<IconAlertTriangle size={18} />}
+                    variant="overdue"
+                    href={`/${DASHBOARD_URL}/installments?status=Overdue`}
+                />
+            </SimpleGrid>
+        </>
     );
 };
 

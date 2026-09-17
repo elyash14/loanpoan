@@ -68,6 +68,7 @@ export async function payAPayment(id: number) {
       }
     }
 
+    revalidatePath(`/${DASHBOARD_URL}`);
     revalidatePath(`/${DASHBOARD_URL}/payments`);
     revalidatePath("/home");
     return {
