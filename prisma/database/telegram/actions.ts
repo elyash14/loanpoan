@@ -75,6 +75,7 @@ export async function syncTelegramGroupMembers(): Promise<{
             }
         }
 
+        revalidatePath(`/${DASHBOARD_URL}/configs/telegram`);
         revalidatePath(`/${DASHBOARD_URL}/telegram-members`);
         revalidatePath(`/${DASHBOARD_URL}/users`);
 

@@ -1,19 +1,12 @@
-import PagePaper from "@dashboard/components/paper/PagePaper";
-import ListPageSkeleton from "@dashboard/components/skeleton/ListPageSkeleton";
-import { IconBrandTelegram } from "@tabler/icons-react";
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { DASHBOARD_URL } from "utils/configs";
 import { ListPage } from "utils/types/pageTypes";
-import LoadTelegramMembers from "./components/LoadTelegramMembers";
 
-export default async function TelegramMembersPage({ searchParams }: ListPage) {
+export default async function TelegramMembersRedirectPage({ searchParams }: ListPage) {
     const resolvedSearchParams = await searchParams;
+    const query = new URLSearchParams(
+        resolvedSearchParams as Record<string, string>,
+    ).toString();
 
-    return (
-        <PagePaper>
-            <h2><IconBrandTelegram />&nbsp;Telegram group members</h2>
-            <Suspense fallback={<ListPageSkeleton />}>
-                <LoadTelegramMembers searchParams={resolvedSearchParams} />
-            </Suspense>
-        </PagePaper>
-    );
+    redirect(`/${DASHBOARD_URL}/configs/telegram${query ? `?${query}` : ""}`);
 }

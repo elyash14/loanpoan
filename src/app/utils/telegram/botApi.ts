@@ -270,6 +270,54 @@ export async function sendTelegramPhoto(
     };
 }
 
+export async function sendTelegramDocument(
+    chatId: number | string | bigint,
+    documentBuffer: Buffer,
+    fileName: string,
+    caption?: string,
+    messageThreadId?: number,
+    replyToMessageId?: number,
+    replyMarkup?: Record<string, unknown>,
+) {
+    const token = getBotToken();
+    const formData = new FormData();
+    formData.append("chat_id", String(chatId));
+
+    const blob = new Blob([new Uint8Array(documentBuffer)], { type: "application/octet-stream" });
+    formData.append("document", blob, fileName);
+
+    if (caption) {
+        formData.append("caption", caption);
+        formData.append("parse_mode", "HTML");
+    }
+    if (messageThreadId !== undefined) {
+        formData.append("message_thread_id", String(messageThreadId));
+    }
+    if (replyToMessageId !== undefined) {
+        formData.append("reply_to_message_id", String(replyToMessageId));
+    }
+    if (replyMarkup) {
+        formData.append("reply_markup", JSON.stringify(replyMarkup));
+    }
+
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+        method: "POST",
+        body: formData,
+    });
+
+    const data = (await response.json()) as TelegramApiResponse<{
+        message_id: number;
+        document?: { file_id: string; file_name?: string; file_size?: number };
+    }>;
+    if (!data.ok) {
+        throw new Error(data.description ?? "Telegram API sendDocument failed");
+    }
+    return {
+        message_id: data.result!.message_id,
+        file_id: data.result?.document?.file_id,
+    };
+}
+
 export async function fetchTelegramFile(fileId: string): Promise<{ buffer: Buffer; contentType: string }> {
     const file = await callTelegramApi<{ file_path: string }>("getFile", { file_id: fileId });
     const token = getBotToken();

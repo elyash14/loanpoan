@@ -57,6 +57,24 @@ const ConfigMenu = () => {
                 <IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />
             }
         />
+        <NavLink
+            component={Link}
+            href={`${URL_PREFIX}/telegram`}
+            label="Telegram"
+            active={pathname === `${URL_PREFIX}/telegram`}
+            rightSection={
+                <IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />
+            }
+        />
+        <NavLink
+            component={Link}
+            href={`${URL_PREFIX}/backup`}
+            label="Database Backup"
+            active={pathname === `${URL_PREFIX}/backup`}
+            rightSection={
+                <IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />
+            }
+        />
     </Paper>
 }
 

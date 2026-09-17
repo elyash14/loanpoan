@@ -39,15 +39,16 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 # Runtime uploads (avatars). Mount a Docker/Coolify volume here so files survive redeploys.
 ENV UPLOADS_DIR=/app/uploads
+ENV BACKUP_DIR=/app/backups
 
-RUN apk add --no-cache libc6-compat openssl su-exec \
+RUN apk add --no-cache libc6-compat openssl su-exec postgresql-client \
   && addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-# Writable uploads dir (bind a volume to /app/uploads in production)
-RUN mkdir -p /app/uploads/avatars ./public/uploads/avatars \
-  && chown -R nextjs:nodejs /app/public /app/uploads
+# Writable uploads and backups dir (bind volumes to /app/uploads and /app/backups in production)
+RUN mkdir -p /app/uploads/avatars /app/backups ./public/uploads/avatars \
+  && chown -R nextjs:nodejs /app/public /app/uploads /app/backups
 
 # Set up the standalone server and static assets
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

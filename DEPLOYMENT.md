@@ -106,6 +106,26 @@ A successful run returns HTTP 200 and generates installments for due loans.
 
 ---
 
+## Automated Database Backup & Telegram Export
+
+You can schedule automated database backups to be created and sent directly to your Telegram group.
+
+### Coolify Scheduled Task for Backups
+
+1. Open Coolify → your **payloop** application → **Scheduled Tasks**.
+2. Add a new task:
+   - **Name:** `daily-database-backup`
+   - **Frequency:** `0 2 * * *` (every day at 2:00 AM server time)
+   - **Command:**
+
+```bash
+curl -sS -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/backup
+```
+
+3. Ensure `TELEGRAM_BOT_TOKEN` and `TELEGRAM_GROUP_CHAT_ID` are configured in your environment variables.
+
+---
+
 ## Startup and Migrations
 
 The container's `entrypoint.sh` automatically runs the database migrations (`prisma migrate deploy`) on startup before launching the Next.js production server.

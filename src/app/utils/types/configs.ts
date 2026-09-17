@@ -16,6 +16,13 @@ export type GlobalConfigType = {
     };
     /** Language for bot messages sent to the Telegram group */
     telegramMessageLocale?: "en" | "fa";
+    backup?: {
+        telegramTopicId?: number | null;
+    };
+    telegram?: {
+        paymentsTopicId?: number | null;
+        backupTopicId?: number | null;
+    };
 }
 
 //TODO make a seeder to seed a default value for this config
